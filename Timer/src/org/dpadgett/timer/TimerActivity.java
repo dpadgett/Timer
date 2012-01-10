@@ -25,6 +25,8 @@ public class TimerActivity extends Activity {
         TabsAdapter mTabsAdapter = new TabsAdapter(this, mViewPager);
         mTabsAdapter.addTab(bar.newTab().setText("Stopwatch"),
                 StopwatchFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("Countdown"),
+                CountdownFragment.class, null);
 
         if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));

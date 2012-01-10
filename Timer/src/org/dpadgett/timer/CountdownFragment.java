@@ -4,6 +4,8 @@ import android.R.attr;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
@@ -35,6 +38,8 @@ public class CountdownFragment extends Fragment {
         rootView = inflater.inflate(R.layout.countdown, container, false);
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
+        EditText countdownHours = (EditText) rootView.findViewById(R.id.countdownHours);
+		countdownHours.addTextChangedListener(new IntLimiter(24));
         this.timerLayout = createTimerLayout(inputs);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         startButton.setOnClickListener(new OnClickListener() {
@@ -62,6 +67,37 @@ public class CountdownFragment extends Fragment {
 				inputs.addView(timerLayout);
 				startButton.setText("Stop");
 			}
+		}
+    	
+    }
+    
+    private static class IntLimiter implements TextWatcher {
+    	private final int limit;
+    	private String oldNumber;
+    	
+    	private IntLimiter(int limit) {
+    		this.limit = limit;
+    	}
+    	
+		@Override
+		public void afterTextChanged(Editable arg0) {
+			if (arg0.length() > 0) {
+				int newNumber = Integer.parseInt(arg0.toString());
+				if (newNumber > limit) {
+					arg0.replace(0, arg0.length(), oldNumber);
+				}
+			}
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
+				int arg3) {
+			oldNumber = arg0.toString();
+		}
+
+		@Override
+		public void onTextChanged(CharSequence arg0, int arg1, int arg2,
+				int arg3) {
 		}
     	
     }

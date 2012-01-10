@@ -63,6 +63,17 @@
     </LinearLayout>
     <Space android:layout_width="match_parent" 
         android:layout_height="20sp" />
+    <ImageView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:paddingBottom="0dp"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:paddingTop="0dp"
+        android:background="#33b5e5"
+        android:src="@android:drawable/divider_horizontal_bright" />
+
     <ScrollView
         android:id="@+id/scrollView1"
         android:layout_width="fill_parent"

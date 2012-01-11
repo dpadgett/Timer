@@ -3,7 +3,15 @@ package org.dpadgett.timer;
 import java.util.concurrent.Semaphore;
 
 import android.R.attr;
+import android.R.drawable;
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -36,6 +44,7 @@ public class CountdownFragment extends Fragment {
 	private final Semaphore s;
 	private DanWidgets danWidgets;
 	private Thread timingThread;
+	private Ringtone alarmSound;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
@@ -44,12 +53,38 @@ public class CountdownFragment extends Fragment {
 		this.timingThread = new Thread(new TimingThread());
 	}
 	
+	private void initRingtone() {
+		alarmSound = null;
+		Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		if (alert != null) {
+			alarmSound = RingtoneManager.getRingtone(rootView.getContext(), alert);
+		}
+		if (alert == null || alarmSound == null) {
+			// alert is null, using backup
+			alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			if (alert != null) {
+				alarmSound = RingtoneManager.getRingtone(rootView.getContext(), alert);
+			}
+		}
+		if (alert == null || alarmSound == null) {
+			// alert backup is null, using 2nd backup
+			alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+			if (alert != null) {
+				alarmSound = RingtoneManager.getRingtone(rootView.getContext(), alert);
+			}
+		}
+		if (alarmSound == null) {
+			System.err.println("Could not find alert sound!");
+		}
+	}
+	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.countdown, container, false);
 		danWidgets = DanWidgets.create(rootView);
+		initRingtone();
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         countdownHours = (EditText) rootView.findViewById(R.id.countdownHours);
@@ -81,6 +116,7 @@ public class CountdownFragment extends Fragment {
 				inputs.addView(inputLayout);
 				startButton.setText("Start");
 				s.release();
+				alarmSound.stop();
 				try {
 					timingThread.join();
 				} catch (InterruptedException e) {
@@ -180,6 +216,7 @@ public class CountdownFragment extends Fragment {
 					timeUntilEnd = 0;
 					playAlarm();
 					handler.post(new ToggleInputMode());
+					s.acquireUninterruptibly();
 					break;
 				}
 				String timeText = getTimerText(timeUntilEnd);
@@ -192,30 +229,51 @@ public class CountdownFragment extends Fragment {
 		}
 
 		private void playAlarm() {
-			Ringtone r = null;
-			Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-			if (alert != null) {
-				r = RingtoneManager.getRingtone(rootView.getContext(), alert);
-			}
-			if (alert == null || r == null) {
-				// alert is null, using backup
-				alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-				if (alert != null) {
-					r = RingtoneManager.getRingtone(rootView.getContext(), alert);
-				}
-			}
-			if (alert == null || r == null) {
-				// alert backup is null, using 2nd backup
-				alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-				if (alert != null) {
-					r = RingtoneManager.getRingtone(rootView.getContext(), alert);
-				}
-			}
-			if (r == null) {
-				System.err.println("Could not find alert sound!");
-			} else {
-				r.play();
-			}
+			handler.post(new PlayAlarm());
+		}
+    }
+
+    /** Plays the alarm and sets button text to 'dismiss' */
+    private class PlayAlarm implements Runnable {
+    	Button startButton = (Button) rootView.findViewById(R.id.startButton);
+    	TextView timerText = (TextView) rootView.findViewById(R.id.countdownTimer);
+
+    	@Override
+		public void run() {
+    		alarmSound.play();
+			startButton.setText("Dismiss");
+			//TODO: hack
+			timerText.setText(getTimerText(0));
+			AlertDialog dialog = new AlertDialog.Builder(rootView.getContext())
+				.setTitle("Countdown timer finished")
+				.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						alarmSound.stop();
+					}
+				})
+				.setCancelable(false)
+				.create();
+			dialog.show();
+			NotificationManager mNotificationManager = 
+					(NotificationManager) rootView.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+			int icon = drawable.ic_dialog_info;
+			CharSequence tickerText = "Countdown timer finished";
+			long when = System.currentTimeMillis();
+
+			Notification notification = new Notification(icon, tickerText, when);
+			notification.flags |= Notification.FLAG_AUTO_CANCEL;
+			
+			Context context = rootView.getContext();
+			CharSequence contentTitle = "Countdown timer finished";
+			CharSequence contentText = "Tap here to dismiss";
+			Intent notificationIntent = new Intent(context, TimerActivity.class);
+			//notificationIntent.addFlags(Intent.)
+			PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+
+			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+			mNotificationManager.notify(R.id.countdownNotification, notification);
 		}
     }
 }

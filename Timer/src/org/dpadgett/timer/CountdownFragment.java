@@ -2,17 +2,27 @@ package org.dpadgett.timer;
 
 import java.util.concurrent.Semaphore;
 
+import org.dpadgett.timer.AlarmService.LocalBinder;
+
 import android.R.attr;
+import android.R.drawable;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -43,6 +53,7 @@ public class CountdownFragment extends Fragment {
 	private DanWidgets danWidgets;
 	private Thread timingThread;
 	private MediaPlayer alarmPlayer;
+	private AlertDialog alarmDialog;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
@@ -107,6 +118,24 @@ public class CountdownFragment extends Fragment {
 				handler.post(new ToggleInputMode());
 			}
         });
+		rootView.getContext().bindService(
+        		new Intent(rootView.getContext(), AlarmService.class),
+        			new ServiceConnection() {
+
+						@Override
+						public void onServiceConnected(ComponentName arg0,
+								IBinder binder) {
+							LocalBinder localBinder = (LocalBinder) binder;
+							localBinder.getService()
+								.setCanonicalInstance(handler,
+										CountdownFragment.this);
+						}
+
+						@Override
+						public void onServiceDisconnected(ComponentName arg0) {
+						}
+        			
+        		}, Context.BIND_AUTO_CREATE);
         return rootView;
     }
 
@@ -282,6 +311,13 @@ public class CountdownFragment extends Fragment {
 			handler.post(new PlayAlarm());
 		}
     }
+    
+    public void dismissAlarm() {
+    	alarmDialog.dismiss();
+    	alarmPlayer.stop();
+		alarmPlayer.release();
+		alarmPlayer = null;
+    }
 
     /** Plays the alarm and sets button text to 'dismiss' */
     private class PlayAlarm implements Runnable {
@@ -293,7 +329,7 @@ public class CountdownFragment extends Fragment {
 			startButton.setText("Dismiss");
 			//TODO: hack
 			timerText.setText(getTimerText(0));
-			/*final NotificationManager mNotificationManager = 
+			final NotificationManager mNotificationManager = 
 					(NotificationManager) rootView.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
 			int icon = drawable.ic_dialog_info;
 			CharSequence tickerText = "Countdown timer finished";
@@ -305,22 +341,21 @@ public class CountdownFragment extends Fragment {
 			Context context = rootView.getContext();
 			CharSequence contentTitle = "Countdown timer finished";
 			CharSequence contentText = "Tap here to dismiss";
-			Intent notificationIntent = new Intent("org.dpadgett.timer.COUNTDOWN_DISMISS")
-				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			Intent notificationIntent = new Intent(rootView.getContext(), AlarmService.class);
 			PendingIntent contentIntent =
-					PendingIntent.getActivity(context, 0, notificationIntent, 0);
+					PendingIntent.getService(context, 0, notificationIntent, 0);
 
 			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-			mNotificationManager.notify(R.id.countdownNotification, notification);*/
+			mNotificationManager.notify(R.id.countdownNotification, notification);
 			
-			AlertDialog dialog = new AlertDialog.Builder(rootView.getContext())
+			alarmDialog = new AlertDialog.Builder(rootView.getContext())
 					.setTitle("Countdown timer finished")
 					.setPositiveButton("Dismiss",
 							new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
-									//mNotificationManager.cancel(R.id.countdownNotification);
+									mNotificationManager.cancel(R.id.countdownNotification);
 									alarmPlayer.stop();
 									alarmPlayer.release();
 									alarmPlayer = null;
@@ -328,7 +363,7 @@ public class CountdownFragment extends Fragment {
 							})
 					.setCancelable(false)
 					.create();
-			dialog.show();
+			alarmDialog.show();
 			initRingtone();
     		alarmPlayer.start();
 		}

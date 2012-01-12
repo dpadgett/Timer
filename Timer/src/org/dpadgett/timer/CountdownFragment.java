@@ -1,8 +1,7 @@
 package org.dpadgett.timer;
 
-import java.util.concurrent.Semaphore;
-
 import org.dpadgett.timer.AlarmService.LocalBinder;
+import org.dpadgett.timer.CountdownThread.OnFinishedListener;
 
 import android.R.attr;
 import android.R.drawable;
@@ -49,17 +48,13 @@ public class CountdownFragment extends Fragment {
 	private EditText countdownHours;
 	private EditText countdownMinutes;
 	private EditText countdownSeconds;
-	private final Semaphore s;
-	private DanWidgets danWidgets;
-	private Thread timingThread;
+	private CountdownThread timingThread;
 	private MediaPlayer alarmPlayer;
 	private AlertDialog alarmDialog;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
 		this.handler = new Handler();
-		this.s = new Semaphore(0);
-		this.timingThread = new Thread(new TimingThread());
 	}
 	
 	private Uri getRingtoneUri() {
@@ -98,7 +93,6 @@ public class CountdownFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.countdown, container, false);
-		danWidgets = DanWidgets.create(rootView);
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
@@ -112,7 +106,17 @@ public class CountdownFragment extends Fragment {
 		countdownSeconds.addTextChangedListener(new IntLimiter(59, countdownSeconds, null));
 		countdownSeconds.setOnFocusChangeListener(new ClearOnFocusListener());
         this.timerLayout = createTimerLayout(inputs);
-        startButton.setOnClickListener(new OnClickListener() {
+		timingThread = new CountdownThread(
+				DanWidgets.create(timerLayout).getTextView(R.id.countdownTimer),
+				savedInstanceState);
+		timingThread.addOnFinishedListener(new OnFinishedListener() {
+			@Override
+			public void onFinished() {
+				handler.post(new PlayAlarm());
+				handler.post(new ToggleInputMode());
+			}
+		});
+		startButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				handler.post(new ToggleInputMode());
@@ -136,9 +140,38 @@ public class CountdownFragment extends Fragment {
 						}
         			
         		}, Context.BIND_AUTO_CREATE);
+		if (savedInstanceState != null) {
+			restoreState(savedInstanceState);
+		}
         return rootView;
     }
+    
+    private void restoreState(Bundle savedInstanceState) {
+    	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
+    	if (!inputMode) {
+    		// countdown view
+			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
+			Button startButton = (Button) rootView.findViewById(R.id.startButton);
+			inputs.removeAllViews();
+			inputs.addView(timerLayout);
+			startButton.setText("Cancel");
+			// timing thread will auto start itself
+    	}
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle saveState) {
+    	super.onSaveInstanceState(saveState);
+    	saveState.putBoolean("inputMode", inputMode);
+    	timingThread.onSaveState(saveState);
+    }
 
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+    	timingThread.stopTimer();
+    }
+    
     private class ToggleInputMode implements Runnable {
 
 		@Override
@@ -150,19 +183,12 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(inputLayout);
 				startButton.setText("Start");
-				s.release();
-				try {
-					timingThread.join();
-				} catch (InterruptedException e) {
-				}
-				timingThread = new Thread(new TimingThread());
+				timingThread.stopTimer();
 			} else {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
-				TextView timerText = (TextView) timerLayout.findViewById(R.id.countdownTimer);
-				timerText.setText(getInputTime());
 				startButton.setText("Cancel");
-				timingThread.start();
+				timingThread.startTimer(getInputTimestamp());
 			}
 		}
     	
@@ -171,7 +197,7 @@ public class CountdownFragment extends Fragment {
     private class ClearOnFocusListener implements OnFocusChangeListener {
 		@Override
 		public void onFocusChange(View v, boolean hasFocus) {
-			final View view = v;
+			/*final View view = v;
 			if (hasFocus) {
 				handler.post(new Runnable() {
 					@Override
@@ -179,7 +205,7 @@ public class CountdownFragment extends Fragment {
 						((TextView)view).setText("");
 					}
 				});
-			}/* else {
+			} else {
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
@@ -244,23 +270,6 @@ public class CountdownFragment extends Fragment {
     	
     }
     
-    private String getInputTime() {
-    	return getTimerText(getInputTimestamp());
-    }
-    
-    private static String getTimerText(long elapsedTime) {
-		if (elapsedTime % 1000 > 0) {
-			elapsedTime += 1000;
-		}
-    	elapsedTime /= 1000;
-		long secs = elapsedTime % 60;
-		elapsedTime /= 60;
-		long mins = elapsedTime % 60;
-		elapsedTime /= 60;
-		long hours = elapsedTime % 60;
-		return String.format("%02d:%02d:%02d", hours, mins, secs);
-	}
-    
     private long getInputTimestamp() {
     	return 1000L * (Integer.parseInt(countdownHours.getText().toString()) * 60 * 60 +
     			Integer.parseInt(countdownMinutes.getText().toString()) * 60 +
@@ -283,35 +292,6 @@ public class CountdownFragment extends Fragment {
 		return runningLayout;
     }
     
-    private class TimingThread implements Runnable {
-		@Override
-		public void run() {
-			long endTime = System.currentTimeMillis() + getInputTimestamp();
-			DanTextView timerText = danWidgets.getTextView(R.id.countdownTimer);
-			while (!s.tryAcquire()) {
-				long timeUntilEnd = endTime - System.currentTimeMillis();
-				if (timeUntilEnd <= 0) {
-					// we hit the end of the timer, so run an alert!
-					timeUntilEnd = 0;
-					playAlarm();
-					handler.post(new ToggleInputMode());
-					s.acquireUninterruptibly();
-					break;
-				}
-				String timeText = getTimerText(timeUntilEnd);
-				timerText.setText(timeText);
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-
-		private void playAlarm() {
-			handler.post(new PlayAlarm());
-		}
-    }
-    
     public void dismissAlarm() {
     	alarmDialog.dismiss();
     	alarmPlayer.stop();
@@ -322,13 +302,10 @@ public class CountdownFragment extends Fragment {
     /** Plays the alarm and sets button text to 'dismiss' */
     private class PlayAlarm implements Runnable {
     	Button startButton = (Button) rootView.findViewById(R.id.startButton);
-    	TextView timerText = (TextView) rootView.findViewById(R.id.countdownTimer);
 
     	@Override
 		public void run() {
 			startButton.setText("Dismiss");
-			//TODO: hack
-			timerText.setText(getTimerText(0));
 			final NotificationManager mNotificationManager = 
 					(NotificationManager) rootView.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
 			int icon = drawable.ic_dialog_info;

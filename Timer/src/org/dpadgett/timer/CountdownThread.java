@@ -58,12 +58,13 @@ public class CountdownThread {
 		}
 	}
 	
-	public void startTimer(long duration) {
+	public void startTimer(long duration, AlarmService service) {
 		if (!isRunning) {
 			endTime = System.currentTimeMillis() + duration;
 			timerThread = new Thread(new TimingThread());
 			timerThread.start();
 			isRunning = true;
+			service.countdownStarted(endTime);
 		}
 	}
 	

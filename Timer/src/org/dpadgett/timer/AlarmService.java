@@ -1,7 +1,13 @@
 package org.dpadgett.timer;
 
+import java.util.concurrent.Semaphore;
+
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,6 +21,9 @@ public class AlarmService extends Service {
 
 	private Handler canonicalInstanceHandler = null;
 	private CountdownFragment fragment = null;
+	private Thread alarmSoundingThread;
+	private Semaphore cancelSemaphore;
+	private MediaPlayer alarmPlayer;
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -25,6 +34,11 @@ public class AlarmService extends Service {
             // Return this instance of LocalService so clients can call public methods
             return AlarmService.this;
         }
+    }
+
+    @Override
+    public void onCreate() {
+        cancelSemaphore = new Semaphore(0);
     }
     
 	@Override
@@ -51,9 +65,71 @@ public class AlarmService extends Service {
 			this.fragment = fragment;
 		}
 	}
+	
+	private void initRingtone() {
+		Uri alarmUri = getRingtoneUri();
+		if (alarmUri != null) {
+			alarmPlayer = new MediaPlayer();
+			alarmPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			try {
+				alarmPlayer.setDataSource(fragment.getContext(), alarmUri);
+				alarmPlayer.setLooping(true);
+				alarmPlayer.prepare();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	private Uri getRingtoneUri() {
+		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		if (alarmUri == null) {
+			// alert is null, using backup
+			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		}
+		if (alarmUri == null) {
+			// alert backup is null, using 2nd backup
+			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+		}
+		if (alarmUri == null) {
+			System.err.println("Could not find alert sound!");
+		}
+		return alarmUri;
+	}
+	
+	public void countdownStarted(long endTimestamp) {
+		alarmSoundingThread = new Thread(new AlarmSoundingThread(endTimestamp));
+		alarmSoundingThread.start();
+	}
 
 	public void resetCanonicalInstanceHandler() {
 		canonicalInstanceHandler = null;
 		fragment = null;
+	}
+	
+	private class AlarmSoundingThread implements Runnable {
+		private final long endTimestamp;
+		
+		private AlarmSoundingThread(long endTimestamp) {
+			this.endTimestamp = endTimestamp;
+		}
+		
+		@Override
+		public void run() {
+			while (!cancelSemaphore.tryAcquire()) {
+				long currentTime = System.currentTimeMillis();
+				long sleepTime = (endTimestamp - currentTime) / 2;
+				if (sleepTime < 10) {
+					sleepTime = 10;
+				}
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e) {
+				}
+				if (System.currentTimeMillis() >= endTimestamp) {
+					// ring notification
+				}
+			}
+		}
 	}
 }

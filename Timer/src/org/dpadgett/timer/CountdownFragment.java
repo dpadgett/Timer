@@ -49,43 +49,16 @@ public class CountdownFragment extends Fragment {
 	private EditText countdownMinutes;
 	private EditText countdownSeconds;
 	private CountdownThread timingThread;
-	private MediaPlayer alarmPlayer;
 	private AlertDialog alarmDialog;
+	private AlarmService alarmService;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
 		this.handler = new Handler();
 	}
-	
-	private Uri getRingtoneUri() {
-		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-		if (alarmUri == null) {
-			// alert is null, using backup
-			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		}
-		if (alarmUri == null) {
-			// alert backup is null, using 2nd backup
-			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-		}
-		if (alarmUri == null) {
-			System.err.println("Could not find alert sound!");
-		}
-		return alarmUri;
-	}
-	
-	private void initRingtone() {
-		Uri alarmUri = getRingtoneUri();
-		if (alarmUri != null) {
-			alarmPlayer = new MediaPlayer();
-			alarmPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			try {
-				alarmPlayer.setDataSource(rootView.getContext(), alarmUri);
-				alarmPlayer.setLooping(true);
-				alarmPlayer.prepare();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
+
+	public Context getContext() {
+		return rootView.getContext();
 	}
 	
     @Override
@@ -133,6 +106,7 @@ public class CountdownFragment extends Fragment {
 							localBinder.getService()
 								.setCanonicalInstance(handler,
 										CountdownFragment.this);
+							CountdownFragment.this.alarmService = localBinder.getService();
 						}
 
 						@Override
@@ -164,6 +138,9 @@ public class CountdownFragment extends Fragment {
     	super.onSaveInstanceState(saveState);
     	saveState.putBoolean("inputMode", inputMode);
     	timingThread.onSaveState(saveState);
+    	if (alarmService != null) {
+    		alarmService.resetCanonicalInstanceHandler();
+    	}
     }
 
     @Override
@@ -188,7 +165,7 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				timingThread.startTimer(getInputTimestamp());
+				timingThread.startTimer(getInputTimestamp(), alarmService);
 			}
 		}
     	
@@ -294,9 +271,9 @@ public class CountdownFragment extends Fragment {
     
     public void dismissAlarm() {
     	alarmDialog.dismiss();
-    	alarmPlayer.stop();
-		alarmPlayer.release();
-		alarmPlayer = null;
+    	//alarmPlayer.stop();
+		//alarmPlayer.release();
+		//alarmPlayer = null;
     }
 
     /** Plays the alarm and sets button text to 'dismiss' */
@@ -333,16 +310,16 @@ public class CountdownFragment extends Fragment {
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
 									mNotificationManager.cancel(R.id.countdownNotification);
-									alarmPlayer.stop();
-									alarmPlayer.release();
-									alarmPlayer = null;
+									//alarmPlayer.stop();
+									//alarmPlayer.release();
+									//alarmPlayer = null;
 								}
 							})
 					.setCancelable(false)
 					.create();
 			alarmDialog.show();
-			initRingtone();
-    		alarmPlayer.start();
+			//initRingtone();
+    		//alarmPlayer.start();
 		}
     }
 }

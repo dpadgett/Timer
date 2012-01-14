@@ -107,7 +107,7 @@ public class CountdownThread {
 		elapsedTime /= 60;
 		long mins = elapsedTime % 60;
 		elapsedTime /= 60;
-		long hours = elapsedTime % 60;
+		long hours = elapsedTime % 100;
 		return String.format("%02d:%02d:%02d", hours, mins, secs);
 	}
 }

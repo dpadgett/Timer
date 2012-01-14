@@ -64,7 +64,7 @@ public class CountdownFragment extends Fragment {
         countdownHours = (EditText) rootView.findViewById(R.id.countdownHours);
 		countdownMinutes = (EditText) rootView.findViewById(R.id.countdownMinutes);
 		countdownSeconds = (EditText) rootView.findViewById(R.id.countdownSeconds);
-		countdownHours.addTextChangedListener(new IntLimiter(23, countdownHours, null));
+		countdownHours.addTextChangedListener(new IntLimiter(99, countdownHours, null));
 		countdownHours.setOnFocusChangeListener(new ClearOnFocusListener());
 		countdownMinutes.addTextChangedListener(new IntLimiter(59, countdownMinutes, null));
 		countdownMinutes.setOnFocusChangeListener(new ClearOnFocusListener());
@@ -113,6 +113,13 @@ public class CountdownFragment extends Fragment {
     }
     
     private void restoreState(Bundle savedInstanceState) {
+    	long countdownInputs = savedInstanceState.getLong("countdownInputs", 0L);
+    	countdownInputs /= 1000;
+    	countdownSeconds.setText(String.format("%02d", countdownInputs % 60));
+    	countdownInputs /= 60;
+    	countdownSeconds.setText(String.format("%02d", countdownInputs % 60));
+    	countdownInputs /= 60;
+    	countdownSeconds.setText(String.format("%02d", countdownInputs % 100));
     	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
     	if (!inputMode) {
     		// countdown view
@@ -130,6 +137,7 @@ public class CountdownFragment extends Fragment {
     	super.onSaveInstanceState(saveState);
     	saveState.putBoolean("inputMode", inputMode);
     	timingThread.onSaveState(saveState);
+    	saveState.putLong("countdownInputs", getInputTimestamp());
     }
 
     @Override
@@ -267,11 +275,8 @@ public class CountdownFragment extends Fragment {
 
     /** Plays the alarm and sets button text to 'dismiss' */
     private class PlayAlarm implements Runnable {
-    	//Button startButton = (Button) rootView.findViewById(R.id.startButton);
-
     	@Override
 		public void run() {
-			//startButton.setText("Dismiss");
 			alarmDialog = new AlertDialog.Builder(rootView.getContext())
 					.setTitle("Countdown timer finished")
 					.setPositiveButton("Dismiss",

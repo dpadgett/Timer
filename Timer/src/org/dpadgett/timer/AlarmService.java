@@ -2,7 +2,12 @@ package org.dpadgett.timer;
 
 import java.util.concurrent.Semaphore;
 
+import android.R.drawable;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -21,8 +26,7 @@ public class AlarmService extends Service {
 
 	private Handler canonicalInstanceHandler = null;
 	private CountdownFragment fragment = null;
-	private Thread alarmSoundingThread;
-	private Semaphore cancelSemaphore;
+	private AlarmSoundingThread alarmSoundingThread;
 	private MediaPlayer alarmPlayer;
 
     /**
@@ -38,7 +42,6 @@ public class AlarmService extends Service {
 
     @Override
     public void onCreate() {
-        cancelSemaphore = new Semaphore(0);
     }
     
 	@Override
@@ -48,14 +51,8 @@ public class AlarmService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (canonicalInstanceHandler != null) {
-			canonicalInstanceHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					fragment.dismissAlarm();
-				}
-			});
-		}
+		dismissNotification();
+		dismissAlarmDialog();
 		return 0;
 	}
 	
@@ -72,7 +69,8 @@ public class AlarmService extends Service {
 			alarmPlayer = new MediaPlayer();
 			alarmPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			try {
-				alarmPlayer.setDataSource(fragment.getContext(), alarmUri);
+				Context appContext = getApplicationContext();
+				alarmPlayer.setDataSource(appContext, alarmUri);
 				alarmPlayer.setLooping(true);
 				alarmPlayer.prepare();
 			} catch (Exception e) {
@@ -98,8 +96,43 @@ public class AlarmService extends Service {
 	}
 	
 	public void countdownStarted(long endTimestamp) {
-		alarmSoundingThread = new Thread(new AlarmSoundingThread(endTimestamp));
-		alarmSoundingThread.start();
+		alarmSoundingThread = new AlarmSoundingThread(endTimestamp);
+		new Thread(alarmSoundingThread).start();
+	}
+	
+	public void cancelCountdown() {
+		if (alarmSoundingThread != null) {
+			alarmSoundingThread.cancel();
+			alarmSoundingThread = null;
+		}
+	}
+	
+	public void dismissNotification() {
+		if (alarmPlayer != null) {
+			alarmPlayer.stop();
+			alarmPlayer = null;
+			System.out.println("Stopped ringtone");
+		}
+		NotificationManager manager = 
+				(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		manager.cancel(R.id.countdownNotification);
+		if (alarmSoundingThread != null) {
+			alarmSoundingThread.cancel(); // just in case
+			alarmSoundingThread = null;
+		}
+	}
+
+	private void dismissAlarmDialog() {
+		if (canonicalInstanceHandler != null) {
+			canonicalInstanceHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					fragment.dismissAlarmDialog();
+				}
+			});
+		} else {
+			System.out.println("Warning: no canonical instance handler...");
+		}
 	}
 
 	public void resetCanonicalInstanceHandler() {
@@ -107,11 +140,38 @@ public class AlarmService extends Service {
 		fragment = null;
 	}
 	
+	private void countdownFinished() {
+		// creates the notification, notification dialog, and starts the ringtone
+		alarmPlayer.start();
+		
+		NotificationManager mNotificationManager = 
+				(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		int icon = drawable.ic_dialog_info;
+		CharSequence tickerText = "Countdown timer finished";
+		long when = System.currentTimeMillis();
+
+		Notification notification = new Notification(icon, tickerText, when);
+		notification.flags |= Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONGOING_EVENT;
+		
+		CharSequence contentTitle = "Countdown timer finished";
+		CharSequence contentText = "Tap here to dismiss";
+		Intent notificationIntent = new Intent(getApplicationContext(), AlarmService.class);
+		PendingIntent contentIntent =
+				PendingIntent.getService(getApplicationContext(), 0, notificationIntent, 0);
+
+		notification.setLatestEventInfo(getApplicationContext(), contentTitle, contentText, contentIntent);
+		mNotificationManager.notify(R.id.countdownNotification, notification);
+		
+		System.out.println("Started ringtone");
+	}
+	
 	private class AlarmSoundingThread implements Runnable {
 		private final long endTimestamp;
+		private final Semaphore cancelSemaphore;
 		
 		private AlarmSoundingThread(long endTimestamp) {
 			this.endTimestamp = endTimestamp;
+			this.cancelSemaphore = new Semaphore(0);
 		}
 		
 		@Override
@@ -128,8 +188,15 @@ public class AlarmService extends Service {
 				}
 				if (System.currentTimeMillis() >= endTimestamp) {
 					// ring notification
+					initRingtone();
+					countdownFinished();
+					break;
 				}
 			}
+		}
+		
+		public void cancel() {
+			cancelSemaphore.release();
 		}
 	}
 }

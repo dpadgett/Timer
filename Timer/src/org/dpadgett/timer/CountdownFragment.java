@@ -4,21 +4,13 @@ import org.dpadgett.timer.AlarmService.LocalBinder;
 import org.dpadgett.timer.CountdownThread.OnFinishedListener;
 
 import android.R.attr;
-import android.R.drawable;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -138,15 +130,15 @@ public class CountdownFragment extends Fragment {
     	super.onSaveInstanceState(saveState);
     	saveState.putBoolean("inputMode", inputMode);
     	timingThread.onSaveState(saveState);
-    	if (alarmService != null) {
-    		alarmService.resetCanonicalInstanceHandler();
-    	}
     }
 
     @Override
     public void onDestroy() {
     	super.onDestroy();
     	timingThread.stopTimer();
+    	if (alarmService != null) {
+    		alarmService.resetCanonicalInstanceHandler();
+    	}
     }
     
     private class ToggleInputMode implements Runnable {
@@ -269,39 +261,17 @@ public class CountdownFragment extends Fragment {
 		return runningLayout;
     }
     
-    public void dismissAlarm() {
+    public void dismissAlarmDialog() {
     	alarmDialog.dismiss();
-    	//alarmPlayer.stop();
-		//alarmPlayer.release();
-		//alarmPlayer = null;
     }
 
     /** Plays the alarm and sets button text to 'dismiss' */
     private class PlayAlarm implements Runnable {
-    	Button startButton = (Button) rootView.findViewById(R.id.startButton);
+    	//Button startButton = (Button) rootView.findViewById(R.id.startButton);
 
     	@Override
 		public void run() {
-			startButton.setText("Dismiss");
-			final NotificationManager mNotificationManager = 
-					(NotificationManager) rootView.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-			int icon = drawable.ic_dialog_info;
-			CharSequence tickerText = "Countdown timer finished";
-			long when = System.currentTimeMillis();
-
-			Notification notification = new Notification(icon, tickerText, when);
-			notification.flags |= Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONGOING_EVENT;
-			
-			Context context = rootView.getContext();
-			CharSequence contentTitle = "Countdown timer finished";
-			CharSequence contentText = "Tap here to dismiss";
-			Intent notificationIntent = new Intent(rootView.getContext(), AlarmService.class);
-			PendingIntent contentIntent =
-					PendingIntent.getService(context, 0, notificationIntent, 0);
-
-			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-			mNotificationManager.notify(R.id.countdownNotification, notification);
-			
+			//startButton.setText("Dismiss");
 			alarmDialog = new AlertDialog.Builder(rootView.getContext())
 					.setTitle("Countdown timer finished")
 					.setPositiveButton("Dismiss",
@@ -309,17 +279,12 @@ public class CountdownFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
-									mNotificationManager.cancel(R.id.countdownNotification);
-									//alarmPlayer.stop();
-									//alarmPlayer.release();
-									//alarmPlayer = null;
+									alarmService.dismissNotification();
 								}
 							})
 					.setCancelable(false)
 					.create();
 			alarmDialog.show();
-			//initRingtone();
-    		//alarmPlayer.start();
 		}
     }
 }

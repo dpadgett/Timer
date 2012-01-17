@@ -87,7 +87,8 @@ public class CountdownFragment extends Fragment {
 				handler.post(new ToggleInputMode());
 			}
         });
-		rootView.getContext().bindService(
+		getContext().startService(new Intent(getContext(), AlarmService.class).putExtra("startup", true));
+		getContext().bindService(
         		new Intent(rootView.getContext(), AlarmService.class),
         			new ServiceConnection() {
 

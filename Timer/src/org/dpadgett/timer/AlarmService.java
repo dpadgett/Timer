@@ -28,6 +28,7 @@ public class AlarmService extends Service {
 	private CountdownFragment fragment = null;
 	private AlarmSoundingThread alarmSoundingThread;
 	private MediaPlayer alarmPlayer;
+	private boolean isRunning = false;
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -51,8 +52,10 @@ public class AlarmService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		dismissNotification();
-		dismissAlarmDialog();
+		if (!intent.getBooleanExtra("startup", false)) {
+			dismissNotification();
+			dismissAlarmDialog();
+		}
 		return 0;
 	}
 	
@@ -98,6 +101,7 @@ public class AlarmService extends Service {
 	public void countdownStarted(long endTimestamp) {
 		alarmSoundingThread = new AlarmSoundingThread(endTimestamp);
 		new Thread(alarmSoundingThread).start();
+		isRunning = true;
 	}
 	
 	public void cancelCountdown() {
@@ -120,6 +124,7 @@ public class AlarmService extends Service {
 			alarmSoundingThread.cancel(); // just in case
 			alarmSoundingThread = null;
 		}
+		isRunning = false;
 	}
 
 	private void dismissAlarmDialog() {
@@ -140,6 +145,12 @@ public class AlarmService extends Service {
 		fragment = null;
 	}
 	
+	public void tryShutdown() {
+		if (!isRunning) {
+			getApplicationContext().stopService(new Intent(getApplicationContext(), getClass()));
+		}
+	}
+	
 	private void countdownFinished() {
 		// creates the notification, notification dialog, and starts the ringtone
 		alarmPlayer.start();
@@ -155,7 +166,8 @@ public class AlarmService extends Service {
 		
 		CharSequence contentTitle = "Countdown timer finished";
 		CharSequence contentText = "Tap here to dismiss";
-		Intent notificationIntent = new Intent(getApplicationContext(), AlarmService.class);
+		Intent notificationIntent = new Intent(getApplicationContext(), AlarmService.class)
+			.putExtra("startup", false);
 		PendingIntent contentIntent =
 				PendingIntent.getService(getApplicationContext(), 0, notificationIntent, 0);
 

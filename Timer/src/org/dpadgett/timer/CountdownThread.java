@@ -90,7 +90,7 @@ public class CountdownThread {
 				String timeText = getTimerText(timeUntilEnd);
 				timerText.setText(timeText);
 				try {
-					Thread.sleep(10);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 				}
 			}

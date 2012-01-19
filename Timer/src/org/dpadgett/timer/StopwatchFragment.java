@@ -222,7 +222,11 @@ public class StopwatchFragment extends Fragment {
 				long elapsedLapTime = System.currentTimeMillis() - timeStarted + additionalElapsed;
 				updateText = getTimerText(elapsedLapTime);
 				lapTimerText.setText("lap: " + updateText);
-				Thread.yield();
+				//Thread.yield();
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e) {
+				}
 			}
 		}
     }

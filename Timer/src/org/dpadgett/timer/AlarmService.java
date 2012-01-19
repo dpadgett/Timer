@@ -4,20 +4,17 @@ import android.R.drawable;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Binder;
+import android.os.IBinder;
 
-/**
- * Service to track and fire alarms.
- *
- * @author dpadgett
- */
-public class CountdownReceiver extends BroadcastReceiver {
+public class AlarmService extends Service {
 
 	private MediaPlayer alarmPlayer;
 	private Context context;
@@ -57,6 +54,7 @@ public class CountdownReceiver extends BroadcastReceiver {
 	public void dismissNotification() {
 		if (alarmPlayer != null) {
 			alarmPlayer.stop();
+			alarmPlayer.release();
 			alarmPlayer = null;
 			System.out.println("Stopped ringtone");
 		} else {
@@ -82,10 +80,11 @@ public class CountdownReceiver extends BroadcastReceiver {
 		
 		CharSequence contentTitle = "Countdown timer finished";
 		CharSequence contentText = "Tap here to dismiss";
-		Intent notificationIntent = new Intent(context, CountdownReceiver.class)
-			.putExtra("startAlarm", false).putExtra("fromFragment", false);
+		Intent notificationIntent = new Intent(context, AlarmService.class)
+			.putExtra("startAlarm", false).putExtra("fromFragment", false)
+			.setAction("internalStopAlarm");
 		PendingIntent contentIntent =
-				PendingIntent.getBroadcast(context, 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT);
+				PendingIntent.getService(context, 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT);
 
 		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 		mNotificationManager.notify(R.id.countdownNotification, notification);
@@ -93,9 +92,25 @@ public class CountdownReceiver extends BroadcastReceiver {
 		System.out.println("Started ringtone");
 	}
 	
+	// This is the old onStart method that will be called on the pre-2.0
+	// platform.  On 2.0 or later we override onStartCommand() so this
+	// method will not be called.
 	@Override
-	public void onReceive(Context context, Intent intent) {
-		this.context = context;
+	public void onStart(Intent intent, int startId) {
+		context = getApplicationContext();
+	    handleCommand(intent);
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		context = getApplicationContext();
+	    handleCommand(intent);
+	    // We want this service to continue running until it is explicitly
+	    // stopped, so return sticky.
+	    return START_STICKY;
+	}
+	
+	private void handleCommand(Intent intent) {
 		if (intent.getBooleanExtra("startAlarm", false)) {
 			initRingtone();
 			countdownFinished();
@@ -107,6 +122,13 @@ public class CountdownReceiver extends BroadcastReceiver {
 				context.sendBroadcast(dismiss);
 				System.out.println("Sent request to dismiss dialog");
 			}
+			context.stopService(new Intent(context, getClass()));
 		}
 	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		return new Binder();
+	}
+
 }

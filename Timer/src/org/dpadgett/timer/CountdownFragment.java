@@ -55,24 +55,12 @@ public class CountdownFragment extends Fragment {
 		return rootView.getContext();
 	}
 	
-	@Override
-	public void onResume() {
-		super.onResume();
-		getContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
-	}
-	
-	@Override
-	public void onPause() {
-		super.onPause();
-		getContext().unregisterReceiver(dismissDialogReceiver);
-	}
-	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.countdown, container, false);
-		getContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
+		getContext().getApplicationContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
@@ -140,6 +128,7 @@ public class CountdownFragment extends Fragment {
     public void onDestroy() {
     	super.onDestroy();
     	timingThread.stopTimer();
+		getContext().unregisterReceiver(dismissDialogReceiver);
     }
     
     private class ToggleInputMode implements Runnable {
@@ -160,8 +149,12 @@ public class CountdownFragment extends Fragment {
 				startButton.setText("Cancel");
 				
 				AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-				Intent intent = new Intent(getContext(), CountdownReceiver.class).putExtra("startAlarm", true);
-				PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+				// should be unique
+				Intent intent = new Intent(getContext(), AlarmService.class)
+					.putExtra("startAlarm", true)
+					.setAction("startAlarmAt" + (getInputTimestamp() + System.currentTimeMillis()));
+				PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent,
+						PendingIntent.FLAG_ONE_SHOT);
 				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 						SystemClock.elapsedRealtime() + getInputTimestamp(), pendingIntent);
 				
@@ -284,9 +277,10 @@ public class CountdownFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
-									Intent intent = new Intent(getContext(), CountdownReceiver.class)
-										.putExtra("startAlarm", false).putExtra("fromFragment", true);
-									getContext().sendBroadcast(intent);
+									Intent intent = new Intent(getContext(), AlarmService.class)
+										.putExtra("startAlarm", false).putExtra("fromFragment", true)
+										.setAction("stopAlarm");
+									getContext().startService(intent);
 								}
 							})
 					.setCancelable(false)

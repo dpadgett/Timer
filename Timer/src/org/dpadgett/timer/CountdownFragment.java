@@ -1,19 +1,20 @@
 package org.dpadgett.timer;
 
-import org.dpadgett.timer.AlarmService.LocalBinder;
 import org.dpadgett.timer.CountdownThread.OnFinishedListener;
 
 import android.R.attr;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.ComponentName;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -32,6 +33,8 @@ import android.widget.TextView;
 
 public class CountdownFragment extends Fragment {
 
+	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
+	
 	private boolean inputMode;
 	private LinearLayout inputLayout;
 	private LinearLayout timerLayout;
@@ -42,7 +45,6 @@ public class CountdownFragment extends Fragment {
 	private EditText countdownSeconds;
 	private CountdownThread timingThread;
 	private AlertDialog alarmDialog;
-	private AlarmService alarmService;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
@@ -53,11 +55,24 @@ public class CountdownFragment extends Fragment {
 		return rootView.getContext();
 	}
 	
+	@Override
+	public void onResume() {
+		super.onResume();
+		getContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		getContext().unregisterReceiver(dismissDialogReceiver);
+	}
+	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.countdown, container, false);
+		getContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
@@ -87,26 +102,6 @@ public class CountdownFragment extends Fragment {
 				handler.post(new ToggleInputMode());
 			}
         });
-		getContext().startService(new Intent(getContext(), AlarmService.class).putExtra("startup", true));
-		getContext().bindService(
-        		new Intent(rootView.getContext(), AlarmService.class),
-        			new ServiceConnection() {
-
-						@Override
-						public void onServiceConnected(ComponentName arg0,
-								IBinder binder) {
-							LocalBinder localBinder = (LocalBinder) binder;
-							localBinder.getService()
-								.setCanonicalInstance(handler,
-										CountdownFragment.this);
-							CountdownFragment.this.alarmService = localBinder.getService();
-						}
-
-						@Override
-						public void onServiceDisconnected(ComponentName arg0) {
-						}
-        			
-        		}, Context.BIND_AUTO_CREATE);
 		if (savedInstanceState != null) {
 			restoreState(savedInstanceState);
 		}
@@ -145,9 +140,6 @@ public class CountdownFragment extends Fragment {
     public void onDestroy() {
     	super.onDestroy();
     	timingThread.stopTimer();
-    	if (alarmService != null) {
-    		alarmService.resetCanonicalInstanceHandler();
-    	}
     }
     
     private class ToggleInputMode implements Runnable {
@@ -166,7 +158,14 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				timingThread.startTimer(getInputTimestamp(), alarmService);
+				
+				AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+				Intent intent = new Intent(getContext(), CountdownReceiver.class).putExtra("startAlarm", true);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+						SystemClock.elapsedRealtime() + getInputTimestamp(), pendingIntent);
+				
+				timingThread.startTimer(getInputTimestamp());
 			}
 		}
     	
@@ -285,7 +284,9 @@ public class CountdownFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
-									alarmService.dismissNotification();
+									Intent intent = new Intent(getContext(), CountdownReceiver.class)
+										.putExtra("startAlarm", false).putExtra("fromFragment", true);
+									getContext().sendBroadcast(intent);
 								}
 							})
 					.setCancelable(false)
@@ -293,4 +294,11 @@ public class CountdownFragment extends Fragment {
 			alarmDialog.show();
 		}
     }
+    
+    private BroadcastReceiver dismissDialogReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			alarmDialog.dismiss();
+		}
+    };
 }

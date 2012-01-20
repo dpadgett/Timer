@@ -60,6 +60,7 @@ public class CountdownThread {
 	
 	public void startTimer(long duration) {
 		if (!isRunning) {
+			timerText.setText(getTimerText(duration));
 			endTime = System.currentTimeMillis() + duration;
 			timerThread = new Thread(new TimingThread());
 			timerThread.start();

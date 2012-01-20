@@ -26,9 +26,10 @@ import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.NumberPicker;
+import android.widget.NumberPicker.Formatter;
 import android.widget.TextView;
 
 public class CountdownFragment extends Fragment {
@@ -40,11 +41,13 @@ public class CountdownFragment extends Fragment {
 	private LinearLayout timerLayout;
 	private View rootView;
 	private final Handler handler;
-	private EditText countdownHours;
-	private EditText countdownMinutes;
-	private EditText countdownSeconds;
+	private NumberPicker countdownHours;
+	private NumberPicker countdownMinutes;
+	private NumberPicker countdownSeconds;
 	private CountdownThread timingThread;
 	private AlertDialog alarmDialog;
+
+	public PendingIntent alarmPendingIntent;
 	
 	public CountdownFragment() {
 		this.inputMode = true;
@@ -64,15 +67,30 @@ public class CountdownFragment extends Fragment {
         LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
-        countdownHours = (EditText) rootView.findViewById(R.id.countdownHours);
-		countdownMinutes = (EditText) rootView.findViewById(R.id.countdownMinutes);
-		countdownSeconds = (EditText) rootView.findViewById(R.id.countdownSeconds);
-		countdownHours.addTextChangedListener(new IntLimiter(99, countdownHours, null));
-		countdownHours.setOnFocusChangeListener(new ClearOnFocusListener());
-		countdownMinutes.addTextChangedListener(new IntLimiter(59, countdownMinutes, null));
-		countdownMinutes.setOnFocusChangeListener(new ClearOnFocusListener());
-		countdownSeconds.addTextChangedListener(new IntLimiter(59, countdownSeconds, null));
-		countdownSeconds.setOnFocusChangeListener(new ClearOnFocusListener());
+        countdownHours = (NumberPicker) rootView.findViewById(R.id.countdownHours);
+        countdownHours.setMinValue(0);
+        countdownHours.setMaxValue(99);
+        Formatter twoDigitFormatter = new NumberPicker.Formatter() {
+			@Override
+			public String format(int value) {
+				return String.format("%02d", value);
+			}
+        };
+		countdownHours.setFormatter(twoDigitFormatter);
+		countdownMinutes = (NumberPicker) rootView.findViewById(R.id.countdownMinutes);
+        countdownMinutes.setMinValue(0);
+        countdownMinutes.setMaxValue(59);
+		countdownMinutes.setFormatter(twoDigitFormatter);
+		countdownSeconds = (NumberPicker) rootView.findViewById(R.id.countdownSeconds);
+        countdownSeconds.setMinValue(0);
+        countdownSeconds.setMaxValue(59);
+		countdownSeconds.setFormatter(twoDigitFormatter);
+		//countdownHours.addTextChangedListener(new IntLimiter(99, countdownHours, null));
+		//countdownHours.setOnFocusChangeListener(new ClearOnFocusListener());
+		//countdownMinutes.addTextChangedListener(new IntLimiter(59, countdownMinutes, null));
+		//countdownMinutes.setOnFocusChangeListener(new ClearOnFocusListener());
+		//countdownSeconds.addTextChangedListener(new IntLimiter(59, countdownSeconds, null));
+		//countdownSeconds.setOnFocusChangeListener(new ClearOnFocusListener());
         this.timerLayout = createTimerLayout(inputs);
 		timingThread = new CountdownThread(
 				DanWidgets.create(timerLayout).getTextView(R.id.countdownTimer),
@@ -99,11 +117,11 @@ public class CountdownFragment extends Fragment {
     private void restoreState(Bundle savedInstanceState) {
     	long countdownInputs = savedInstanceState.getLong("countdownInputs", 0L);
     	countdownInputs /= 1000;
-    	countdownSeconds.setText(String.format("%02d", countdownInputs % 60));
+    	countdownSeconds.setValue((int) (countdownInputs % 60));
     	countdownInputs /= 60;
-    	countdownSeconds.setText(String.format("%02d", countdownInputs % 60));
+    	countdownMinutes.setValue((int) (countdownInputs % 60));
     	countdownInputs /= 60;
-    	countdownSeconds.setText(String.format("%02d", countdownInputs % 100));
+    	countdownHours.setValue((int) (countdownInputs % 100));
     	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
     	if (!inputMode) {
     		// countdown view
@@ -143,6 +161,11 @@ public class CountdownFragment extends Fragment {
 				inputs.addView(inputLayout);
 				startButton.setText("Start");
 				timingThread.stopTimer();
+				if (alarmPendingIntent != null) {
+					AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+					alarmMgr.cancel(alarmPendingIntent);
+					alarmPendingIntent = null;
+				}
 			} else {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
@@ -153,11 +176,11 @@ public class CountdownFragment extends Fragment {
 				Intent intent = new Intent(getContext(), AlarmService.class)
 					.putExtra("startAlarm", true)
 					.setAction("startAlarmAt" + (getInputTimestamp() + System.currentTimeMillis()));
-				PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent,
+				alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
 						PendingIntent.FLAG_ONE_SHOT);
 				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-						SystemClock.elapsedRealtime() + getInputTimestamp(), pendingIntent);
-				
+						SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
+
 				timingThread.startTimer(getInputTimestamp());
 			}
 		}
@@ -241,9 +264,9 @@ public class CountdownFragment extends Fragment {
     }
     
     private long getInputTimestamp() {
-    	return 1000L * (Integer.parseInt(countdownHours.getText().toString()) * 60 * 60 +
-    			Integer.parseInt(countdownMinutes.getText().toString()) * 60 +
-    			Integer.parseInt(countdownSeconds.getText().toString()));
+    	return 1000L * (countdownHours.getValue() * 60 * 60 +
+    			countdownMinutes.getValue() * 60 +
+    			countdownSeconds.getValue());
     }
     
     private static LinearLayout createTimerLayout(LinearLayout inputs) {

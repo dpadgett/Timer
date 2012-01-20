@@ -16,21 +16,27 @@
             android:id="@+id/inputsInnerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal" >
+            android:gravity="center_horizontal|center_vertical"
+        	android:weightSum="5" >
+
+            <Space
+	            android:layout_width="0px"
+	            android:layout_height="match_parent"
+	            android:layout_weight="1" />
 
             <LinearLayout
                 android:id="@+id/linearLayout2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:layout_weight="1" >
 
-                <EditText
+                <NumberPicker
                     android:id="@+id/countdownHours"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:text="00"
                     android:textSize="50sp" />
 
                 <TextView
@@ -43,27 +49,39 @@
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/textView1"
+            <LinearLayout
+                android:id="@+id/linearLayoutForColon1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=":"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="50sp" />
+                android:gravity="center_vertical|center_horizontal"
+                android:orientation="vertical" >
+                
+	            <TextView
+	                android:id="@+id/textView1"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text=":"
+	                android:textAppearance="?android:attr/textAppearanceMedium" />
+	            
+		        <Space
+		            android:layout_width="match_parent"
+		            android:layout_height="20sp" />
+		        
+			</LinearLayout>
 
             <LinearLayout
                 android:id="@+id/linearLayout2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:layout_weight="1" >
 
-                <EditText
+                <NumberPicker
                     android:id="@+id/countdownMinutes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:text="00"
                     android:textSize="50sp" />
 
                 <TextView
@@ -76,27 +94,39 @@
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/textView2"
+            <LinearLayout
+                android:id="@+id/linearLayoutForColon2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=":"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="50sp" />
+                android:gravity="center_vertical|center_horizontal"
+                android:orientation="vertical" >
+                
+	            <TextView
+	                android:id="@+id/textViewColon2"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text=":"
+	                android:textAppearance="?android:attr/textAppearanceMedium" />
+	            
+		        <Space
+		            android:layout_width="match_parent"
+		            android:layout_height="20sp" />
+		        
+			</LinearLayout>
 
             <LinearLayout
                 android:id="@+id/linearLayout2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:layout_weight="1" >
 
-                <EditText
+                <NumberPicker
                     android:id="@+id/countdownSeconds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:text="00"
                     android:textSize="50sp" />
 
                 <TextView
@@ -108,6 +138,12 @@
                     android:text="SECONDS"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
+            
+            <Space
+	            android:layout_width="0px"
+	            android:layout_height="match_parent"
+	            android:layout_weight="1" />
+
         </LinearLayout>
     </LinearLayout>
 

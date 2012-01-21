@@ -20,7 +20,7 @@
         	android:weightSum="3" >
 
             <LinearLayout
-                android:id="@+id/linearLayout2"
+                android:id="@+id/linearLayout_countdownHours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
@@ -35,24 +35,23 @@
                     android:textSize="50sp" />
 
                 <TextView
-                    android:id="@+id/textView3"
+                    android:id="@+id/textView_hours"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center_horizontal"
                     android:text="HOURS"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayoutForColon1"
+                android:id="@+id/linearLayout_colon1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
                 android:orientation="vertical" >
                 
 	            <TextView
-	                android:id="@+id/textView1"
+	                android:id="@+id/textView_colon1"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
 	                android:text=":"
@@ -65,7 +64,7 @@
 			</LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayout2"
+                android:id="@+id/linearLayout_countdownMinutes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
@@ -80,17 +79,16 @@
                     android:textSize="50sp" />
 
                 <TextView
-                    android:id="@+id/textView4"
+                    android:id="@+id/textView_minutes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center_horizontal"
                     android:text="MINUTES"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayoutForColon2"
+                android:id="@+id/linearLayout_colon2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
@@ -110,7 +108,7 @@
 			</LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayout2"
+                android:id="@+id/linearLayout_countdownSeconds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
@@ -125,10 +123,9 @@
                     android:textSize="50sp" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/textView_seconds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center_horizontal"
                     android:text="SECONDS"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
@@ -137,7 +134,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
+        android:id="@+id/linearLayout_startButton"
         android:layout_width="match_parent"
         android:layout_height="0px"
         android:layout_weight="1"

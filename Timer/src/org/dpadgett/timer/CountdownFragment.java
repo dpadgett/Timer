@@ -58,15 +58,17 @@ public class CountdownFragment extends Fragment {
 		getContext().getApplicationContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
-        countdownHours = (NumberPicker) rootView.findViewById(R.id.countdownHours);
-        countdownHours.setMinValue(0);
-        countdownHours.setMaxValue(99);
+
         Formatter twoDigitFormatter = new NumberPicker.Formatter() {
 			@Override
 			public String format(int value) {
 				return String.format("%02d", value);
 			}
         };
+
+        countdownHours = (NumberPicker) rootView.findViewById(R.id.countdownHours);
+        countdownHours.setMinValue(0);
+        countdownHours.setMaxValue(99);
 		countdownHours.setFormatter(twoDigitFormatter);
 		countdownMinutes = (NumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);

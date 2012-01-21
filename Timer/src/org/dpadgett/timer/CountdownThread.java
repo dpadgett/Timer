@@ -60,7 +60,6 @@ public class CountdownThread {
 	
 	public void startTimer(long duration) {
 		if (!isRunning) {
-			timerText.setText(getTimerText(duration));
 			endTime = System.currentTimeMillis() + duration;
 			timerThread = new Thread(new TimingThread());
 			timerThread.start();
@@ -98,7 +97,7 @@ public class CountdownThread {
 		}
     }
     
-    private static String getTimerText(long elapsedTime) {
+    static String getTimerText(long elapsedTime) {
 		if (elapsedTime % 1000 > 0) {
 			elapsedTime += 1000;
 		}

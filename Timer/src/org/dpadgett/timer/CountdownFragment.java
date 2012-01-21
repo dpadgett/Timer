@@ -15,16 +15,12 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
@@ -85,12 +81,6 @@ public class CountdownFragment extends Fragment {
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
 		countdownSeconds.setFormatter(twoDigitFormatter);
-		//countdownHours.addTextChangedListener(new IntLimiter(99, countdownHours, null));
-		//countdownHours.setOnFocusChangeListener(new ClearOnFocusListener());
-		//countdownMinutes.addTextChangedListener(new IntLimiter(59, countdownMinutes, null));
-		//countdownMinutes.setOnFocusChangeListener(new ClearOnFocusListener());
-		//countdownSeconds.addTextChangedListener(new IntLimiter(59, countdownSeconds, null));
-		//countdownSeconds.setOnFocusChangeListener(new ClearOnFocusListener());
         this.timerLayout = createTimerLayout(inputs);
 		timingThread = new CountdownThread(
 				DanWidgets.create(timerLayout).getTextView(R.id.countdownTimer),
@@ -167,6 +157,10 @@ public class CountdownFragment extends Fragment {
 					alarmPendingIntent = null;
 				}
 			} else {
+				// done to prevent momentary flicker
+				TextView timerText = (TextView) timerLayout.findViewById(R.id.countdownTimer);
+				timerText.setText(CountdownThread.getTimerText(getInputTimestamp()));
+				
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
@@ -183,82 +177,6 @@ public class CountdownFragment extends Fragment {
 
 				timingThread.startTimer(getInputTimestamp());
 			}
-		}
-    	
-    }
-    
-    private class ClearOnFocusListener implements OnFocusChangeListener {
-		@Override
-		public void onFocusChange(View v, boolean hasFocus) {
-			/*final View view = v;
-			if (hasFocus) {
-				handler.post(new Runnable() {
-					@Override
-					public void run() {
-						((TextView)view).setText("");
-					}
-				});
-			} else {
-				handler.post(new Runnable() {
-					@Override
-					public void run() {
-						String curText = ((TextView)view).getText().toString();
-						int curValue = 0;
-						if (curText.length() > 0) {
-							curValue = Integer.parseInt(curText);
-						}
-						((TextView)view).setText(String.format("%02d", curValue));
-					}
-				});
-			}*/
-		}
-    }
-    
-    private static class IntLimiter implements TextWatcher {
-    	private final int limit;
-    	private String oldNumber;
-    	private final View nextFocus;
-		private final View thisView;
-    	
-    	private IntLimiter(int limit, View thisView, View nextFocus) {
-    		this.limit = limit;
-    		this.thisView = thisView;
-    		this.nextFocus = nextFocus;
-    	}
-    	
-		@Override
-		public void afterTextChanged(Editable arg0) {
-			if (arg0.length() > 0) {
-				int newNumber = Integer.parseInt(arg0.toString());
-				if (newNumber > limit) {
-					arg0.replace(0, arg0.length(), oldNumber);
-				}
-			}
-			
-			/*int finalValue = 0;
-			if (arg0.length() > 0) {
-				finalValue = Integer.parseInt(arg0.toString());
-			}*/
-			if (/*finalValue * 10 > limit || */arg0.length() + 1 > new String("" + limit).length()) {
-				if (nextFocus == null) {
-					InputMethodManager imm =
-							(InputMethodManager) thisView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.hideSoftInputFromWindow(thisView.getWindowToken(), 0);
-				} else {
-					nextFocus.requestFocus();
-				}
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-				int arg3) {
-			oldNumber = arg0.toString();
-		}
-
-		@Override
-		public void onTextChanged(CharSequence arg0, int arg1, int arg2,
-				int arg3) {
 		}
     	
     }

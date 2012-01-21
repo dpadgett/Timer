@@ -2,7 +2,6 @@ package org.dpadgett.timer;
 
 import org.dpadgett.timer.CountdownThread.OnFinishedListener;
 
-import android.R.attr;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -15,15 +14,12 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.Formatter;
 import android.widget.TextView;
@@ -60,7 +56,6 @@ public class CountdownFragment extends Fragment {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.countdown, container, false);
 		getContext().getApplicationContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
-        LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         countdownHours = (NumberPicker) rootView.findViewById(R.id.countdownHours);
@@ -81,7 +76,8 @@ public class CountdownFragment extends Fragment {
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
 		countdownSeconds.setFormatter(twoDigitFormatter);
-        this.timerLayout = createTimerLayout(inputs);
+        this.timerLayout =
+        		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
 		timingThread = new CountdownThread(
 				DanWidgets.create(timerLayout).getTextView(R.id.countdownTimer),
 				savedInstanceState);
@@ -187,27 +183,7 @@ public class CountdownFragment extends Fragment {
     			countdownSeconds.getValue());
     }
     
-    private static LinearLayout createTimerLayout(LinearLayout inputs) {
-		LinearLayout runningLayout = new LinearLayout(inputs.getContext());
-		runningLayout.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0f));
-		runningLayout.setGravity(Gravity.CENTER_HORIZONTAL);
-		runningLayout.setId(R.id.inputsInnerLayout);
-		
-		TextView timerText = new TextView(inputs.getContext());
-		timerText.setText("00:00:00");
-		timerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 50f);
-		timerText.setTextAppearance(inputs.getContext(), attr.textAppearanceLarge);
-		timerText.setId(R.id.countdownTimer);
-		
-		runningLayout.addView(timerText);
-		return runningLayout;
-    }
-    
-    public void dismissAlarmDialog() {
-    	alarmDialog.dismiss();
-    }
-
-    /** Plays the alarm and sets button text to 'dismiss' */
+    /** Pops up the alarm dialog */
     private class PlayAlarm implements Runnable {
     	@Override
 		public void run() {

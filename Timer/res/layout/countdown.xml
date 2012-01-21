@@ -17,12 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal|center_vertical"
-        	android:weightSum="5" >
-
-            <Space
-	            android:layout_width="0px"
-	            android:layout_height="match_parent"
-	            android:layout_weight="1" />
+        	android:weightSum="3" >
 
             <LinearLayout
                 android:id="@+id/linearLayout2"
@@ -138,12 +133,6 @@
                     android:text="SECONDS"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
-            
-            <Space
-	            android:layout_width="0px"
-	            android:layout_height="match_parent"
-	            android:layout_weight="1" />
-
         </LinearLayout>
     </LinearLayout>
 

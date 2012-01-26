@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.Formatter;
@@ -70,14 +72,33 @@ public class CountdownFragment extends Fragment {
         countdownHours.setMinValue(0);
         countdownHours.setMaxValue(99);
 		countdownHours.setFormatter(twoDigitFormatter);
+		// I will burn in hell for this
+		View view = countdownHours.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		if (view != null) {
+			EditText inputText = (EditText) view;
+			inputText.setOnFocusChangeListener(null);
+			inputText.setFocusable(false);
+		}
 		countdownMinutes = (NumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
 		countdownMinutes.setFormatter(twoDigitFormatter);
+		view = countdownMinutes.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		if (view != null) {
+			EditText inputText = (EditText) view;
+			inputText.setOnFocusChangeListener(null);
+			inputText.setFocusable(false);
+		}
 		countdownSeconds = (NumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
 		countdownSeconds.setFormatter(twoDigitFormatter);
+		view = countdownSeconds.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		if (view != null) {
+			EditText inputText = (EditText) view;
+			inputText.setOnFocusChangeListener(null);
+			inputText.setFocusable(false);
+		}
         this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
 		timingThread = new CountdownThread(

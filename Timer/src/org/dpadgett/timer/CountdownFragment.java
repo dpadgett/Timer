@@ -56,7 +56,7 @@ public class CountdownFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.countdown, container, false);
+        rootView = inflater.inflate(R.layout.countdown_simplified, container, false);
 		getContext().getApplicationContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);

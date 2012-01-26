@@ -20,14 +20,6 @@
             android:gravity="center_horizontal|center_vertical"
         	android:weightSum="3" >
 
-            <LinearLayout
-                android:id="@+id/linearLayout_countdownHours"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical"
-                android:layout_weight="1" >
-
                 <NumberPicker
                     android:id="@+id/countdownHours"
                     android:layout_width="wrap_content"
@@ -35,42 +27,12 @@
                     android:inputType="number"
                     android:textSize="50sp" />
 
-                <TextView
-                    android:id="@+id/textView_hours"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="HOURS"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout_colon1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical" >
-                
 	            <TextView
 	                android:id="@+id/textView_colon1"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
 	                android:text=":"
 	                android:textAppearance="?android:attr/textAppearanceMedium" />
-	            
-		        <Space
-		            android:layout_width="match_parent"
-		            android:layout_height="20sp" />
-		        
-			</LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout_countdownMinutes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical"
-                android:layout_weight="1" >
 
                 <NumberPicker
                     android:id="@+id/countdownMinutes"
@@ -79,42 +41,12 @@
                     android:inputType="number"
                     android:textSize="50sp" />
 
-                <TextView
-                    android:id="@+id/textView_minutes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="MINUTES"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout_colon2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical" >
-                
 	            <TextView
 	                android:id="@+id/textViewColon2"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
 	                android:text=":"
 	                android:textAppearance="?android:attr/textAppearanceMedium" />
-	            
-		        <Space
-		            android:layout_width="match_parent"
-		            android:layout_height="20sp" />
-		        
-			</LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/linearLayout_countdownSeconds"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical|center_horizontal"
-                android:orientation="vertical"
-                android:layout_weight="1" >
 
                 <NumberPicker
                     android:id="@+id/countdownSeconds"
@@ -123,14 +55,6 @@
                     android:inputType="number"
                     android:textSize="50sp" />
 
-                <TextView
-                    android:id="@+id/textView_seconds"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="SECONDS"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

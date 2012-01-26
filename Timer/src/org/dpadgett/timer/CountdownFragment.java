@@ -76,7 +76,6 @@ public class CountdownFragment extends Fragment {
 		View view = countdownHours.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
 		if (view != null) {
 			EditText inputText = (EditText) view;
-			inputText.setOnFocusChangeListener(null);
 			inputText.setFocusable(false);
 		}
 		countdownMinutes = (NumberPicker) rootView.findViewById(R.id.countdownMinutes);
@@ -86,7 +85,6 @@ public class CountdownFragment extends Fragment {
 		view = countdownMinutes.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
 		if (view != null) {
 			EditText inputText = (EditText) view;
-			inputText.setOnFocusChangeListener(null);
 			inputText.setFocusable(false);
 		}
 		countdownSeconds = (NumberPicker) rootView.findViewById(R.id.countdownSeconds);
@@ -96,7 +94,6 @@ public class CountdownFragment extends Fragment {
 		view = countdownSeconds.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
 		if (view != null) {
 			EditText inputText = (EditText) view;
-			inputText.setOnFocusChangeListener(null);
 			inputText.setFocusable(false);
 		}
         this.timerLayout =

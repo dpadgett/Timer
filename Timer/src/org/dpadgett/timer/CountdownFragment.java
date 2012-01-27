@@ -152,7 +152,7 @@ public class CountdownFragment extends Fragment {
     public void onDestroy() {
     	super.onDestroy();
     	timingThread.stopTimer();
-		getContext().unregisterReceiver(dismissDialogReceiver);
+    	getContext().getApplicationContext().unregisterReceiver(dismissDialogReceiver);
     }
     
     private class ToggleInputMode implements Runnable {
@@ -229,7 +229,10 @@ public class CountdownFragment extends Fragment {
     private BroadcastReceiver dismissDialogReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			alarmDialog.dismiss();
+			// alarmDialog could be null due to a variety of race conditions
+			if (alarmDialog != null) {
+				alarmDialog.dismiss();
+			}
 		}
     };
 }

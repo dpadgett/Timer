@@ -29,21 +29,29 @@ public class DanWidgets {
 		return new DanScrollView(handler, finder, scrollViewId);
 	}
 
-	public static DanWidgets create(final Activity activity) {
-		return new DanWidgets(new DanResourceFinder() {
+	public static DanWidgets create(Activity activity) {
+		return new DanWidgets(finderFrom(activity));
+	}
+	
+	public static DanResourceFinder finderFrom(final Activity activity) {
+		return new DanResourceFinder() {
 			@Override
 			public View findViewById(int id) {
 				return activity.findViewById(id);
 			}
-		});
+		};
 	}
-
-	public static DanWidgets create(final View view) {
-		return new DanWidgets(new DanResourceFinder() {
+	
+	public static DanResourceFinder finderFrom(final View view) {
+		return new DanResourceFinder() {
 			@Override
 			public View findViewById(int id) {
 				return view.findViewById(id);
 			}
-		});
+		};
+	}
+
+	public static DanWidgets create(final View view) {
+		return new DanWidgets(finderFrom(view));
 	}
 }

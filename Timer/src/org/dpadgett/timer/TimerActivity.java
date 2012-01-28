@@ -27,6 +27,8 @@ public class TimerActivity extends Activity {
                 StopwatchFragment.class, null);
         mTabsAdapter.addTab(bar.newTab().setText("Countdown"),
                 CountdownFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("World Clock"),
+                WorldClockFragment.class, null);
 
         if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));

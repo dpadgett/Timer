@@ -5,11 +5,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,7 +57,7 @@ public class WorldClockFragment extends Fragment {
 				uiHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						addNewClock();
+						newClockDialog();
 					}
 				});
 			}
@@ -64,13 +67,33 @@ public class WorldClockFragment extends Fragment {
         return rootView;
     }
 
-	/**
+    private void newClockDialog() {
+    	AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    	builder.setTitle("Select a timezone");
+    	Set<String> timezones = new TreeSet<String>();
+    	for (String timezone : TimeZone.getAvailableIDs()) {
+    		//if (timezone.indexOf('/') == -1) {
+    			timezones.add(timezone);
+    		//} else {
+    		//	timezone = timezone.substring(0, timezone.indexOf('/'));
+    		//	timezones.add("+ " + timezone);
+    		//}
+    	}
+    	final String[] items = timezones.toArray(new String[timezones.size()]);
+    	builder.setItems(items, new DialogInterface.OnClickListener() {
+    	    public void onClick(DialogInterface dialog, int item) {
+    	    	addNewClock(items[item]);
+    	    }
+    	});
+    	AlertDialog alert = builder.create();
+    	alert.show();
+    }
+
+    /**
 	 * Adds a new clock to the view
 	 */
-	private void addNewClock() {
-		String[] allIDs = TimeZone.getAvailableIDs();
-		String myID = allIDs[new Random().nextInt(allIDs.length)];
-		clockList.add(myID);
+	private void addNewClock(String timeZone) {
+		clockList.add(timeZone);
 		clocksListAdapter.notifyDataSetChanged();
 	}
 	

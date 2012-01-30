@@ -16,6 +16,9 @@
 
 package org.dpadgett.timer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -119,6 +122,9 @@ public class AnalogClockWithTimezone extends View {
 			@Override
 			public void run() {
 				onTimeChanged();
+				for (OnTickListener l : onTickListeners) {
+					l.onTick();
+				}
 				invalidate();
 				mHandler.postDelayed(this, 1000 - (System.currentTimeMillis() % 1000));
 			}
@@ -259,6 +265,19 @@ public class AnalogClockWithTimezone extends View {
     	mCalendar = new Time(tz);
     	onTimeChanged();
     	postInvalidate();
+    }
+    
+    private List<OnTickListener> onTickListeners = new ArrayList<OnTickListener>();
+    public void addOnTickListener(OnTickListener l) {
+    	onTickListeners.add(l);
+    }
+    
+    public void removeOnTickListener(OnTickListener l) {
+    	onTickListeners.remove(l);
+    }
+    
+    public interface OnTickListener {
+    	void onTick();
     }
 
     private void updateContentDescription(Time time) {

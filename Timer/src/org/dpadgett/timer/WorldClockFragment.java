@@ -1,6 +1,5 @@
 package org.dpadgett.timer;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,16 +15,16 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.DigitalClock;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class WorldClockFragment extends Fragment {
 	
@@ -57,17 +56,24 @@ public class WorldClockFragment extends Fragment {
 				uiHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						newClockDialog();
+						newClockDialog(-1);
 					}
 				});
 			}
         });
 		ListView clocksList = (ListView) finder.findViewById(R.id.clocksList);
 		clocksList.setAdapter(clocksListAdapter);
+		clocksList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				newClockDialog(position);
+			}
+		});
         return rootView;
     }
 
-    private void newClockDialog() {
+    private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
     	builder.setTitle("Select a timezone");
     	Set<String> timezones = new TreeSet<String>();
@@ -82,9 +88,18 @@ public class WorldClockFragment extends Fragment {
     	final String[] items = timezones.toArray(new String[timezones.size()]);
     	builder.setItems(items, new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int item) {
-    	    	addNewClock(items[item]);
+    	    	addNewClock(items[item], position);
     	    }
     	});
+    	if (position > -1) {
+	    	builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					clockList.remove(position);
+					clocksListAdapter.notifyDataSetChanged();
+				}
+	    	});
+    	}
     	AlertDialog alert = builder.create();
     	alert.show();
     }
@@ -92,8 +107,12 @@ public class WorldClockFragment extends Fragment {
     /**
 	 * Adds a new clock to the view
 	 */
-	private void addNewClock(String timeZone) {
-		clockList.add(timeZone);
+	private void addNewClock(String timeZone, int position) {
+		if (position == -1) {
+			clockList.add(timeZone);
+		} else {
+			clockList.set(position, timeZone);
+		}
 		clocksListAdapter.notifyDataSetChanged();
 	}
 	
@@ -115,43 +134,37 @@ public class WorldClockFragment extends Fragment {
 	    }
 	 
 	    public View getView(int position, View convertView, ViewGroup parent) {
-	        final String myID = clockList.get(position);
+	        final String timezone = clockList.get(position);
 	 
 	        LinearLayout newClock =
 	        		(LinearLayout) LayoutInflater.from(context)
 	        			.inflate(R.layout.single_world_clock, parent, false);
 	 
-	        DigitalClock clock = (DigitalClock) newClock.findViewById(R.id.digitalClock);
-			clock.addTextChangedListener(new TextWatcher() {
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) { }
-
-				private boolean isInternalEdit = true;
-				@Override
-				public void afterTextChanged(Editable s) {
-					isInternalEdit = !isInternalEdit;
-					if (!isInternalEdit) {
-						SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss a");
-						Date newDate = new Date(); // as a fallback
-						try {
-							newDate = sdf.parse(s.toString());
-						} catch (ParseException e) {
-						}
-						sdf.setTimeZone(TimeZone.getTimeZone(myID));
-						String toText = sdf.format(newDate);
-						s.replace(0, s.length(), toText.toLowerCase());
-					}
-				}
-			});
-			
 			AnalogClockWithTimezone analogClock =
 					(AnalogClockWithTimezone) newClock.findViewById(R.id.analogClock);
-			analogClock.setTimezone(myID);
+			analogClock.setTimezone(timezone);
+
+			final TextView clock = (TextView) newClock.findViewById(R.id.digitalClock);
+			analogClock.addOnTickListener(new AnalogClockWithTimezone.OnTickListener() {
+				@Override
+				public void onTick() {
+					updateClockTextView(clock, timezone);
+				}
+			});
 	 
+			TextView timezoneText = (TextView) newClock.findViewById(R.id.timezone);
+			timezoneText.setText(timezone);
+			updateClockTextView(clock, timezone);
 	        return newClock;
 	    }
 	 
+	}
+	
+	private void updateClockTextView(TextView clockToUpdate, String timezone) {
+		SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss a");
+		Date newDate = new Date(); // as a fallback
+		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+		String toText = sdf.format(newDate).toLowerCase();
+		clockToUpdate.setText(toText);
 	}
 }

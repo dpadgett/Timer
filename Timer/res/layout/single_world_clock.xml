@@ -6,19 +6,34 @@
     android:orientation="horizontal" >
 
     <view
-		class="org.dpadgett.timer.AnalogClockWithTimezone"
         android:id="@+id/analogClock"
         android:layout_width="100sp"
         android:layout_height="100sp"
-        android:layout_weight="0.5" />
+        android:layout_weight="0.5"
+        class="org.dpadgett.timer.AnalogClockWithTimezone" />
 
-    <DigitalClock
-        android:id="@+id/digitalClock"
+    <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:text=""
-        android:gravity="center"
-        android:textSize="30sp" />
+        android:orientation="vertical"
+        android:gravity="center" >
+
+        <TextView
+            android:id="@+id/digitalClock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text=""
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/timezone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+    </LinearLayout>
 
 </LinearLayout>

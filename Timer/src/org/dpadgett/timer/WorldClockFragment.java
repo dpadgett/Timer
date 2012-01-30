@@ -2,11 +2,13 @@ package org.dpadgett.timer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.TimeZone;
-import java.util.TreeSet;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -76,15 +78,26 @@ public class WorldClockFragment extends Fragment {
     private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
     	builder.setTitle("Select a timezone");
-    	Set<String> timezones = new TreeSet<String>();
+    	List<String> timezones = new ArrayList<String>();
+    	final Map<String, Integer> strToOffset = new HashMap<String, Integer>();
+    	final long currentTime = System.currentTimeMillis();
     	for (String timezone : TimeZone.getAvailableIDs()) {
-    		//if (timezone.indexOf('/') == -1) {
-    			timezones.add(timezone);
-    		//} else {
-    		//	timezone = timezone.substring(0, timezone.indexOf('/'));
-    		//	timezones.add("+ " + timezone);
-    		//}
+    		int millisOffset = TimeZone.getTimeZone(timezone).getOffset(currentTime);
+			String offset = String.format("%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), (millisOffset / 1000 / 60) % 60);
+			if (millisOffset / 1000 / 60 / 60 < 0) {
+				offset = "-" + offset;
+			} else {
+				offset = "+" + offset;
+			}
+			timezones.add("(UTC" + offset + ") - " + timezone);
+			strToOffset.put("(UTC" + offset + ") - " + timezone, millisOffset);
     	}
+    	Collections.sort(timezones, new Comparator<String>() {
+			@Override
+			public int compare(String lhs, String rhs) {
+				return strToOffset.get(lhs) - strToOffset.get(rhs);
+			}
+    	});
     	final String[] items = timezones.toArray(new String[timezones.size()]);
     	builder.setItems(items, new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int item) {

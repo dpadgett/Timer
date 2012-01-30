@@ -4,20 +4,12 @@
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
-    <ScrollView
-        android:id="@+id/scrollView1"
+    <ListView
+        android:id="@+id/clocksList"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="0dip"
         android:layout_weight="1" >
-
-        <LinearLayout
-            android:id="@+id/clocksLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
-
-        </LinearLayout>
-    </ScrollView>
+    </ListView>
 
     <LinearLayout
         android:id="@+id/addClockView"

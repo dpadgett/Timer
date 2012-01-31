@@ -101,7 +101,9 @@ public class WorldClockFragment extends Fragment {
     	final String[] items = timezones.toArray(new String[timezones.size()]);
     	builder.setItems(items, new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int item) {
-    	    	addNewClock(items[item], position);
+    	    	String timezone = items[item];
+    	    	timezone = timezone.substring(timezone.lastIndexOf(' ') + 1);
+    	    	addNewClock(timezone, position);
     	    }
     	});
     	if (position > -1) {

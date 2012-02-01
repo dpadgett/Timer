@@ -14,7 +14,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -25,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -51,12 +51,12 @@ public class WorldClockFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.world_clock, container, false);
         finder = DanWidgets.finderFrom(rootView);
         context = rootView.getContext();
-        LinearLayout addClockView = (LinearLayout) finder.findViewById(R.id.addClockView);
-        addClockView.setOnClickListener(new OnClickListener() {
+        Button addClockButton = (Button) finder.findViewById(R.id.addClockButton);
+        addClockButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				view.setBackgroundResource(
-						Resources.getSystem().getIdentifier("list_selector_holo_dark", "drawable", "android"));
+				//view.setBackgroundResource(
+						//Resources.getSystem().getIdentifier("list_selector_holo_dark", "drawable", "android"));
 						//android.R.drawable.list_selector_background);
 				uiHandler.post(new Runnable() {
 					@Override

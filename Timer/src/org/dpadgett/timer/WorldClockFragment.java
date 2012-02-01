@@ -2,13 +2,13 @@ package org.dpadgett.timer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -23,9 +23,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class WorldClockFragment extends Fragment {
@@ -78,34 +81,17 @@ public class WorldClockFragment extends Fragment {
     private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
     	builder.setTitle("Select a timezone");
-    	List<String> timezones = new ArrayList<String>();
-    	final Map<String, Integer> strToOffset = new HashMap<String, Integer>();
+    	Set<Integer> timezones = new TreeSet<Integer>();
+    	final Map<Integer, List<String>> offsetToID = new HashMap<Integer, List<String>>();
     	final long currentTime = System.currentTimeMillis();
     	for (String timezone : TimeZone.getAvailableIDs()) {
     		int millisOffset = TimeZone.getTimeZone(timezone).getOffset(currentTime);
-			String offset = String.format("%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), (millisOffset / 1000 / 60) % 60);
-			if (millisOffset / 1000 / 60 / 60 < 0) {
-				offset = "-" + offset;
-			} else {
-				offset = "+" + offset;
+			timezones.add(millisOffset);
+			if (!offsetToID.containsKey(millisOffset)) {
+				offsetToID.put(millisOffset, new ArrayList<String>());
 			}
-			timezones.add("(UTC" + offset + ") - " + timezone);
-			strToOffset.put("(UTC" + offset + ") - " + timezone, millisOffset);
+			offsetToID.get(millisOffset).add(timezone);
     	}
-    	Collections.sort(timezones, new Comparator<String>() {
-			@Override
-			public int compare(String lhs, String rhs) {
-				return strToOffset.get(lhs) - strToOffset.get(rhs);
-			}
-    	});
-    	final String[] items = timezones.toArray(new String[timezones.size()]);
-    	builder.setItems(items, new DialogInterface.OnClickListener() {
-    	    public void onClick(DialogInterface dialog, int item) {
-    	    	String timezone = items[item];
-    	    	timezone = timezone.substring(timezone.lastIndexOf(' ') + 1);
-    	    	addNewClock(timezone, position);
-    	    }
-    	});
     	if (position > -1) {
 	    	builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
 				@Override
@@ -115,8 +101,66 @@ public class WorldClockFragment extends Fragment {
 				}
 	    	});
     	}
-    	AlertDialog alert = builder.create();
-    	alert.show();
+    	LinearLayout tzView = (LinearLayout) LayoutInflater.from(context)
+			.inflate(R.layout.timezone_picker_dialog, (ViewGroup) finder.findViewById(R.id.layout_root));
+
+    	final List<String> initialItems = new ArrayList<String>();
+    	initialItems.add("GMT");
+    	initialItems.add("UTC");
+    	final ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.timezone_dialog_list_item,
+    			initialItems);
+    	ListView timezoneList = (ListView) tzView.findViewById(R.id.timezoneList);
+    	timezoneList.setAdapter(adapter);
+    	
+    	final TextView sliderView = (TextView) tzView.findViewById(R.id.timezoneLabel);
+
+    	final SeekBar timezoneSeeker = (SeekBar) tzView.findViewById(R.id.timezoneSeeker);
+    	final List<Integer> timezonesList = new ArrayList<Integer>(timezones);
+    	timezoneSeeker.setMax(timezonesList.size() - 1);
+    	if (position > -1) {
+    		int offset = TimeZone.getTimeZone(clockList.get(position)).getOffset(currentTime);
+    		timezoneSeeker.setProgress(timezonesList.indexOf(offset));
+    	} else {
+    		timezoneSeeker.setProgress(timezonesList.indexOf(0));
+    	}
+    	timezoneSeeker.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+    		
+    		// initialize the timezoneSeeker
+    		{
+    			onProgressChanged(timezoneSeeker, timezoneSeeker.getProgress(), false);
+    		}
+    		
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				adapter.clear();
+				adapter.addAll(offsetToID.get(timezonesList.get(progress)));
+				int millisOffset = timezonesList.get(progress);
+				String offset = String.format("%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), Math.abs(millisOffset / 1000 / 60) % 60);
+				if (millisOffset / 1000 / 60 / 60 < 0) {
+					offset = "-" + offset;
+				} else {
+					offset = "+" + offset;
+				}
+				sliderView.setText("UTC Offset: " + offset);
+			}
+
+			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
+			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
+    	});
+    	builder.setView(tzView);
+    	final AlertDialog alert = builder.create();
+
+    	timezoneList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int selectedPosition, long id) {
+				String timezone = adapter.getItem(selectedPosition);
+		    	addNewClock(timezone, position);
+		    	alert.dismiss();
+			}
+    	});
+
+        alert.show();
     }
 
     /**

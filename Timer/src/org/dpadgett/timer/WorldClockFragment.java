@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -75,6 +76,10 @@ public class WorldClockFragment extends Fragment {
 				newClockDialog(position);
 			}
 		});
+		
+		// hack to get the bottom divider to be the same as the listview dividers
+		Drawable divider = new ListView(context).getDivider();
+		((LinearLayout) rootView).setDividerDrawable(divider);
         return rootView;
     }
 

@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class StopwatchFragment extends Fragment {
@@ -50,6 +51,10 @@ public class StopwatchFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.stopwatch, container, false);
         danWidgets = DanWidgets.create(rootView);
+        
+        ((LinearLayout) rootView).setDividerDrawable(
+        		new ListView(rootView.getContext()).getDivider());
+        
         Button startButton = (Button) rootView.findViewById(R.id.button1);
         Button resetButton = (Button) rootView.findViewById(R.id.button2);
         LinearLayout lapTimesView = (LinearLayout) rootView.findViewById(R.id.linearLayout2);

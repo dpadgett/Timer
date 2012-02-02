@@ -1,84 +1,99 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
+    android:divider="@android:drawable/divider_horizontal_dark"
     android:gravity="center_horizontal"
-    android:orientation="vertical" >
-    <Space android:layout_width="match_parent" 
-        android:layout_height="20sp" />
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="00:00:00.000"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="50sp" />
+    android:orientation="vertical"
+    android:showDividers="middle" >
 
     <LinearLayout
-        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:weightSum="3" >
+        android:orientation="vertical" >
 
-        <Space android:layout_width="20sp" 
-        	android:layout_height="10sp"
-        	android:layout_weight="2" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20sp" />
 
         <TextView
-            android:id="@+id/liveLapTime"
+            android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="lap: 00:00:00.000"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_weight="1" />
+            android:text="00:00:00.000"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="50sp" />
 
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:weightSum="3" >
 
-    <Space android:layout_width="match_parent" 
-        android:layout_height="20sp" />
-    <LinearLayout
-        android:id="@+id/linearLayout1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:weightSum="2" >
-        <Space android:layout_width="20sp" 
-            android:layout_height="match_parent" />
-        <Button
-            android:id="@+id/button1"
-            android:layout_width="0dip"
+            <Space
+                android:layout_width="20sp"
+                android:layout_height="10sp"
+                android:layout_weight="2" />
+
+            <TextView
+                android:id="@+id/liveLapTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="lap: 00:00:00.000"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20sp" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Start"
-            android:layout_weight="1" />
-        <Space android:layout_width="20sp" 
-            android:layout_height="match_parent" />
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:text="Reset"
-            android:layout_weight="1" />
-        <Space android:layout_width="20sp" 
-            android:layout_height="match_parent" />
+            android:gravity="center_horizontal"
+            android:weightSum="2" >
+
+            <Space
+                android:layout_width="20sp"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/button1"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Start" />
+
+            <Space
+                android:layout_width="20sp"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Reset" />
+
+            <Space
+                android:layout_width="20sp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20sp" />
     </LinearLayout>
-    <Space android:layout_width="match_parent" 
-        android:layout_height="20sp" />
-    <ImageView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:paddingBottom="0dp"
-        android:paddingLeft="0dp"
-        android:paddingRight="0dp"
-        android:paddingTop="0dp"
-        android:background="#33b5e5"
-        android:src="@android:drawable/divider_horizontal_bright" />
 
     <ScrollView
         android:id="@+id/scrollView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:gravity="center_horizontal" >
+
         <LinearLayout
             android:id="@+id/linearLayout2"
             android:layout_width="fill_parent"
@@ -87,4 +102,5 @@
             android:orientation="vertical" >
         </LinearLayout>
     </ScrollView>
+
 </LinearLayout>

@@ -26,6 +26,7 @@ public class StopwatchFragment extends Fragment {
 	private DanWidgets danWidgets;
 	private final List<Long> lapTimes;
 	private Context context;
+	private View rootView;
 	
 	private Semaphore s;
 
@@ -50,7 +51,7 @@ public class StopwatchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.stopwatch, container, false);
+        rootView = inflater.inflate(R.layout.stopwatch, container, false);
         context = rootView.getContext();
         danWidgets = DanWidgets.create(rootView);
         
@@ -123,38 +124,46 @@ public class StopwatchFragment extends Fragment {
         });
 
         if (savedInstanceState != null) {
-        	isTimerRunning = savedInstanceState.getBoolean("isTimerRunning", false);
-        	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
-        	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
-        	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
-        	long[] lapTimesArray = savedInstanceState.getLongArray("lapTimes");
-        	
-        	if (lapTimesArray != null) {
-        		for (long lapTime : lapTimesArray) {
-        			// add it to the list of lap times
-					lapTimes.add(lapTime);
-					lapTimesAdapter.notifyDataSetChanged();
-        		}
-        	}
-
-        	TextView timerText = (TextView) rootView.findViewById(R.id.textView1);
-        	TextView lapTimerText = (TextView) rootView.findViewById(R.id.liveLapTime);
-        	long elapsedTime = additionalElapsed + additionalLapTimeElapsed;
-
-        	if (isTimerRunning) {
-        		updateTimerThread.start();
-				startButton.setText("Stop");
-				resetButton.setText("Lap");
-				elapsedTime = System.currentTimeMillis() - timeStarted + additionalElapsed + additionalLapTimeElapsed;
-        	}
-
-        	String updateText = getTimerText(elapsedTime);
-			timerText.setText(updateText);
-			updateText = getTimerText(elapsedTime - additionalLapTimeElapsed);
-			lapTimerText.setText("lap: " + updateText);
+        	restoreState(savedInstanceState);
         }
 
         return rootView;
+    }
+    
+    private void restoreState(Bundle savedInstanceState) {
+    	isTimerRunning = savedInstanceState.getBoolean("isTimerRunning", false);
+    	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
+    	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
+    	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
+    	
+    	long[] lapTimesArray = savedInstanceState.getLongArray("lapTimes");
+    	lapTimes.clear();
+    	
+    	if (lapTimesArray != null) {
+    		for (long lapTime : lapTimesArray) {
+    			// add it to the list of lap times
+				lapTimes.add(lapTime);
+    		}
+    		lapTimesAdapter.notifyDataSetChanged();
+    	}
+
+    	TextView timerText = (TextView) rootView.findViewById(R.id.textView1);
+    	TextView lapTimerText = (TextView) rootView.findViewById(R.id.liveLapTime);
+    	long elapsedTime = additionalElapsed + additionalLapTimeElapsed;
+
+    	Button startButton = (Button) rootView.findViewById(R.id.button1);
+        Button resetButton = (Button) rootView.findViewById(R.id.button2);
+    	if (isTimerRunning) {
+    		updateTimerThread.start();
+			startButton.setText("Stop");
+			resetButton.setText("Lap");
+			elapsedTime = System.currentTimeMillis() - timeStarted + additionalElapsed + additionalLapTimeElapsed;
+    	}
+
+    	String updateText = getTimerText(elapsedTime);
+		timerText.setText(updateText);
+		updateText = getTimerText(elapsedTime - additionalLapTimeElapsed);
+		lapTimerText.setText("lap: " + updateText);
     }
 
     @Override
@@ -170,6 +179,40 @@ public class StopwatchFragment extends Fragment {
         	lapTimesArray[idx] = lapTimes.get(idx);
         }
         saveState.putLongArray("lapTimes", lapTimesArray);
+    }
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	if (isTimerRunning) {
+    		s.release();
+	    	try {
+				updateTimerThread.join();
+			} catch (InterruptedException e) {
+			}
+    	}
+    	updateTimerThread = null;
+    }
+    
+    @Override
+    public void onResume() {
+    	super.onResume();
+		updateTimerThread = new Thread(new UpdateTimerThread());
+		Button startButton = (Button) rootView.findViewById(R.id.button1);
+        Button resetButton = (Button) rootView.findViewById(R.id.button2);
+		TextView timerText = (TextView) rootView.findViewById(R.id.textView1);
+    	TextView lapTimerText = (TextView) rootView.findViewById(R.id.liveLapTime);
+    	long elapsedTime = additionalElapsed + additionalLapTimeElapsed;
+		if (isTimerRunning) {
+			updateTimerThread.start();
+			startButton.setText("Stop");
+			resetButton.setText("Lap");
+			elapsedTime = System.currentTimeMillis() - timeStarted + additionalElapsed + additionalLapTimeElapsed;
+		}
+		String updateText = getTimerText(elapsedTime);
+		timerText.setText(updateText);
+		updateText = getTimerText(elapsedTime - additionalLapTimeElapsed);
+		lapTimerText.setText("lap: " + updateText);
     }
 
     private class UpdateTimerThread implements Runnable {
@@ -248,8 +291,16 @@ public class StopwatchFragment extends Fragment {
 				
 				@Override
 				public void run() {
-					//lapTimesView.smoothScrollBy(-1, 0);
 					lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
+					lapTimesView.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							if (lapTimesView.getLastVisiblePosition() != lapTimes.size() - 1) {
+								System.out.println("Not all the way down!!!");
+							}
+							lapTimesView.setSelection(lapTimes.size() - 1);
+						}
+					}, 400);
 				}
 				
 			});

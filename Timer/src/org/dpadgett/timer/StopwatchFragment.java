@@ -6,14 +6,10 @@ import java.util.concurrent.Semaphore;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -30,7 +26,6 @@ public class StopwatchFragment extends Fragment {
 	private DanWidgets danWidgets;
 	private final List<Long> lapTimes;
 	private Context context;
-	private Handler handler;
 	
 	private Semaphore s;
 
@@ -57,7 +52,6 @@ public class StopwatchFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.stopwatch, container, false);
         context = rootView.getContext();
-        handler = new Handler();
         danWidgets = DanWidgets.create(rootView);
         
         ((LinearLayout) rootView).setDividerDrawable(
@@ -68,15 +62,6 @@ public class StopwatchFragment extends Fragment {
         lapTimesView = (ListView) rootView.findViewById(R.id.lapTimesView);
         lapTimesAdapter = new LapTimeListAdapter();
 		lapTimesView.setAdapter(lapTimesAdapter);
-//        lapTimesView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-//			@Override
-//			public void onLayoutChange(View v, int left, int top, int right,
-//					int bottom, int oldLeft, int oldTop, int oldRight,
-//					int oldBottom) {
-//				ListView lv = (ListView) v;
-//				lv.smoothScrollToPosition(lapTimes.size() - 1);
-//			}
-//        });
         startButton.setOnClickListener(new OnClickListener() {
 			DanButton startButton = danWidgets.getButton(R.id.button1);
 			DanButton resetButton = danWidgets.getButton(R.id.button2);
@@ -239,64 +224,35 @@ public class StopwatchFragment extends Fragment {
 	 
 	    public View getView(int position, View convertView, ViewGroup parent) {
 	    	long lapTime = getItem(position);
-			LinearLayout lapLayout =
+			LinearLayout lapLayout;
+			if (convertView != null && convertView instanceof LinearLayout) {
+				lapLayout = (LinearLayout) convertView;
+	    	} else {
+	    		lapLayout =
 					(LinearLayout) LayoutInflater.from(context).inflate(R.layout.single_lap_time, parent, false);
+	    	}
+			
 			
 			TextView lapLabel = (TextView) lapLayout.findViewById(R.id.lapLabel);
 			lapLabel.setText("lap " + (position + 1));
 			
 			TextView lapTimeView = (TextView) lapLayout.findViewById(R.id.lapTime);
 			lapTimeView.setText(getTimerText(lapTime));
-			
-			lapLayout.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-
-				@Override
-				public void onViewAttachedToWindow(View v) {
-					handler.post(new Runnable() {
-
-						private int numTimesRun = 0;
-						
-						@Override
-						public void run() {
-							if (lapTimesView.getCount() < lapTimes.size()) {
-								handler.post(this);
-							} else {
-								lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
-								numTimesRun++;
-								if (numTimesRun < 5) {
-									handler.postDelayed(this, 100);
-								}
-							}
-						}
-						
-					});
-				}
-
-				@Override
-				public void onViewDetachedFromWindow(View v) {
-				}
-				
-			});
-			handler.post(new Runnable() {
-
-				private int numTimesRun = 0;
-				
-				@Override
-				public void run() {
-					if (lapTimesView.getCount() < lapTimes.size()) {
-						handler.post(this);
-					} else {
-						lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
-						numTimesRun++;
-						if (numTimesRun < 5) {
-							handler.postDelayed(this, 100);
-						}
-					}
-				}
-				
-			});
 			return lapLayout;
 	    }
 	 
+	    @Override
+	    public void notifyDataSetChanged() {
+	    	super.notifyDataSetChanged();
+	    	lapTimesView.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					lapTimesView.smoothScrollBy(-1, 0);
+					lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
+				}
+				
+			});
+	    }
 	}
 }

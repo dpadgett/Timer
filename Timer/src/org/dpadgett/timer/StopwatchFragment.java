@@ -248,7 +248,7 @@ public class StopwatchFragment extends Fragment {
 				
 				@Override
 				public void run() {
-					lapTimesView.smoothScrollBy(-1, 0);
+					//lapTimesView.smoothScrollBy(-1, 0);
 					lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
 				}
 				

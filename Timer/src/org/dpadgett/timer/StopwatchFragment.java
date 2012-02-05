@@ -5,17 +5,19 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,10 +29,14 @@ public class StopwatchFragment extends Fragment {
 	private Thread updateTimerThread;
 	private DanWidgets danWidgets;
 	private final List<Long> lapTimes;
+	private Context context;
+	private Handler handler;
 	
 	private Semaphore s;
 
 	private boolean isTimerRunning;
+	private LapTimeListAdapter lapTimesAdapter;
+	private ListView lapTimesView;
 
 	public StopwatchFragment() {
 		updateTimerThread = new Thread(new UpdateTimerThread());
@@ -50,6 +56,8 @@ public class StopwatchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.stopwatch, container, false);
+        context = rootView.getContext();
+        handler = new Handler();
         danWidgets = DanWidgets.create(rootView);
         
         ((LinearLayout) rootView).setDividerDrawable(
@@ -57,16 +65,18 @@ public class StopwatchFragment extends Fragment {
         
         Button startButton = (Button) rootView.findViewById(R.id.button1);
         Button resetButton = (Button) rootView.findViewById(R.id.button2);
-        LinearLayout lapTimesView = (LinearLayout) rootView.findViewById(R.id.linearLayout2);
-        lapTimesView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-			@Override
-			public void onLayoutChange(View v, int left, int top, int right,
-					int bottom, int oldLeft, int oldTop, int oldRight,
-					int oldBottom) {
-				DanScrollView scrollView = danWidgets.getScrollView(R.id.scrollView1);
-				scrollView.fullScroll(View.FOCUS_DOWN);
-			}
-        });
+        lapTimesView = (ListView) rootView.findViewById(R.id.lapTimesView);
+        lapTimesAdapter = new LapTimeListAdapter();
+		lapTimesView.setAdapter(lapTimesAdapter);
+//        lapTimesView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+//			@Override
+//			public void onLayoutChange(View v, int left, int top, int right,
+//					int bottom, int oldLeft, int oldTop, int oldRight,
+//					int oldBottom) {
+//				ListView lv = (ListView) v;
+//				lv.smoothScrollToPosition(lapTimes.size() - 1);
+//			}
+//        });
         startButton.setOnClickListener(new OnClickListener() {
 			DanButton startButton = danWidgets.getButton(R.id.button1);
 			DanButton resetButton = danWidgets.getButton(R.id.button2);
@@ -102,7 +112,6 @@ public class StopwatchFragment extends Fragment {
         	
         	DanTextView timerText = danWidgets.getTextView(R.id.textView1);
         	DanTextView lapTimerText = danWidgets.getTextView(R.id.liveLapTime);
-			DanLinearLayout lapTimesView = danWidgets.getLinearLayout(R.id.linearLayout2);
         	
 			@Override
 			public void onClick(View arg0) {
@@ -114,34 +123,16 @@ public class StopwatchFragment extends Fragment {
 					additionalElapsed = 0L;
 
 					// add it to the list of lap times
-					LinearLayout lapLayout = new LinearLayout(lapTimesView.getContext());
-					lapLayout.setGravity(Gravity.CENTER);
-					lapLayout.setWeightSum(3f);
-					
-					TextView lapLabel = new TextView(lapLayout.getContext());
-					lapLabel.setText("lap " + (lapTimes.size() + 1));
-					lapLabel.setGravity(Gravity.CENTER);
-					lapLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20.0f);
-					lapLabel.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1f));
-					lapLayout.addView(lapLabel);
-					
-					TextView lapTimeView = new TextView(lapLayout.getContext());
-					lapTimeView.setText(getTimerText(lapTime));
-					lapTimeView.setGravity(Gravity.CENTER);
-					lapTimeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40.0f);
-					lapTimeView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 2f));
-					lapLayout.addView(lapTimeView);
-					
-					lapTimesView.addView(lapLayout);
 					lapTimes.add(lapTime);
+					lapTimesAdapter.notifyDataSetChanged();
 				} else { // reset
 					timeStarted = 0L;
 					additionalElapsed = 0L;
 					additionalLapTimeElapsed = 0L;
 					timerText.setText("00:00:00.000");
 					lapTimerText.setText("lap: 00:00:00.000");
-					lapTimesView.removeAllViews();
 					lapTimes.clear();
+					lapTimesAdapter.notifyDataSetChanged();
 				}
 			}
         });
@@ -156,26 +147,8 @@ public class StopwatchFragment extends Fragment {
         	if (lapTimesArray != null) {
         		for (long lapTime : lapTimesArray) {
         			// add it to the list of lap times
-					LinearLayout lapLayout = new LinearLayout(lapTimesView.getContext());
-					lapLayout.setGravity(Gravity.CENTER);
-					lapLayout.setWeightSum(3f);
-					
-					TextView lapLabel = new TextView(lapLayout.getContext());
-					lapLabel.setText("lap " + (lapTimes.size() + 1));
-					lapLabel.setGravity(Gravity.CENTER);
-					lapLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20.0f);
-					lapLabel.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1f));
-					lapLayout.addView(lapLabel);
-					
-					TextView lapTimeView = new TextView(lapLayout.getContext());
-					lapTimeView.setText(getTimerText(lapTime));
-					lapTimeView.setGravity(Gravity.CENTER);
-					lapTimeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40.0f);
-					lapTimeView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 2f));
-					lapLayout.addView(lapTimeView);
-					
-					lapTimesView.addView(lapLayout);
 					lapTimes.add(lapTime);
+					lapTimesAdapter.notifyDataSetChanged();
         		}
         	}
 
@@ -245,5 +218,85 @@ public class StopwatchFragment extends Fragment {
 		elapsedTime /= 60;
 		long hours = elapsedTime % 60;
 		return String.format("%02d:%02d:%02d.%03d", hours, mins, secs, millis);
+	}
+	
+	private class LapTimeListAdapter extends BaseAdapter {
+		 
+	    public LapTimeListAdapter() {
+	    }
+	 
+	    public int getCount() {
+	        return lapTimes.size();
+	    }
+	 
+	    public Long getItem(int position) {
+	        return lapTimes.get(position);
+	    }
+	 
+	    public long getItemId(int position) {
+	        return lapTimes.get(position).hashCode();
+	    }
+	 
+	    public View getView(int position, View convertView, ViewGroup parent) {
+	    	long lapTime = getItem(position);
+			LinearLayout lapLayout =
+					(LinearLayout) LayoutInflater.from(context).inflate(R.layout.single_lap_time, parent, false);
+			
+			TextView lapLabel = (TextView) lapLayout.findViewById(R.id.lapLabel);
+			lapLabel.setText("lap " + (position + 1));
+			
+			TextView lapTimeView = (TextView) lapLayout.findViewById(R.id.lapTime);
+			lapTimeView.setText(getTimerText(lapTime));
+			
+			lapLayout.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+
+				@Override
+				public void onViewAttachedToWindow(View v) {
+					handler.post(new Runnable() {
+
+						private int numTimesRun = 0;
+						
+						@Override
+						public void run() {
+							if (lapTimesView.getCount() < lapTimes.size()) {
+								handler.post(this);
+							} else {
+								lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
+								numTimesRun++;
+								if (numTimesRun < 5) {
+									handler.postDelayed(this, 100);
+								}
+							}
+						}
+						
+					});
+				}
+
+				@Override
+				public void onViewDetachedFromWindow(View v) {
+				}
+				
+			});
+			handler.post(new Runnable() {
+
+				private int numTimesRun = 0;
+				
+				@Override
+				public void run() {
+					if (lapTimesView.getCount() < lapTimes.size()) {
+						handler.post(this);
+					} else {
+						lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
+						numTimesRun++;
+						if (numTimesRun < 5) {
+							handler.postDelayed(this, 100);
+						}
+					}
+				}
+				
+			});
+			return lapLayout;
+	    }
+	 
 	}
 }

@@ -88,19 +88,10 @@
             android:layout_height="20sp" />
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/scrollView1"
+    <ListView
+        android:id="@+id/lapTimesView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:gravity="center_horizontal" >
-
-        <LinearLayout
-            android:id="@+id/linearLayout2"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical" >
-        </LinearLayout>
-    </ScrollView>
+        android:gravity="center_horizontal" />
 
 </LinearLayout>

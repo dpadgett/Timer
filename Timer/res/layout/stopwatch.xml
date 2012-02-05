@@ -88,11 +88,21 @@
             android:layout_height="20sp" />
     </LinearLayout>
 
-    <view
-        android:id="@+id/lapTimesView"
+    <ScrollView
+        android:id="@+id/scrollView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:gravity="center_horizontal"
-        class="org.dpadgett.widget.DanListView" />
+        android:gravity="center_horizontal" >
+
+        <LinearLayout
+            android:id="@+id/lapTimesView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:divider="@android:drawable/divider_horizontal_dark"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:showDividers="middle" >
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

@@ -1,20 +1,17 @@
 package org.dpadgett.timer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class StopwatchFragment extends Fragment {
@@ -22,23 +19,18 @@ public class StopwatchFragment extends Fragment {
 	private long additionalElapsed = 0L;
 	private long additionalLapTimeElapsed = 0L;
 	private long timeStarted = 0L;
-	private Thread updateTimerThread;
+	private Thread updateTimerThread = null;
 	private DanWidgets danWidgets;
-	private final List<Long> lapTimes;
-	private Context context;
+	private LapTimes lapTimes;
 	private View rootView;
 	
 	private Semaphore s;
 
 	private boolean isTimerRunning;
-	private LapTimeListAdapter lapTimesAdapter;
-	private ListView lapTimesView;
 
 	public StopwatchFragment() {
-		updateTimerThread = new Thread(new UpdateTimerThread());
 		isTimerRunning = false;
 		s = new Semaphore(0);
-		lapTimes = new ArrayList<Long>();
 	}
 
     /** Called when the activity is first created. */
@@ -52,7 +44,6 @@ public class StopwatchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.stopwatch, container, false);
-        context = rootView.getContext();
         danWidgets = DanWidgets.create(rootView);
         
         ((LinearLayout) rootView).setDividerDrawable(
@@ -60,9 +51,9 @@ public class StopwatchFragment extends Fragment {
         
         Button startButton = (Button) rootView.findViewById(R.id.button1);
         Button resetButton = (Button) rootView.findViewById(R.id.button2);
-        lapTimesView = (ListView) rootView.findViewById(R.id.lapTimesView);
-        lapTimesAdapter = new LapTimeListAdapter();
-		lapTimesView.setAdapter(lapTimesAdapter);
+        
+        lapTimes = new LapTimes((ScrollView) rootView.findViewById(R.id.scrollView1));
+        
         startButton.setOnClickListener(new OnClickListener() {
 			DanButton startButton = danWidgets.getButton(R.id.button1);
 			DanButton resetButton = danWidgets.getButton(R.id.button2);
@@ -74,6 +65,7 @@ public class StopwatchFragment extends Fragment {
 				isTimerRunning = !isTimerRunning;
 				if (isTimerRunning) { // start
 					timeStarted = System.currentTimeMillis();
+					updateTimerThread = new Thread(new UpdateTimerThread());
 					updateTimerThread.start();
 					startButton.setText("Stop");
 					resetButton.setText("Lap");
@@ -83,7 +75,7 @@ public class StopwatchFragment extends Fragment {
 						updateTimerThread.join();
 					} catch (InterruptedException e) {
 					}
-					updateTimerThread = new Thread(new UpdateTimerThread());
+					updateTimerThread = null;
 					startButton.setText("Start");
 					resetButton.setText("Reset");
 					additionalElapsed += System.currentTimeMillis() - timeStarted;
@@ -110,7 +102,6 @@ public class StopwatchFragment extends Fragment {
 
 					// add it to the list of lap times
 					lapTimes.add(lapTime);
-					lapTimesAdapter.notifyDataSetChanged();
 				} else { // reset
 					timeStarted = 0L;
 					additionalElapsed = 0L;
@@ -118,7 +109,6 @@ public class StopwatchFragment extends Fragment {
 					timerText.setText("00:00:00.000");
 					lapTimerText.setText("lap: 00:00:00.000");
 					lapTimes.clear();
-					lapTimesAdapter.notifyDataSetChanged();
 				}
 			}
         });
@@ -135,25 +125,16 @@ public class StopwatchFragment extends Fragment {
     	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
     	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
     	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
+    	lapTimes.restoreState(savedInstanceState);
     	
-    	long[] lapTimesArray = savedInstanceState.getLongArray("lapTimes");
-    	lapTimes.clear();
-    	
-    	if (lapTimesArray != null) {
-    		for (long lapTime : lapTimesArray) {
-    			// add it to the list of lap times
-				lapTimes.add(lapTime);
-    		}
-    		lapTimesAdapter.notifyDataSetChanged();
-    	}
-
+    	Button startButton = (Button) rootView.findViewById(R.id.button1);
+        Button resetButton = (Button) rootView.findViewById(R.id.button2);
     	TextView timerText = (TextView) rootView.findViewById(R.id.textView1);
     	TextView lapTimerText = (TextView) rootView.findViewById(R.id.liveLapTime);
     	long elapsedTime = additionalElapsed + additionalLapTimeElapsed;
 
-    	Button startButton = (Button) rootView.findViewById(R.id.button1);
-        Button resetButton = (Button) rootView.findViewById(R.id.button2);
     	if (isTimerRunning) {
+    		updateTimerThread = new Thread(new UpdateTimerThread());
     		updateTimerThread.start();
 			startButton.setText("Stop");
 			resetButton.setText("Lap");
@@ -173,46 +154,32 @@ public class StopwatchFragment extends Fragment {
         saveState.putLong("timeStarted", timeStarted);
         saveState.putLong("additionalElapsed", additionalElapsed);
         saveState.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
-        
-        long[] lapTimesArray = new long[lapTimes.size()];
-        for (int idx = 0; idx < lapTimes.size(); idx++) {
-        	lapTimesArray[idx] = lapTimes.get(idx);
-        }
-        saveState.putLongArray("lapTimes", lapTimesArray);
+        lapTimes.onSaveInstanceState(saveState);
     }
     
+    private Bundle savedState = null;
     @Override
     public void onPause() {
     	super.onPause();
     	if (isTimerRunning) {
     		s.release();
-	    	try {
+			try {
 				updateTimerThread.join();
 			} catch (InterruptedException e) {
 			}
+			updateTimerThread = null;
     	}
-    	updateTimerThread = null;
+    	savedState = new Bundle();
+    	onSaveInstanceState(savedState);
     }
     
     @Override
     public void onResume() {
     	super.onResume();
-		updateTimerThread = new Thread(new UpdateTimerThread());
-		Button startButton = (Button) rootView.findViewById(R.id.button1);
-        Button resetButton = (Button) rootView.findViewById(R.id.button2);
-		TextView timerText = (TextView) rootView.findViewById(R.id.textView1);
-    	TextView lapTimerText = (TextView) rootView.findViewById(R.id.liveLapTime);
-    	long elapsedTime = additionalElapsed + additionalLapTimeElapsed;
-		if (isTimerRunning) {
-			updateTimerThread.start();
-			startButton.setText("Stop");
-			resetButton.setText("Lap");
-			elapsedTime = System.currentTimeMillis() - timeStarted + additionalElapsed + additionalLapTimeElapsed;
-		}
-		String updateText = getTimerText(elapsedTime);
-		timerText.setText(updateText);
-		updateText = getTimerText(elapsedTime - additionalLapTimeElapsed);
-		lapTimerText.setText("lap: " + updateText);
+    	if (savedState != null) {
+    		restoreState(savedState);
+    		System.out.println("resumed");
+    	}
     }
 
     private class UpdateTimerThread implements Runnable {
@@ -237,7 +204,7 @@ public class StopwatchFragment extends Fragment {
 		}
     }
 
-	private static String getTimerText(long elapsedTime) {
+	static String getTimerText(long elapsedTime) {
 		long millis = elapsedTime % 1000;
 		elapsedTime /= 1000;
 		long secs = elapsedTime % 60;
@@ -246,64 +213,5 @@ public class StopwatchFragment extends Fragment {
 		elapsedTime /= 60;
 		long hours = elapsedTime % 60;
 		return String.format("%02d:%02d:%02d.%03d", hours, mins, secs, millis);
-	}
-	
-	private class LapTimeListAdapter extends BaseAdapter {
-		 
-	    public LapTimeListAdapter() {
-	    }
-	 
-	    public int getCount() {
-	        return lapTimes.size();
-	    }
-	 
-	    public Long getItem(int position) {
-	        return lapTimes.get(position);
-	    }
-	 
-	    public long getItemId(int position) {
-	        return lapTimes.get(position).hashCode();
-	    }
-	 
-	    public View getView(int position, View convertView, ViewGroup parent) {
-	    	long lapTime = getItem(position);
-			LinearLayout lapLayout;
-			if (convertView != null && convertView instanceof LinearLayout) {
-				lapLayout = (LinearLayout) convertView;
-	    	} else {
-	    		lapLayout =
-					(LinearLayout) LayoutInflater.from(context).inflate(R.layout.single_lap_time, parent, false);
-	    	}
-			
-			
-			TextView lapLabel = (TextView) lapLayout.findViewById(R.id.lapLabel);
-			lapLabel.setText("lap " + (position + 1));
-			
-			TextView lapTimeView = (TextView) lapLayout.findViewById(R.id.lapTime);
-			lapTimeView.setText(getTimerText(lapTime));
-			return lapLayout;
-	    }
-	 
-	    @Override
-	    public void notifyDataSetChanged() {
-	    	super.notifyDataSetChanged();
-	    	lapTimesView.post(new Runnable() {
-				
-				@Override
-				public void run() {
-					lapTimesView.smoothScrollToPosition(lapTimes.size() - 1);
-					lapTimesView.postDelayed(new Runnable() {
-						@Override
-						public void run() {
-							if (lapTimesView.getLastVisiblePosition() != lapTimes.size() - 1) {
-								System.out.println("Not all the way down!!!");
-							}
-							lapTimesView.setSelection(lapTimes.size() - 1);
-						}
-					}, 400);
-				}
-				
-			});
-	    }
 	}
 }

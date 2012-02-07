@@ -2,6 +2,7 @@ package org.dpadgett.timer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -80,10 +81,43 @@ public class WorldClockFragment extends Fragment {
 		// hack to get the bottom divider to be the same as the listview dividers
 		Drawable divider = new ListView(context).getDivider();
 		((LinearLayout) rootView).setDividerDrawable(divider);
+		
+		if (savedInstanceState != null) {
+			restoreState(savedInstanceState);
+		}
+		
         return rootView;
     }
 
-    private void newClockDialog(final int position) {
+    private Bundle savedInstance = null;
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		savedInstance = savedInstanceState;
+	}
+
+	private void restoreState(Bundle savedInstanceState) {
+		String[] clocks = savedInstanceState.getStringArray("clockList");
+		if (clocks != null) {
+			clockList.clear();
+			clockList.addAll(Arrays.asList(clocks));
+			clocksListAdapter.notifyDataSetChanged();
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (context == null) {
+			if (savedInstance != null) {
+				outState.putAll(savedInstance);
+			}
+			return;
+		}
+		outState.putStringArray("clockList", clockList.toArray(new String[clockList.size()]));
+	}
+
+	private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
     	builder.setTitle("Select a timezone");
     	Set<Integer> timezones = new TreeSet<Integer>();

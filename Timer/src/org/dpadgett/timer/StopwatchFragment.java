@@ -27,6 +27,7 @@ public class StopwatchFragment extends Fragment {
 	private Semaphore s;
 
 	private boolean isTimerRunning;
+	private Bundle initialSavedState;
 
 	public StopwatchFragment() {
 		isTimerRunning = false;
@@ -37,6 +38,7 @@ public class StopwatchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initialSavedState = savedInstanceState;
     }
 
     @Override
@@ -150,14 +152,18 @@ public class StopwatchFragment extends Fragment {
     @Override
 	public void onSaveInstanceState(Bundle saveState) {
         super.onSaveInstanceState(saveState);
-        saveState.putBoolean("isTimerRunning", isTimerRunning);
-        saveState.putLong("timeStarted", timeStarted);
-        saveState.putLong("additionalElapsed", additionalElapsed);
-        saveState.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
-        lapTimes.onSaveInstanceState(saveState);
+        if (rootView != null) {
+	        saveState.putBoolean("isTimerRunning", isTimerRunning);
+	        saveState.putLong("timeStarted", timeStarted);
+	        saveState.putLong("additionalElapsed", additionalElapsed);
+	        saveState.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
+	        lapTimes.onSaveInstanceState(saveState);
+        } else {
+        	saveState.putAll(initialSavedState);
+        }
     }
-    
-    private Bundle savedState = null;
+
+	private Bundle savedState = null;
     @Override
     public void onPause() {
     	super.onPause();

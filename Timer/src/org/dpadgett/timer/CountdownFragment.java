@@ -20,7 +20,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.Formatter;
-import android.widget.TextView;
 
 public class CountdownFragment extends Fragment {
 
@@ -195,9 +194,7 @@ public class CountdownFragment extends Fragment {
 					alarmPendingIntent = null;
 				}
 			} else {
-				// done to prevent momentary flicker
-				TextView timerText = (TextView) timerLayout.findViewById(R.id.countdownTimer);
-				timerText.setText(CountdownThread.getTimerText(getInputTimestamp()));
+				timingThread.startTimer(getInputTimestamp());
 				
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
@@ -213,7 +210,6 @@ public class CountdownFragment extends Fragment {
 				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 						SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
 
-				timingThread.startTimer(getInputTimestamp());
 				handler.postAtTime(this, 
 						SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 			}

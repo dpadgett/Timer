@@ -32,8 +32,8 @@ import android.view.View;
 import android.widget.RemoteViews.RemoteView;
 
 /**
- * This widget display an analogic clock with two hands for hours and
- * minutes.
+ * This widget display an analog clock with three hands for hours,
+ * minutes, and seconds.
  */
 @RemoteView
 public class AnalogClockWithTimezone extends View {

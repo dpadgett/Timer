@@ -57,9 +57,6 @@ public class WorldClockFragment extends Fragment {
         addClockButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				//view.setBackgroundResource(
-						//Resources.getSystem().getIdentifier("list_selector_holo_dark", "drawable", "android"));
-						//android.R.drawable.list_selector_background);
 				uiHandler.post(new Runnable() {
 					@Override
 					public void run() {

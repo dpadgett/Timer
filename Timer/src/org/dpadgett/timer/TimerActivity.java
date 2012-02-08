@@ -14,7 +14,7 @@ public class TimerActivity extends Activity {
         setContentView(R.layout.main);
         
         ViewPager mViewPager = new ViewPager(this);
-        mViewPager.setId(R.id.button1);
+        mViewPager.setId(R.id.viewPager);
         setContentView(mViewPager);
 
         final ActionBar bar = getActionBar();

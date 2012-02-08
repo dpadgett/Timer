@@ -16,16 +16,16 @@
             android:layout_width="match_parent"
             android:layout_height="20sp" />
 
-        <TextView
-            android:id="@+id/textView1"
+        <view
+            android:id="@+id/timerText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00:00.000"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="50sp" />
+            android:textSize="50sp"
+            class="org.dpadgett.widget.TimerTextView" />
 
         <LinearLayout
-            android:id="@+id/linearLayout3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -36,21 +36,21 @@
                 android:layout_height="10sp"
                 android:layout_weight="2" />
 
-            <TextView
+            <view
                 android:id="@+id/liveLapTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="lap: 00:00:00.000"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </LinearLayout>
+                android:textAppearance="?android:attr/textAppearanceMedium"
+            	class="org.dpadgett.widget.TimerTextView" />
+            </LinearLayout>
 
         <Space
             android:layout_width="match_parent"
             android:layout_height="20sp" />
 
         <LinearLayout
-            android:id="@+id/linearLayout1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -61,7 +61,7 @@
                 android:layout_height="match_parent" />
 
             <Button
-                android:id="@+id/button1"
+                android:id="@+id/startButton"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -72,7 +72,7 @@
                 android:layout_height="match_parent" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/stopButton"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

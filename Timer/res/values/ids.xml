@@ -2,4 +2,5 @@
 <resources>
   <!-- id's which will be in R.id and you'll use later -->
   <item type="id" name="countdownNotification" />
+  <item type="id" name="viewPager" />
 </resources>

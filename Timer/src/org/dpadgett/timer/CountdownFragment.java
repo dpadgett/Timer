@@ -98,7 +98,18 @@ public class CountdownFragment extends Fragment {
 		}
         this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
-		timingThread = new CountdownThread(
+		startButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				handler.post(new ToggleInputMode());
+			}
+        });
+		restoreState(savedInstanceState);
+        return rootView;
+    }
+    
+    private void restoreState(Bundle savedInstanceState) {
+    	timingThread = new CountdownThread(
 				DanWidgets.create(timerLayout).getTextView(R.id.countdownTimer),
 				savedInstanceState);
 		timingThread.addOnFinishedListener(new OnFinishedListener() {
@@ -108,44 +119,64 @@ public class CountdownFragment extends Fragment {
 				handler.post(new ToggleInputMode());
 			}
 		});
-		startButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				handler.post(new ToggleInputMode());
-			}
-        });
+		
 		if (savedInstanceState != null) {
-			restoreState(savedInstanceState);
+	    	long countdownInputs = savedInstanceState.getLong("countdownInputs", 0L);
+	    	countdownInputs /= 1000;
+	    	countdownSeconds.setValue((int) (countdownInputs % 60));
+	    	countdownInputs /= 60;
+	    	countdownMinutes.setValue((int) (countdownInputs % 60));
+	    	countdownInputs /= 60;
+	    	countdownHours.setValue((int) (countdownInputs % 100));
+	    	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
+	    	if (!inputMode && timingThread.isRunning()) {
+	    		// countdown view
+				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
+				Button startButton = (Button) rootView.findViewById(R.id.startButton);
+				inputs.removeAllViews();
+				inputs.addView(timerLayout);
+				startButton.setText("Cancel");
+				// timing thread will auto start itself
+	    	}
 		}
-        return rootView;
     }
     
-    private void restoreState(Bundle savedInstanceState) {
-    	long countdownInputs = savedInstanceState.getLong("countdownInputs", 0L);
-    	countdownInputs /= 1000;
-    	countdownSeconds.setValue((int) (countdownInputs % 60));
-    	countdownInputs /= 60;
-    	countdownMinutes.setValue((int) (countdownInputs % 60));
-    	countdownInputs /= 60;
-    	countdownHours.setValue((int) (countdownInputs % 100));
-    	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
-    	if (!inputMode) {
-    		// countdown view
-			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
-			Button startButton = (Button) rootView.findViewById(R.id.startButton);
-			inputs.removeAllViews();
-			inputs.addView(timerLayout);
-			startButton.setText("Cancel");
-			// timing thread will auto start itself
+    private Bundle savedInstance = null;
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		savedInstance = savedInstanceState;
+	}
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	savedInstance = new Bundle();
+    	onSaveInstanceState(savedInstance);
+    	timingThread.stopTimer();
+    }
+    
+    @Override
+    public void onResume() {
+    	super.onResume();
+    	if (savedInstance != null) {
+    		restoreState(savedInstance);
+    		System.out.println("resumed");
     	}
     }
     
     @Override
     public void onSaveInstanceState(Bundle saveState) {
     	super.onSaveInstanceState(saveState);
-    	saveState.putBoolean("inputMode", inputMode);
-    	timingThread.onSaveState(saveState);
-    	saveState.putLong("countdownInputs", getInputTimestamp());
+    	if (rootView != null) {
+	    	saveState.putBoolean("inputMode", inputMode);
+	    	timingThread.onSaveState(saveState);
+	    	saveState.putLong("countdownInputs", getInputTimestamp());
+    	} else {
+    		if (savedInstance != null) {
+    			saveState.putAll(savedInstance);
+    		}
+    	}
     }
 
     @Override

@@ -26,8 +26,9 @@ public class CountdownThread {
 	}
 	
 	private void restoreState(Bundle savedInstanceState) {
-		isRunning = savedInstanceState.getBoolean("isRunning", isRunning);
 		endTime = savedInstanceState.getLong("endTime", endTime);
+		isRunning = savedInstanceState.getBoolean("isRunning", isRunning)
+				&& endTime > System.currentTimeMillis();
 		if (isRunning) {
 			timerThread = new Thread(new TimingThread());
 			timerThread.start();
@@ -65,6 +66,10 @@ public class CountdownThread {
 			timerThread.start();
 			isRunning = true;
 		}
+	}
+	
+	public boolean isRunning() {
+		return isRunning;
 	}
 	
 	public void onSaveState(Bundle saveState) {

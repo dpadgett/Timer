@@ -25,6 +25,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.AttributeSet;
@@ -126,10 +127,12 @@ public class AnalogClockWithTimezone extends View {
 					l.onTick();
 				}
 				invalidate();
-				mHandler.postDelayed(this, 1000 - (System.currentTimeMillis() % 1000));
+                long now = SystemClock.uptimeMillis();
+                long next = now + (1000 - now % 1000);
+                mHandler.postAtTime(this, next);
 			}
         };
-        mHandler.postDelayed(mUpdater, 1000 - (System.currentTimeMillis() % 1000));
+        mUpdater.run();
     }
 
     @Override

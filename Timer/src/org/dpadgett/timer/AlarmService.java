@@ -90,6 +90,10 @@ public class AlarmService extends Service {
 		mNotificationManager.notify(R.id.countdownNotification, notification);
 		
 		System.out.println("Started ringtone");
+
+		Intent showDialog = new Intent(TimerActivity.ACTION_SHOW_DIALOG);
+		context.sendBroadcast(showDialog);
+		System.out.println("Sent request to show dialog");
 	}
 	
 	// This is the old onStart method that will be called on the pre-2.0
@@ -118,7 +122,7 @@ public class AlarmService extends Service {
 		} else {
 			dismissNotification();
 			if (!intent.getBooleanExtra("fromFragment", true)) {
-				Intent dismiss = new Intent(CountdownFragment.ACTION_DISMISS_DIALOG);
+				Intent dismiss = new Intent(TimerActivity.ACTION_DISMISS_DIALOG);
 				context.sendBroadcast(dismiss);
 				System.out.println("Sent request to dismiss dialog");
 			}

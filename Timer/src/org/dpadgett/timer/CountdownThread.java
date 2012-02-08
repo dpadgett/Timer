@@ -1,21 +1,19 @@
 package org.dpadgett.timer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import org.dpadgett.widget.CountdownTextView;
 
 import android.os.Bundle;
 
 public class CountdownThread {
-	private final List<OnFinishedListener> onFinishedListeners;
 	public long endTime;
-	private final DanTextView timerText;
+	private final CountdownTextView timerText;
 	private final Semaphore cancelSemaphore;
 	private boolean isRunning;
 	private Thread timerThread;
 	
-	public CountdownThread(DanTextView timerText, Bundle savedInstanceState) {
-		onFinishedListeners = new ArrayList<OnFinishedListener>();
+	public CountdownThread(CountdownTextView timerText, Bundle savedInstanceState) {
 		this.timerText = timerText;
 		this.cancelSemaphore = new Semaphore(0);
 		isRunning = false;
@@ -27,33 +25,23 @@ public class CountdownThread {
 	
 	private void restoreState(Bundle savedInstanceState) {
 		endTime = savedInstanceState.getLong("endTime", endTime);
+		timerText.setEndingTime(endTime);
 		isRunning = savedInstanceState.getBoolean("isRunning", isRunning)
 				&& endTime > System.currentTimeMillis();
 		if (isRunning) {
-			timerThread = new Thread(new TimingThread());
-			timerThread.start();
+			//timerThread = new Thread(new TimingThread());
+			//timerThread.start();
+			timerText.forceUpdate(System.currentTimeMillis());
 		}
-	}
-	
-	public void addOnFinishedListener(OnFinishedListener l) {
-		onFinishedListeners.add(l);
-	}
-	
-	public boolean removeOnFinishedListener(OnFinishedListener l) {
-		return onFinishedListeners.remove(l);
-	}
-	
-	public interface OnFinishedListener {
-		void onFinished();
 	}
 	
 	public void stopTimer() {
 		if (isRunning) {
-			cancelSemaphore.release();
+			/*cancelSemaphore.release();
 			try {
 				timerThread.join();
 			} catch (InterruptedException e) {
-			}
+			}*/
 			isRunning = false;
 			timerThread = null;
 		}
@@ -62,8 +50,9 @@ public class CountdownThread {
 	public void startTimer(long duration) {
 		if (!isRunning) {
 			endTime = System.currentTimeMillis() + duration;
-			timerThread = new Thread(new TimingThread());
-			timerThread.start();
+			//timerThread = new Thread(new TimingThread());
+			//timerThread.start();
+			timerText.setEndingTime(endTime);
 			isRunning = true;
 		}
 	}
@@ -86,9 +75,9 @@ public class CountdownThread {
 					timeUntilEnd = 0; // so we never go negative
 					timerText.setText(getTimerText(0));
 					// we hit the end of the timer, so run the callbacks
-					for (OnFinishedListener l : onFinishedListeners) {
-						l.onFinished();
-					}
+					//for (OnFinishedListener l : onFinishedListeners) {
+					//	l.onFinished();
+					//}
 					cancelSemaphore.acquireUninterruptibly();
 					break;
 				}

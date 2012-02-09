@@ -140,7 +140,6 @@ public class CountdownFragment extends Fragment {
     	super.onPause();
     	savedInstance = new Bundle();
     	onSaveInstanceState(savedInstance);
-    	timingThread.stopTimer();
     	handler.removeCallbacks(toggleInputMode);
     }
     

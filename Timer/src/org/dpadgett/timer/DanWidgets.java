@@ -4,6 +4,15 @@ import android.app.Activity;
 import android.os.Handler;
 import android.view.View;
 
+/**
+ * A library of wrapper widgets which may be mutated from any thread by deferring
+ * the mutation to the ui thread's message handler.
+ *
+ * @author dpadgett
+ * @deprecated should no longer be necessary - can usually be achieved by
+ *             better methods such as extending the widget type.
+ */
+@Deprecated
 public class DanWidgets {
 	private final DanResourceFinder finder;
 	private final Handler handler;

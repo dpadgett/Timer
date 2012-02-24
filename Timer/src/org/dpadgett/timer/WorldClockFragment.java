@@ -15,6 +15,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,6 +66,22 @@ public class WorldClockFragment extends Fragment {
 				});
 			}
         });
+        
+        clockList.clear();
+        SharedPreferences prefs =
+				context.getSharedPreferences("WorldClocks", Context.MODE_PRIVATE);
+		int numClocks = prefs.getInt("numClocks", -1);
+		if (numClocks >= 0) {
+			for (int idx = 0; idx < numClocks; idx++) {
+				String clock = prefs.getString("clock" + idx, null);
+				if (clock != null) {
+					clockList.add(clock);
+				}
+			}
+		} else {
+			addNewClock(TimeZone.getDefault().getID(), -1);
+		}
+        
 		ListView clocksList = (ListView) finder.findViewById(R.id.clocksList);
 		clocksList.setAdapter(clocksListAdapter);
 		clocksList.setOnItemClickListener(new OnItemClickListener() {
@@ -94,12 +111,12 @@ public class WorldClockFragment extends Fragment {
 	}
 
 	private void restoreState(Bundle savedInstanceState) {
-		String[] clocks = savedInstanceState.getStringArray("clockList");
-		if (clocks != null) {
-			clockList.clear();
-			clockList.addAll(Arrays.asList(clocks));
-			clocksListAdapter.notifyDataSetChanged();
-		}
+//		String[] clocks = savedInstanceState.getStringArray("clockList");
+//		if (clocks != null) {
+//			clockList.clear();
+//			clockList.addAll(Arrays.asList(clocks));
+//			clocksListAdapter.notifyDataSetChanged();
+//		}
 	}
 
 	@Override
@@ -111,7 +128,7 @@ public class WorldClockFragment extends Fragment {
 			}
 			return;
 		}
-		outState.putStringArray("clockList", clockList.toArray(new String[clockList.size()]));
+		// outState.putStringArray("clockList", clockList.toArray(new String[clockList.size()]));
 	}
 
 	private void newClockDialog(final int position) {
@@ -134,6 +151,16 @@ public class WorldClockFragment extends Fragment {
 				public void onClick(DialogInterface dialog, int which) {
 					clockList.remove(position);
 					clocksListAdapter.notifyDataSetChanged();
+					
+					SharedPreferences.Editor prefs =
+							context.getSharedPreferences("WorldClocks", Context.MODE_PRIVATE).edit();
+					prefs.putInt("numClocks", clockList.size());
+					int idx;
+					for (idx = position; idx < clockList.size(); idx++) {
+						prefs.putString("clock" + idx, clockList.get(idx));
+					}
+					prefs.remove("clock" + idx);
+					prefs.apply();
 				}
 	    	});
     	}
@@ -205,10 +232,18 @@ public class WorldClockFragment extends Fragment {
 	private void addNewClock(String timeZone, int position) {
 		if (position == -1) {
 			clockList.add(timeZone);
+			position = clockList.size() - 1;
 		} else {
 			clockList.set(position, timeZone);
 		}
 		clocksListAdapter.notifyDataSetChanged();
+
+		// save to prefs
+		SharedPreferences.Editor prefs =
+				context.getSharedPreferences("WorldClocks", Context.MODE_PRIVATE).edit();
+		prefs.putInt("numClocks", clockList.size());
+		prefs.putString("clock" + position, timeZone);
+		prefs.apply();
 	}
 	
 	private class ClockListAdapter extends BaseAdapter {
@@ -248,7 +283,7 @@ public class WorldClockFragment extends Fragment {
 			});
 	 
 			TextView timezoneText = (TextView) newClock.findViewById(R.id.timezone);
-			timezoneText.setText(timezone);
+			timezoneText.setText(TimeZone.getTimeZone(timezone).getDisplayName());
 			updateClockTextView(clock, timezone);
 	        return newClock;
 	    }

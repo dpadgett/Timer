@@ -187,11 +187,17 @@ public class CountdownFragment extends Fragment {
 				inputs.addView(inputLayout);
 				startButton.setText("Start");
 				timingThread.stopTimer();
-				if (alarmPendingIntent != null) {
-					AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-					alarmMgr.cancel(alarmPendingIntent);
-					alarmPendingIntent = null;
+				if (alarmPendingIntent == null) {
+					// should be unique
+					Intent intent = new Intent(getContext(), AlarmService.class)
+						.putExtra("startAlarm", true)
+						.setAction("startAlarmAt" + (timingThread.endTime));
+					alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
+							PendingIntent.FLAG_ONE_SHOT);
 				}
+				AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+				alarmMgr.cancel(alarmPendingIntent);
+				alarmPendingIntent = null;
 			} else {
 				timingThread.startTimer(getInputTimestamp());
 				
@@ -203,7 +209,7 @@ public class CountdownFragment extends Fragment {
 				// should be unique
 				Intent intent = new Intent(getContext(), AlarmService.class)
 					.putExtra("startAlarm", true)
-					.setAction("startAlarmAt" + (getInputTimestamp() + System.currentTimeMillis()));
+					.setAction("startAlarmAt" + (timingThread.endTime));
 				alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
 						PendingIntent.FLAG_ONE_SHOT);
 				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,

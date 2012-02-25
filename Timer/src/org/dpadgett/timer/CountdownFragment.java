@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -100,11 +101,35 @@ public class CountdownFragment extends Fragment {
     }
     
     private void restoreState(Bundle savedInstanceState) {
+        SharedPreferences prefs =
+				getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE);
+
     	timingThread = new CountdownThread(
 				(CountdownTextView) timerLayout.findViewById(R.id.countdownTimer),
 				savedInstanceState);
 		
-		if (savedInstanceState != null) {
+        if (prefs.contains("countdownInputs")) {
+	    	long countdownInputs = prefs.getLong("countdownInputs", 0L);
+	    	countdownInputs /= 1000;
+	    	countdownSeconds.setValue((int) (countdownInputs % 60));
+	    	countdownInputs /= 60;
+	    	countdownMinutes.setValue((int) (countdownInputs % 60));
+	    	countdownInputs /= 60;
+	    	countdownHours.setValue((int) (countdownInputs % 100));
+	    	inputMode = prefs.getBoolean("inputMode", inputMode);
+	    	if (!inputMode && timingThread.isRunning()) {
+	    		// countdown view
+	    		inputMode = false;
+				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
+				Button startButton = (Button) rootView.findViewById(R.id.startButton);
+				inputs.removeAllViews();
+				inputs.addView(timerLayout);
+				startButton.setText("Cancel");
+				handler.postAtTime(toggleInputMode, 
+						SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
+				// timing thread will auto start itself
+	    	}
+        } else if (savedInstanceState != null) {
 	    	long countdownInputs = savedInstanceState.getLong("countdownInputs", 0L);
 	    	countdownInputs /= 1000;
 	    	countdownSeconds.setValue((int) (countdownInputs % 60));

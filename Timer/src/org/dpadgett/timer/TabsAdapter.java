@@ -10,6 +10,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.widget.ListView;
 
 /**
  * This is a helper class that implements the management of tabs and all
@@ -45,6 +46,8 @@ public class TabsAdapter extends FragmentPagerAdapter
         mActionBar = activity.getActionBar();
         mViewPager = pager;
         mViewPager.setAdapter(this);
+        mViewPager.setPageMargin(1);
+        mViewPager.setPageMarginDrawable(new ListView(activity).getDivider());
         mViewPager.setOnPageChangeListener(this);
     }
 

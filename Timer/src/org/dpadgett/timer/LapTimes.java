@@ -3,6 +3,8 @@ package org.dpadgett.timer;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +28,12 @@ public class LapTimes {
 	private final LinearLayout lapTimesView;
 	private final List<Long> lapTimes;
 	private OnLayoutChangeListener bottomScroller;
+	private final Context context;
 
 	public LapTimes(ScrollView scrollView) {
 		this.scrollView = scrollView;
 		this.lapTimesView = (LinearLayout) scrollView.findViewById(R.id.lapTimesView);
+		this.context = scrollView.getContext();
 		bottomScroller = new OnLayoutChangeListener() {
 			@Override
 			public void onLayoutChange(View v, int left, int top, int right,
@@ -72,6 +76,12 @@ public class LapTimes {
 		
 		lapTimesView.addView(space);
 		lapTimes.add(lapTime);
+		
+		SharedPreferences.Editor prefs =
+				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
+		prefs.putLong("lapTime" + (lapTimes.size() - 1), lapTime);
+		prefs.putInt("lapTimesCount", lapTimes.size());
+		prefs.apply();
 	}
 	
 	/**
@@ -86,6 +96,11 @@ public class LapTimes {
         }
         saveState.putLongArray("lapTimes", lapTimesArray);
         saveState.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
+
+		SharedPreferences.Editor prefs =
+				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
+		prefs.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
+		prefs.apply();
 	}
 
 	/**
@@ -122,10 +137,53 @@ public class LapTimes {
 	}
 
 	/**
+	 * Restore this lap times list to a previously saved state.
+	 *
+	 * @param savedInstanceState
+	 */
+	public void restoreState(SharedPreferences prefs) {
+		lapTimesView.removeOnLayoutChangeListener(bottomScroller);
+		
+		int lapTimesCount = prefs.getInt("lapTimesCount", 0);
+    	
+  		for (int idx = 0; idx < lapTimesCount; idx++) {
+  			if (prefs.contains("lapTime" + idx)) {
+	  			long lapTime = prefs.getLong("lapTime" + idx, 0);
+	   			// add it to the list of lap times
+				add(lapTime);
+  			}
+   		}
+
+    	final int scrollPosition = prefs.getInt("lapTimesScrollPosition", 0);
+    	scrollView.post(new Runnable() {
+			@Override
+			public void run() {
+				scrollView.scrollTo(0, scrollPosition - scrollView.getMeasuredHeight());
+		    	System.out.println("scrolled to " + (scrollPosition - scrollView.getMeasuredHeight()));
+				lapTimesView.post(new Runnable() {
+					@Override
+					public void run() {
+						lapTimesView.addOnLayoutChangeListener(bottomScroller);
+					}
+				});
+			}
+    	});
+	}
+
+	/**
 	 * Removes all lap times in the list.
 	 */
 	public void clear() {
 		lapTimesView.removeAllViews();
+
+		SharedPreferences.Editor prefs =
+				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
+		for (int idx = 0; idx < lapTimes.size(); idx++) {
+			prefs.remove("lapTime" + idx);
+		}
+		prefs.putInt("lapTimesCount", 0);
+		prefs.apply();
+
 		lapTimes.clear();
 	}
 }

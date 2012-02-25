@@ -3,6 +3,8 @@ package org.dpadgett.timer;
 import org.dpadgett.widget.TimerTextView;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ public class StopwatchFragment extends Fragment {
 	private long timeStarted = 0L;
 	private LapTimes lapTimes;
 	private View rootView;
+	private Context context;
 	
 	private TimerTextView timerText;
 	private TimerTextView lapTimeText;
@@ -43,6 +46,7 @@ public class StopwatchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.stopwatch, container, false);
+        context = rootView.getContext();
         
         ((LinearLayout) rootView).setDividerDrawable(
         		new ListView(rootView.getContext()).getDivider());
@@ -108,20 +112,34 @@ public class StopwatchFragment extends Fragment {
 			}
         });
 
-        if (savedInstanceState != null) {
+        //if (savedInstanceState != null) {
         	restoreState(savedInstanceState);
-        }
+        //}
 
         return rootView;
     }
     
     private void restoreState(Bundle savedInstanceState) {
-    	isTimerRunning = savedInstanceState.getBoolean("isTimerRunning", false);
-    	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
-    	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
-    	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
-    	lapTimes.restoreState(savedInstanceState);
-    	
+        SharedPreferences prefs =
+				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE);
+
+        if (prefs.contains("isTimerRunning")) {
+        	isTimerRunning = prefs.getBoolean("isTimerRunning", false);
+        	timeStarted = prefs.getLong("timeStarted", 0L);
+        	additionalElapsed = prefs.getLong("additionalElapsed", 0L);
+        	additionalLapTimeElapsed = prefs.getLong("additionalLapTimeElapsed", 0L);
+        	lapTimes.restoreState(prefs);
+        } else {
+        	if (savedInstanceState == null) {
+        		return;
+        	}
+	    	isTimerRunning = savedInstanceState.getBoolean("isTimerRunning", false);
+	    	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
+	    	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
+	    	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
+	    	lapTimes.restoreState(savedInstanceState);
+        }	    	
+        
     	Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
 
@@ -147,6 +165,14 @@ public class StopwatchFragment extends Fragment {
 	        saveState.putLong("additionalElapsed", additionalElapsed);
 	        saveState.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
 	        lapTimes.onSaveInstanceState(saveState);
+
+	        SharedPreferences.Editor prefs =
+					context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
+	        prefs.putBoolean("isTimerRunning", isTimerRunning);
+	        prefs.putLong("timeStarted", timeStarted);
+	        prefs.putLong("additionalElapsed", additionalElapsed);
+	        prefs.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
+	        prefs.apply();
         } else {
         	saveState.putAll(initialSavedState);
         }

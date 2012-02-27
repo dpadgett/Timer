@@ -125,8 +125,8 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				handler.postAtTime(toggleInputMode, 
-						SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
+				//handler.postAtTime(toggleInputMode, 
+				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 				// timing thread will auto start itself
 	    	}
         } else if (savedInstanceState != null) {
@@ -146,8 +146,8 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				handler.postAtTime(toggleInputMode, 
-						SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
+				//handler.postAtTime(toggleInputMode, 
+				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 				// timing thread will auto start itself
 	    	}
 		}
@@ -198,6 +198,10 @@ public class CountdownFragment extends Fragment {
     	handler.removeCallbacks(toggleInputMode);
     }
     
+    public void toggleInputMode() {
+    	handler.post(toggleInputMode);
+    }
+    
     private final Runnable toggleInputMode = new Runnable() {
 
 		@Override
@@ -240,8 +244,8 @@ public class CountdownFragment extends Fragment {
 				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 						SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
 
-				handler.postAtTime(this, 
-						SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
+				//handler.postAtTime(this, 
+				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 			}
 		}
     	

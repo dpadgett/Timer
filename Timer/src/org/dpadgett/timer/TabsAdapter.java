@@ -1,5 +1,7 @@
 package org.dpadgett.timer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -29,6 +31,7 @@ public class TabsAdapter extends FragmentPagerAdapter
     private final ActionBar mActionBar;
     private final ViewPager mViewPager;
     private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
+    private final Map<Integer, Fragment> mSingletonMap = new HashMap<Integer, Fragment>();
 
     static final class TabInfo {
         private final Class<?> clss;
@@ -67,8 +70,14 @@ public class TabsAdapter extends FragmentPagerAdapter
 
     @Override
     public Fragment getItem(int position) {
-        TabInfo info = mTabs.get(position);
-        return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+    	if (!mSingletonMap.containsKey(position)) {
+	        TabInfo info = mTabs.get(position);
+	        Fragment fragment = Fragment.instantiate(mContext, info.clss.getName(), info.args);
+	        mSingletonMap.put(position, fragment);
+	        return fragment;
+    	} else {
+    		return mSingletonMap.get(position);
+    	}
     }
 
     @Override

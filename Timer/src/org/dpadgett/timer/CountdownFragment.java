@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -106,8 +107,9 @@ public class CountdownFragment extends Fragment {
 
     	timingThread = new CountdownThread(
 				(CountdownTextView) timerLayout.findViewById(R.id.countdownTimer),
-				savedInstanceState);
+				savedInstanceState, prefs);
 		
+    	Log.i(getClass().getName(), "Prefs: " + prefs.getAll());
         if (prefs.contains("countdownInputs")) {
 	    	long countdownInputs = prefs.getLong("countdownInputs", 0L);
 	    	countdownInputs /= 1000;
@@ -125,8 +127,6 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				//handler.postAtTime(toggleInputMode, 
-				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 				// timing thread will auto start itself
 	    	}
         } else if (savedInstanceState != null) {
@@ -146,8 +146,6 @@ public class CountdownFragment extends Fragment {
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
 				startButton.setText("Cancel");
-				//handler.postAtTime(toggleInputMode, 
-				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 				// timing thread will auto start itself
 	    	}
 		}
@@ -181,9 +179,17 @@ public class CountdownFragment extends Fragment {
     public void onSaveInstanceState(Bundle saveState) {
     	super.onSaveInstanceState(saveState);
     	if (rootView != null) {
+    		Log.i(getClass().getName(), "Saving instance state to shared prefs");
+    		SharedPreferences.Editor prefs = 
+    			getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();    		
+    		
+    		prefs.putBoolean("inputMode", inputMode);
 	    	saveState.putBoolean("inputMode", inputMode);
 	    	timingThread.onSaveState(saveState);
+	    	timingThread.onSaveState(prefs);
+    		prefs.putLong("countdownInputs", getInputTimestamp());
 	    	saveState.putLong("countdownInputs", getInputTimestamp());
+	    	prefs.apply();
     	} else {
     		if (savedInstance != null) {
     			saveState.putAll(savedInstance);
@@ -206,6 +212,9 @@ public class CountdownFragment extends Fragment {
 
 		@Override
 		public void run() {
+			if (rootView == null) {
+				return;
+			}
 			inputMode = !inputMode;
 			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
 			Button startButton = (Button) rootView.findViewById(R.id.startButton);

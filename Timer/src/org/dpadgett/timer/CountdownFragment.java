@@ -118,8 +118,9 @@ public class CountdownFragment extends Fragment {
 	    	countdownMinutes.setValue((int) (countdownInputs % 60));
 	    	countdownInputs /= 60;
 	    	countdownHours.setValue((int) (countdownInputs % 100));
-	    	inputMode = prefs.getBoolean("inputMode", inputMode);
-	    	if (!inputMode && timingThread.isRunning()) {
+	    	// inputMode = prefs.getBoolean("inputMode", inputMode);
+	    	inputMode = !timingThread.isRunning();
+	    	if (!inputMode) {
 	    		// countdown view
 	    		inputMode = false;
 				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
@@ -137,8 +138,9 @@ public class CountdownFragment extends Fragment {
 	    	countdownMinutes.setValue((int) (countdownInputs % 60));
 	    	countdownInputs /= 60;
 	    	countdownHours.setValue((int) (countdownInputs % 100));
-	    	inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
-	    	if (!inputMode && timingThread.isRunning()) {
+	    	// inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
+	    	inputMode = !timingThread.isRunning();
+	    	if (!inputMode) {
 	    		// countdown view
 	    		inputMode = false;
 				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);

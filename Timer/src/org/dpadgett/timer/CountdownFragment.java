@@ -12,7 +12,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -109,7 +108,6 @@ public class CountdownFragment extends Fragment {
 				(CountdownTextView) timerLayout.findViewById(R.id.countdownTimer),
 				savedInstanceState, prefs);
 		
-    	Log.i(getClass().getName(), "Prefs: " + prefs.getAll());
         if (prefs.contains("countdownInputs")) {
 	    	long countdownInputs = prefs.getLong("countdownInputs", 0L);
 	    	countdownInputs /= 1000;
@@ -118,7 +116,6 @@ public class CountdownFragment extends Fragment {
 	    	countdownMinutes.setValue((int) (countdownInputs % 60));
 	    	countdownInputs /= 60;
 	    	countdownHours.setValue((int) (countdownInputs % 100));
-	    	// inputMode = prefs.getBoolean("inputMode", inputMode);
 	    	inputMode = !timingThread.isRunning();
 	    	if (!inputMode) {
 	    		// countdown view
@@ -138,7 +135,6 @@ public class CountdownFragment extends Fragment {
 	    	countdownMinutes.setValue((int) (countdownInputs % 60));
 	    	countdownInputs /= 60;
 	    	countdownHours.setValue((int) (countdownInputs % 100));
-	    	// inputMode = savedInstanceState.getBoolean("inputMode", inputMode);
 	    	inputMode = !timingThread.isRunning();
 	    	if (!inputMode) {
 	    		// countdown view
@@ -181,12 +177,9 @@ public class CountdownFragment extends Fragment {
     public void onSaveInstanceState(Bundle saveState) {
     	super.onSaveInstanceState(saveState);
     	if (rootView != null) {
-    		Log.i(getClass().getName(), "Saving instance state to shared prefs");
     		SharedPreferences.Editor prefs = 
     			getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();    		
     		
-    		prefs.putBoolean("inputMode", inputMode);
-	    	saveState.putBoolean("inputMode", inputMode);
 	    	timingThread.onSaveState(saveState);
 	    	timingThread.onSaveState(prefs);
     		prefs.putLong("countdownInputs", getInputTimestamp());

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 
@@ -46,7 +47,6 @@ public class TimerActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.main);
         
         ViewPager mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.viewPager);
@@ -63,7 +63,10 @@ public class TimerActivity extends Activity {
 	                tab.getFragmentClass(), null);
         }
 
-        if (savedInstanceState != null) {
+        SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
+        if (prefs.contains("tab")) {
+            bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
+        } else if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
 

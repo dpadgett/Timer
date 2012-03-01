@@ -9,6 +9,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -87,6 +88,9 @@ public class TabsAdapter extends FragmentPagerAdapter
     @Override
     public void onPageSelected(int position) {
         mActionBar.setSelectedNavigationItem(position);
+        SharedPreferences.Editor prefs = mContext.getSharedPreferences("TimerActivity", Context.MODE_PRIVATE).edit();
+        prefs.putInt("tab", position);
+        prefs.apply();
     }
 
     @Override

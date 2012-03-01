@@ -26,13 +26,15 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text=""
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:textSize="30sp" />
 
         <TextView
             android:id="@+id/timezone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="" />
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
     </LinearLayout>
 

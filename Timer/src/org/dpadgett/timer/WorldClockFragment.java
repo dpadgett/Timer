@@ -2,6 +2,7 @@ package org.dpadgett.timer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -133,16 +134,25 @@ public class WorldClockFragment extends Fragment {
 	private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
     	builder.setTitle("Select a timezone");
+    	final Map<String, String> timezoneNameToId = new HashMap<String, String>();
     	Set<Integer> timezones = new TreeSet<Integer>();
-    	final Map<Integer, List<String>> offsetToID = new HashMap<Integer, List<String>>();
+    	final Map<Integer, List<String>> offsetToName = new HashMap<Integer, List<String>>();
     	final long currentTime = System.currentTimeMillis();
     	for (String timezone : TimeZone.getAvailableIDs()) {
+    		String timezoneName = TimeZone.getTimeZone(timezone).getDisplayName();
+    		if (timezoneNameToId.containsKey(timezoneName)) {
+    			continue;
+    		}
     		int millisOffset = TimeZone.getTimeZone(timezone).getOffset(currentTime);
 			timezones.add(millisOffset);
-			if (!offsetToID.containsKey(millisOffset)) {
-				offsetToID.put(millisOffset, new ArrayList<String>());
+			if (!offsetToName.containsKey(millisOffset)) {
+				offsetToName.put(millisOffset, new ArrayList<String>());
 			}
-			offsetToID.get(millisOffset).add(timezone);
+			offsetToName.get(millisOffset).add(timezoneName);
+			timezoneNameToId.put(timezoneName, timezone);
+    	}
+    	for (List<String> names : offsetToName.values()) {
+    		Collections.sort(names);
     	}
     	if (position > -1) {
 	    	builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
@@ -195,7 +205,7 @@ public class WorldClockFragment extends Fragment {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				adapter.clear();
-				adapter.addAll(offsetToID.get(timezonesList.get(progress)));
+				adapter.addAll(offsetToName.get(timezonesList.get(progress)));
 				int millisOffset = timezonesList.get(progress);
 				String offset = String.format("%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), Math.abs(millisOffset / 1000 / 60) % 60);
 				if (millisOffset / 1000 / 60 / 60 < 0) {
@@ -216,7 +226,8 @@ public class WorldClockFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int selectedPosition, long id) {
-				String timezone = adapter.getItem(selectedPosition);
+				String timezoneName = adapter.getItem(selectedPosition);
+				String timezone = timezoneNameToId.get(timezoneName);
 		    	addNewClock(timezone, position);
 		    	alert.dismiss();
 			}

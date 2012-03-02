@@ -106,9 +106,8 @@ public class TimerActivity extends Activity {
 			}
 
 			CountdownFragment countdown =
-//					(CountdownFragment) mTabsAdapter.instantiateItem(mViewPager, Tab.COUNTDOWN.ordinal());
 					(CountdownFragment) mTabsAdapter.getCachedItem(mViewPager, Tab.COUNTDOWN.ordinal());
-			countdown.toggleInputMode();
+			countdown.inputModeOn();
 		}
     };
 

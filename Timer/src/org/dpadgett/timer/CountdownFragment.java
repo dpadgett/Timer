@@ -93,7 +93,11 @@ public class CountdownFragment extends Fragment {
 		startButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				handler.post(toggleInputMode);
+				if (inputMode) {
+					inputModeOff();
+				} else {
+					inputModeOn();
+				}
 			}
         });
 		restoreState();
@@ -133,7 +137,7 @@ public class CountdownFragment extends Fragment {
     public void onPause() {
     	super.onPause();
     	saveState();
-    	handler.removeCallbacks(toggleInputMode);
+    	handler.removeCallbacks(inputModeOff);
     }
     
     @Override
@@ -166,61 +170,81 @@ public class CountdownFragment extends Fragment {
     public void onDestroy() {
     	super.onDestroy();
     	timingThread.stopTimer();
-    	handler.removeCallbacks(toggleInputMode);
+    	handler.removeCallbacks(inputModeOff);
     }
 
-    public void toggleInputMode() {
-    	handler.post(toggleInputMode);
+    public void inputModeOff() {
+    	handler.post(inputModeOff);
     }
 
-    private final Runnable toggleInputMode = new Runnable() {
+    public void inputModeOn() {
+    	handler.post(inputModeOn);
+    }
+
+    private final Runnable inputModeOff = new Runnable() {
 
 		@Override
 		public void run() {
 			if (rootView == null) {
 				return;
 			}
-			inputMode = !inputMode;
+			inputMode = false;
 			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
 			Button startButton = (Button) rootView.findViewById(R.id.startButton);
-			if (inputMode) {
-				//TODO: fixme
-		    	handler.removeCallbacks(toggleInputMode);
-				inputs.removeAllViews();
-				inputs.addView(inputLayout);
-				startButton.setText("Start");
-				timingThread.stopTimer();
-				if (alarmPendingIntent == null) {
-					// should be unique
-					Intent intent = new Intent(getContext(), AlarmService.class)
-						.putExtra("startAlarm", true)
-						.setAction("startAlarmAt" + (timingThread.endTime));
-					alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
-							PendingIntent.FLAG_ONE_SHOT);
-				}
-				AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-				alarmMgr.cancel(alarmPendingIntent);
-				alarmPendingIntent = null;
-			} else {
-				timingThread.startTimer(getInputTimestamp());
-				
-				inputs.removeAllViews();
-				inputs.addView(timerLayout);
-				startButton.setText("Cancel");
-				
-				AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+
+			timingThread.startTimer(getInputTimestamp());
+			
+			inputs.removeAllViews();
+			inputs.addView(timerLayout);
+			startButton.setText("Cancel");
+			
+			AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+			// should be unique
+			Intent intent = new Intent(getContext(), AlarmService.class)
+				.putExtra("startAlarm", true)
+				.setAction("startAlarmAt" + (timingThread.endTime));
+			alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
+					PendingIntent.FLAG_ONE_SHOT);
+			alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+					SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
+
+			//handler.postAtTime(this, 
+			//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
+			saveState();
+		}
+    	
+    };
+    
+    private final Runnable inputModeOn = new Runnable() {
+
+		@Override
+		public void run() {
+			if (rootView == null) {
+				return;
+			}
+			inputMode = true;
+			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
+			Button startButton = (Button) rootView.findViewById(R.id.startButton);
+
+			//TODO: fixme
+	    	handler.removeCallbacks(inputModeOff);
+	    	handler.removeCallbacks(inputModeOn);
+			inputs.removeAllViews();
+			inputs.addView(inputLayout);
+			startButton.setText("Start");
+			timingThread.stopTimer();
+			if (alarmPendingIntent == null) {
 				// should be unique
 				Intent intent = new Intent(getContext(), AlarmService.class)
 					.putExtra("startAlarm", true)
 					.setAction("startAlarmAt" + (timingThread.endTime));
 				alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
 						PendingIntent.FLAG_ONE_SHOT);
-				alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-						SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
-
-				//handler.postAtTime(this, 
-				//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 			}
+			AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+			alarmMgr.cancel(alarmPendingIntent);
+			alarmPendingIntent = null;
+
 			saveState();
 		}
     	

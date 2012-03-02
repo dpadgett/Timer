@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -86,17 +85,8 @@ public class LapTimes {
 	
 	/**
 	 * Save the state of this lap times list.
-	 *
-	 * @param saveState
 	 */
-	public void onSaveInstanceState(Bundle saveState) {
-        long[] lapTimesArray = new long[lapTimes.size()];
-        for (int idx = 0; idx < lapTimes.size(); idx++) {
-        	lapTimesArray[idx] = lapTimes.get(idx);
-        }
-        saveState.putLongArray("lapTimes", lapTimesArray);
-        saveState.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
-
+	public void saveState() {
 		SharedPreferences.Editor prefs =
 				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
 		prefs.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
@@ -108,42 +98,12 @@ public class LapTimes {
 	 *
 	 * @param savedInstanceState
 	 */
-	public void restoreState(Bundle savedInstanceState) {
-		lapTimesView.removeOnLayoutChangeListener(bottomScroller);
-		
-		long[] lapTimesArray = savedInstanceState.getLongArray("lapTimes");
-    	
-    	if (lapTimesArray != null) {
-    		for (long lapTime : lapTimesArray) {
-    			// add it to the list of lap times
-				add(lapTime);
-    		}
-    	}
-    	
-    	final int scrollPosition = savedInstanceState.getInt("lapTimesScrollPosition", 0);
-    	scrollView.post(new Runnable() {
-			@Override
-			public void run() {
-				scrollView.scrollTo(0, scrollPosition - scrollView.getMeasuredHeight());
-		    	System.out.println("scrolled to " + (scrollPosition - scrollView.getMeasuredHeight()));
-				lapTimesView.post(new Runnable() {
-					@Override
-					public void run() {
-						lapTimesView.addOnLayoutChangeListener(bottomScroller);
-					}
-				});
-			}
-    	});
-	}
-
-	/**
-	 * Restore this lap times list to a previously saved state.
-	 *
-	 * @param savedInstanceState
-	 */
 	public void restoreState(SharedPreferences prefs) {
 		lapTimesView.removeOnLayoutChangeListener(bottomScroller);
 		
+		lapTimes.clear();
+		lapTimesView.removeAllViews();
+
 		int lapTimesCount = prefs.getInt("lapTimesCount", 0);
     	
   		for (int idx = 0; idx < lapTimesCount; idx++) {

@@ -96,40 +96,8 @@ public class WorldClockFragment extends Fragment {
 		Drawable divider = new ListView(context).getDivider();
 		((LinearLayout) rootView).setDividerDrawable(divider);
 		
-		if (savedInstanceState != null) {
-			restoreState(savedInstanceState);
-		}
-		
         return rootView;
     }
-
-    private Bundle savedInstance = null;
-    @Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		savedInstance = savedInstanceState;
-	}
-
-	private void restoreState(Bundle savedInstanceState) {
-//		String[] clocks = savedInstanceState.getStringArray("clockList");
-//		if (clocks != null) {
-//			clockList.clear();
-//			clockList.addAll(Arrays.asList(clocks));
-//			clocksListAdapter.notifyDataSetChanged();
-//		}
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		if (context == null) {
-			if (savedInstance != null) {
-				outState.putAll(savedInstance);
-			}
-			return;
-		}
-		// outState.putStringArray("clockList", clockList.toArray(new String[clockList.size()]));
-	}
 
 	private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);

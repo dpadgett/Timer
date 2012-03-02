@@ -23,23 +23,15 @@ public class StopwatchFragment extends Fragment {
 	private LapTimes lapTimes;
 	private View rootView;
 	private Context context;
-	
+
 	private TimerTextView timerText;
 	private TimerTextView lapTimeText;
-	
+
 	private boolean isTimerRunning;
-	private Bundle initialSavedState;
 
 	public StopwatchFragment() {
 		isTimerRunning = false;
 	}
-
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        initialSavedState = savedInstanceState;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,6 +77,7 @@ public class StopwatchFragment extends Fragment {
 					timerText.pause(timeStopped);
 					lapTimeText.pause(timeStopped);
 				}
+				saveState();
 			}
         });
         resetButton.setOnClickListener(new OnClickListener() {
@@ -109,17 +102,16 @@ public class StopwatchFragment extends Fragment {
 					lapTimeText.reset();
 					lapTimes.clear();
 				}
+				saveState();
 			}
         });
 
-        //if (savedInstanceState != null) {
-        	restoreState(savedInstanceState);
-        //}
+    	restoreState();
 
         return rootView;
     }
     
-    private void restoreState(Bundle savedInstanceState) {
+    private void restoreState() {
         SharedPreferences prefs =
 				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE);
 
@@ -129,16 +121,7 @@ public class StopwatchFragment extends Fragment {
         	additionalElapsed = prefs.getLong("additionalElapsed", 0L);
         	additionalLapTimeElapsed = prefs.getLong("additionalLapTimeElapsed", 0L);
         	lapTimes.restoreState(prefs);
-        } else {
-        	if (savedInstanceState == null) {
-        		return;
-        	}
-	    	isTimerRunning = savedInstanceState.getBoolean("isTimerRunning", false);
-	    	timeStarted = savedInstanceState.getLong("timeStarted", 0L);
-	    	additionalElapsed = savedInstanceState.getLong("additionalElapsed", 0L);
-	    	additionalLapTimeElapsed = savedInstanceState.getLong("additionalLapTimeElapsed", 0L);
-	    	lapTimes.restoreState(savedInstanceState);
-        }	    	
+        }
         
     	Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
@@ -159,38 +142,35 @@ public class StopwatchFragment extends Fragment {
     @Override
 	public void onSaveInstanceState(Bundle saveState) {
         super.onSaveInstanceState(saveState);
-        if (rootView != null) {
-	        saveState.putBoolean("isTimerRunning", isTimerRunning);
-	        saveState.putLong("timeStarted", timeStarted);
-	        saveState.putLong("additionalElapsed", additionalElapsed);
-	        saveState.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
-	        lapTimes.onSaveInstanceState(saveState);
-
-	        SharedPreferences.Editor prefs =
-					context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
-	        prefs.putBoolean("isTimerRunning", isTimerRunning);
-	        prefs.putLong("timeStarted", timeStarted);
-	        prefs.putLong("additionalElapsed", additionalElapsed);
-	        prefs.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
-	        prefs.apply();
-        } else {
-        	saveState.putAll(initialSavedState);
+        if (lapTimes != null) {
+	        lapTimes.saveState();
         }
     }
 
-	private Bundle savedState = null;
-    @Override
-    public void onPause() {
-    	super.onPause();
-    	savedState = new Bundle();
-    	onSaveInstanceState(savedState);
+    /** Called whenever internal persisted state is changed */
+    private void saveState() {
+    	SharedPreferences.Editor prefs =
+				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
+        prefs.putBoolean("isTimerRunning", isTimerRunning);
+        prefs.putLong("timeStarted", timeStarted);
+        prefs.putLong("additionalElapsed", additionalElapsed);
+        prefs.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
+        prefs.apply();
     }
-    
+
     @Override
+	public void onPause() {
+		super.onPause();
+        if (lapTimes != null) {
+	        lapTimes.saveState();
+        }
+	}
+
+	@Override
     public void onResume() {
     	super.onResume();
-    	if (savedState != null) {
-    		restoreState(savedState);
+    	if (rootView != null) {
+    		restoreState();
     		System.out.println("resumed");
     	}
     }

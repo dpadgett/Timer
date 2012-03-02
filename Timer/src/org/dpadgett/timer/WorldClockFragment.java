@@ -36,7 +36,7 @@ import android.widget.TextView;
 
 public class WorldClockFragment extends Fragment {
 	
-	private DanResourceFinder finder;
+	private ResourceFinder finder;
 	private Context context;
 	private Handler uiHandler;
 	private final ClockListAdapter clocksListAdapter;
@@ -52,7 +52,7 @@ public class WorldClockFragment extends Fragment {
                              Bundle savedInstanceState) {
     	uiHandler = new Handler();
         View rootView = inflater.inflate(R.layout.world_clock, container, false);
-        finder = DanWidgets.finderFrom(rootView);
+        finder = ResourceFinders.from(rootView);
         context = rootView.getContext();
         Button addClockButton = (Button) finder.findViewById(R.id.addClockButton);
         addClockButton.setOnClickListener(new OnClickListener() {

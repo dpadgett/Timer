@@ -42,13 +42,14 @@ public class TimerActivity extends Activity {
 	
 	private AlertDialog alarmDialog;
 	private TabsAdapter mTabsAdapter;
+	private ViewPager mViewPager;
 
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        ViewPager mViewPager = new ViewPager(this);
+        mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.viewPager);
         setContentView(mViewPager);
 
@@ -105,7 +106,8 @@ public class TimerActivity extends Activity {
 			}
 
 			CountdownFragment countdown =
-					(CountdownFragment) mTabsAdapter.getItem(Tab.COUNTDOWN.ordinal());
+//					(CountdownFragment) mTabsAdapter.instantiateItem(mViewPager, Tab.COUNTDOWN.ordinal());
+					(CountdownFragment) mTabsAdapter.getCachedItem(mViewPager, Tab.COUNTDOWN.ordinal());
 			countdown.toggleInputMode();
 		}
     };

@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.ListView;
 
 /**
@@ -77,6 +79,19 @@ public class TabsAdapter extends FragmentPagerAdapter
 	        mSingletonMap.put(position, fragment);
 	        return fragment;
     	} else {
+    		return mSingletonMap.get(position);
+    	}
+    }
+
+    public Fragment getCachedItem(ViewGroup container, int position) {
+        // Do we already have this fragment?
+    	if (!mSingletonMap.containsKey(position)) {
+    		Log.i(getClass().getName(), "Fragment cache miss");
+	        Fragment fragment = (Fragment) instantiateItem(container, position);
+	        mSingletonMap.put(position, fragment);
+	        return fragment;
+    	} else {
+    		Log.i(getClass().getName(), "Fragment cache hit");
     		return mSingletonMap.get(position);
     	}
     }

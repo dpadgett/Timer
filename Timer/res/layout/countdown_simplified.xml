@@ -19,12 +19,13 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal|center_vertical" >
 
-                <NumberPicker
+                <view
                     android:id="@+id/countdownHours"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:textSize="50sp" />
+                    android:textSize="50sp"
+                    class="org.dpadgett.widget.FasterNumberPicker" />
 
 	            <TextView
 	                android:id="@+id/textView_colon1"
@@ -33,12 +34,13 @@
 	                android:text=":"
 	                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                <NumberPicker
+                <view
                     android:id="@+id/countdownMinutes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:textSize="50sp" />
+                    android:textSize="50sp"
+                    class="org.dpadgett.widget.FasterNumberPicker" />
 
 	            <TextView
 	                android:id="@+id/textViewColon2"
@@ -47,12 +49,13 @@
 	                android:text=":"
 	                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                <NumberPicker
+                <view
                     android:id="@+id/countdownSeconds"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:textSize="50sp" />
+                    android:textSize="50sp"
+                    class="org.dpadgett.widget.FasterNumberPicker" />
 
         </LinearLayout>
     </LinearLayout>

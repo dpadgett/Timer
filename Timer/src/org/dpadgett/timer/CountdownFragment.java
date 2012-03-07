@@ -1,6 +1,7 @@
 package org.dpadgett.timer;
 
 import org.dpadgett.widget.CountdownTextView;
+import org.dpadgett.widget.FasterNumberPicker;
 
 import android.app.AlarmManager;
 import android.app.Fragment;
@@ -19,8 +20,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
-import android.widget.NumberPicker.Formatter;
 
 public class CountdownFragment extends Fragment {
 
@@ -29,9 +28,9 @@ public class CountdownFragment extends Fragment {
 	private LinearLayout timerLayout;
 	private View rootView;
 	private final Handler handler;
-	private NumberPicker countdownHours;
-	private NumberPicker countdownMinutes;
-	private NumberPicker countdownSeconds;
+	private FasterNumberPicker countdownHours;
+	private FasterNumberPicker countdownMinutes;
+	private FasterNumberPicker countdownSeconds;
 	private CountdownThread timingThread;
 
 	public PendingIntent alarmPendingIntent;
@@ -53,14 +52,14 @@ public class CountdownFragment extends Fragment {
         this.inputLayout = (LinearLayout) rootView.findViewById(R.id.inputsInnerLayout);
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
 
-        Formatter twoDigitFormatter = new NumberPicker.Formatter() {
+        FasterNumberPicker.Formatter twoDigitFormatter = new FasterNumberPicker.Formatter() {
 			@Override
 			public String format(int value) {
 				return String.format("%02d", value);
 			}
         };
 
-        countdownHours = (NumberPicker) rootView.findViewById(R.id.countdownHours);
+        countdownHours = (FasterNumberPicker) rootView.findViewById(R.id.countdownHours);
         countdownHours.setMinValue(0);
         countdownHours.setMaxValue(99);
 		countdownHours.setFormatter(twoDigitFormatter);
@@ -70,7 +69,7 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
-		countdownMinutes = (NumberPicker) rootView.findViewById(R.id.countdownMinutes);
+		countdownMinutes = (FasterNumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
 		countdownMinutes.setFormatter(twoDigitFormatter);
@@ -79,7 +78,7 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
-		countdownSeconds = (NumberPicker) rootView.findViewById(R.id.countdownSeconds);
+		countdownSeconds = (FasterNumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
 		countdownSeconds.setFormatter(twoDigitFormatter);

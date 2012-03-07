@@ -16,6 +16,7 @@
 
 package org.dpadgett.widget;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import android.animation.Animator;
@@ -554,8 +555,22 @@ public class FasterNumberPicker extends LinearLayout {
             	Resources.getSystem().getIdentifier("NumberPicker_minWidth", "styleable", "android"),
             	Resources.getSystem().getIdentifier("NumberPicker_maxWidth", "styleable", "android"),
         };
+		try {
+			Class clazz = Class.forName("android.R$styleable");
+	        attrsArray = (int[]) clazz.getField("NumberPicker").get(clazz);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		}
+		Log.i(getClass().getName(), "Attrs: " + Arrays.toString(attrsArray));
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 attrsArray /* R.styleable.NumberPicker */, defStyle, 0);
+        Log.i(getClass().getName(), "TypedAttrs: " + attributesArray);
         mSolidColor = attributesArray.getColor(Resources.getSystem().getIdentifier("NumberPicker_solidColor", "styleable", "android"), 0);
         mFlingable = attributesArray.getBoolean(Resources.getSystem().getIdentifier("NumberPicker_flingable", "styleable", "android"), true);
         mSelectionDivider = attributesArray.getDrawable(Resources.getSystem().getIdentifier("NumberPicker_selectionDivider", "styleable", "android"));
@@ -568,7 +583,6 @@ public class FasterNumberPicker extends LinearLayout {
                 SIZE_UNSPECIFIED);
         mMaxHeight = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_maxHeight", "styleable", "android"),
                 SIZE_UNSPECIFIED);
-        Log.i(getClass().getName(), "Max height: " + mMaxHeight);
         if (mMinHeight != SIZE_UNSPECIFIED && mMaxHeight != SIZE_UNSPECIFIED
                 && mMinHeight > mMaxHeight) {
             throw new IllegalArgumentException("minHeight > maxHeight");

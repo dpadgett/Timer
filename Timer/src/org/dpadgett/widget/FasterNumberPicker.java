@@ -54,6 +54,7 @@ import android.view.ViewConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -80,12 +81,12 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * The default update interval during long press.
      */
-    private static final long DEFAULT_LONG_PRESS_UPDATE_INTERVAL = 300;
+    private static final long DEFAULT_LONG_PRESS_UPDATE_INTERVAL = 300 / 2;
 
     /**
      * The index of the middle selector item.
      */
-    private static final int SELECTOR_MIDDLE_ITEM_INDEX = 2;
+    private static final int SELECTOR_MIDDLE_ITEM_INDEX = 3;
 
     /**
      * The coefficient by which to adjust (divide) the max fling velocity.
@@ -299,8 +300,8 @@ public class FasterNumberPicker extends LinearLayout {
      * The selector indices whose value are show by the selector.
      */
     private final int[] mSelectorIndices = new int[] {
-            Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
-            Integer.MIN_VALUE
+    		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
+    		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
     };
 
     /**
@@ -357,12 +358,12 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * {@link Animator} for showing the up/down arrows.
      */
-    private final AnimatorSet mShowInputControlsAnimator;
+    //private final AnimatorSet mShowInputControlsAnimator;
 
     /**
      * {@link Animator} for dimming the selector wheel.
      */
-    private final Animator mDimSelectorWheelAnimator;
+    //private final Animator mDimSelectorWheelAnimator;
 
     /**
      * The Y position of the last down event.
@@ -453,6 +454,10 @@ public class FasterNumberPicker extends LinearLayout {
      * Flag whether the scoll wheel and the fading edges have been initialized.
      */
     private boolean mScrollWheelAndFadingEdgesInitialized;
+
+	private Scroller mLongPressScroller;
+
+	private boolean mIsLongPressed = false;
 
     /**
      * Interface to listen for changes of the current value.
@@ -631,6 +636,7 @@ public class FasterNumberPicker extends LinearLayout {
         OnLongClickListener onLongClickListener = new OnLongClickListener() {
             public boolean onLongClick(View v) {
                 mInputText.clearFocus();
+                mIsLongPressed = true;
                 if (v.getId() == Resources.getSystem().getIdentifier("increment", "id", "android")) {
                     postChangeCurrentByOneFromLongPress(true);
                 } else {
@@ -694,16 +700,16 @@ public class FasterNumberPicker extends LinearLayout {
         mSelectorWheelPaint = paint;
 
         // create the animator for showing the input controls
-        mDimSelectorWheelAnimator = ObjectAnimator.ofInt(this, PROPERTY_SELECTOR_PAINT_ALPHA,
-                SELECTOR_WHEEL_BRIGHT_ALPHA, SELECTOR_WHEEL_DIM_ALPHA);
-        final ObjectAnimator showIncrementButton = ObjectAnimator.ofFloat(mIncrementButton,
-                PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
-        final ObjectAnimator showDecrementButton = ObjectAnimator.ofFloat(mDecrementButton,
-                PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
-        mShowInputControlsAnimator = new AnimatorSet();
-        mShowInputControlsAnimator.playTogether(mDimSelectorWheelAnimator, showIncrementButton,
-                showDecrementButton);
-        mShowInputControlsAnimator.addListener(new AnimatorListenerAdapter() {
+        //mDimSelectorWheelAnimator = ObjectAnimator.ofInt(this, PROPERTY_SELECTOR_PAINT_ALPHA,
+        //        SELECTOR_WHEEL_BRIGHT_ALPHA, SELECTOR_WHEEL_DIM_ALPHA);
+        //final ObjectAnimator showIncrementButton = ObjectAnimator.ofFloat(mIncrementButton,
+        //        PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
+        //final ObjectAnimator showDecrementButton = ObjectAnimator.ofFloat(mDecrementButton,
+        //        PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
+        //mShowInputControlsAnimator = new AnimatorSet();
+        //mShowInputControlsAnimator.playTogether(mDimSelectorWheelAnimator, showIncrementButton,
+        //        showDecrementButton);
+        /*mShowInputControlsAnimator.addListener(new AnimatorListenerAdapter() {
             private boolean mCanceled = false;
 
             @Override
@@ -721,11 +727,12 @@ public class FasterNumberPicker extends LinearLayout {
                     mCanceled = true;
                 }
             }
-        });
+        });*/
 
         // create the fling and adjust scrollers
         mFlingScroller = new Scroller(getContext(), null, true);
         mAdjustScroller = new Scroller(getContext(), new DecelerateInterpolator(2.5f));
+        mLongPressScroller = new Scroller(getContext(), new LinearInterpolator());
 
         updateInputTextView();
         updateIncrementAndDecrementButtonsVisibilityState();
@@ -807,8 +814,9 @@ public class FasterNumberPicker extends LinearLayout {
             case MotionEvent.ACTION_DOWN:
                 mLastMotionEventY = mLastDownEventY = event.getY();
                 removeAllCallbacks();
-                mShowInputControlsAnimator.cancel();
-                mDimSelectorWheelAnimator.cancel();
+                //mShowInputControlsAnimator.cancel();
+                //mDimSelectorWheelAnimator.cancel();
+                cancelDim();
                 mBeginEditOnUpEvent = false;
                 mAdjustScrollerOnUpEvent = true;
                 if (mSelectorWheelState == SELECTOR_WHEEL_STATE_LARGE) {
@@ -848,7 +856,11 @@ public class FasterNumberPicker extends LinearLayout {
         return false;
     }
 
-    @Override
+    private void cancelDim() {
+    	setSelectorPaintAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
+	}
+
+	@Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (!isEnabled()) {
             return false;
@@ -916,6 +928,11 @@ public class FasterNumberPicker extends LinearLayout {
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 removeAllCallbacks();
+                if (mIsLongPressed) {
+                	mIsLongPressed = false;
+                    forceCompleteChangeCurrentByOneViaScroll();
+                    postAdjustScrollerCommand(0);
+                }
                 break;
         }
         return super.dispatchTouchEvent(event);
@@ -948,7 +965,10 @@ public class FasterNumberPicker extends LinearLayout {
         if (scroller.isFinished()) {
             scroller = mAdjustScroller;
             if (scroller.isFinished()) {
-                return;
+            	scroller = mLongPressScroller;
+                if (scroller.isFinished()) {
+                	return;
+                }
             }
         }
         scroller.computeScrollOffset();
@@ -1337,8 +1357,8 @@ public class FasterNumberPicker extends LinearLayout {
 
         // Draw our children if we are not showing the selector wheel or fading
         // it out
-        if (mShowInputControlsAnimator.isRunning()
-                || mSelectorWheelState != SELECTOR_WHEEL_STATE_LARGE) {
+        if (/*mShowInputControlsAnimator.isRunning()
+                || */ mSelectorWheelState != SELECTOR_WHEEL_STATE_LARGE) {
             long drawTime = getDrawingTime();
             for (int i = 0, count = getChildCount(); i < count; i++) {
                 View child = getChildAt(i);
@@ -1355,7 +1375,6 @@ public class FasterNumberPicker extends LinearLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
-        	Log.i(getClass().getName(), "Not showing selector wheel.");
             return;
         }
 
@@ -1365,10 +1384,10 @@ public class FasterNumberPicker extends LinearLayout {
         final int restoreCount = canvas.save();
 
         Rect origBounds = canvas.getClipBounds();
-        Rect clipBounds = canvas.getClipBounds();
+        //Rect clipBounds = canvas.getClipBounds();
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_SMALL) {
-            clipBounds.inset(0, mSelectorElementHeight);
-            canvas.clipRect(clipBounds);
+            //clipBounds.inset(0, mSelectorElementHeight / 2);
+            //canvas.clipRect(clipBounds);
         }
 
         // draw the selector wheel
@@ -1384,8 +1403,8 @@ public class FasterNumberPicker extends LinearLayout {
         	paint.setAlpha(255);
         	y = mSelectorElementHeight;
         	lastHashCode = hashCode;
-        	if (saved == null ||
-        			origBounds.height() + mSelectorElementHeight != saved.getHeight()) {
+        	if (saved == null
+        			|| origBounds.height() + mSelectorElementHeight != saved.getHeight()) {
             	saved = Bitmap.createBitmap(canvas.getClipBounds().width(),
             			canvas.getClipBounds().height() + mSelectorElementHeight, Config.ARGB_8888);
         	} else {
@@ -1524,7 +1543,8 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private void changeCurrentByOne(boolean increment) {
         if (mFlingable) {
-            mDimSelectorWheelAnimator.cancel();
+        	cancelDim();
+            //mDimSelectorWheelAnimator.cancel();
             mInputText.setVisibility(View.INVISIBLE);
             mSelectorWheelPaint.setAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
             mPreviousScrollerY = 0;
@@ -1553,6 +1573,14 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private void forceCompleteChangeCurrentByOneViaScroll() {
         Scroller scroller = mFlingScroller;
+        if (!scroller.isFinished()) {
+            final int yBeforeAbort = scroller.getCurrY();
+            scroller.abortAnimation();
+            final int yDelta = scroller.getCurrY() - yBeforeAbort;
+            scrollBy(0, yDelta);
+        }
+
+        scroller = mLongPressScroller;
         if (!scroller.isFinished()) {
             final int yBeforeAbort = scroller.getCurrY();
             scroller.abortAnimation();
@@ -1605,7 +1633,7 @@ public class FasterNumberPicker extends LinearLayout {
     private void initializeSelectorWheel() {
         initializeSelectorWheelIndices();
         int[] selectorIndices = mSelectorIndices;
-        int totalTextHeight = selectorIndices.length * mTextSize;
+        int totalTextHeight = (selectorIndices.length - 2) * mTextSize;
         float totalTextGapHeight = (getBottom() - getTop()) - totalTextHeight;
         float textGapCount = selectorIndices.length - 1;
         mSelectorTextGapHeight = (int) (totalTextGapHeight / textGapCount + 0.5f);
@@ -1635,6 +1663,8 @@ public class FasterNumberPicker extends LinearLayout {
                 updateInputTextView();
                 fadeSelectorWheel(mShowInputControlsAnimimationDuration);
             }
+        } else if (scroller == mLongPressScroller) {
+        	// adjust scroller command is posted on long press up.
         } else {
             updateInputTextView();
             showInputControls(mShowInputControlsAnimimationDuration);
@@ -1673,7 +1703,8 @@ public class FasterNumberPicker extends LinearLayout {
      * Hides the input controls which is the up/down arrows and the text field.
      */
     private void hideInputControls() {
-        mShowInputControlsAnimator.cancel();
+        cancelDim();
+        //mShowInputControlsAnimator.cancel();
         mIncrementButton.setVisibility(INVISIBLE);
         mDecrementButton.setVisibility(INVISIBLE);
         mInputText.setVisibility(INVISIBLE);
@@ -1688,8 +1719,10 @@ public class FasterNumberPicker extends LinearLayout {
     private void showInputControls(long animationDuration) {
         updateIncrementAndDecrementButtonsVisibilityState();
         mInputText.setVisibility(VISIBLE);
-        mShowInputControlsAnimator.setDuration(animationDuration);
-        mShowInputControlsAnimator.start();
+    	setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
+        setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
+        //mShowInputControlsAnimator.setDuration(animationDuration);
+        //mShowInputControlsAnimator.start();
     }
 
     /**
@@ -1698,9 +1731,11 @@ public class FasterNumberPicker extends LinearLayout {
      * @param animationDuration The duration of the animation.
      */
     private void fadeSelectorWheel(long animationDuration) {
-        mInputText.setVisibility(VISIBLE);
-        mDimSelectorWheelAnimator.setDuration(animationDuration);
-        mDimSelectorWheelAnimator.start();
+    	//mInputText.setVisibility(VISIBLE);
+    	//setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
+    	showInputControls(animationDuration);
+    //    mDimSelectorWheelAnimator.setDuration(animationDuration);
+    //    mDimSelectorWheelAnimator.start();
     }
 
     /**
@@ -2042,7 +2077,31 @@ public class FasterNumberPicker extends LinearLayout {
         }
 
         public void run() {
-            changeCurrentByOne(mIncrement);
+            //changeCurrentByOne(mIncrement);
+            if (mFlingable) {
+            	cancelDim();
+                mInputText.setVisibility(View.INVISIBLE);
+                mSelectorWheelPaint.setAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
+                mPreviousScrollerY = 0;
+                if (mIncrement) {
+                	mLongPressScroller.setFinalY(mLongPressScroller.getCurrY());
+                	mLongPressScroller.forceFinished(true);
+                    mLongPressScroller.startScroll(0, 0, 0, -mSelectorElementHeight * 2,
+                    		(int) mLongPressUpdateInterval * 2);
+                } else {
+                	mLongPressScroller.setFinalY(mLongPressScroller.getCurrY());
+                	mLongPressScroller.forceFinished(true);
+                	mLongPressScroller.startScroll(0, 0, 0, mSelectorElementHeight * 2,
+                			(int) mLongPressUpdateInterval * 2);
+                }
+                invalidate();
+            } else {
+                if (mIncrement) {
+                    changeCurrent(mValue + 1);
+                } else {
+                    changeCurrent(mValue - 1);
+                }
+            }
             postDelayed(this, mLongPressUpdateInterval);
         }
     }

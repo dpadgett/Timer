@@ -40,6 +40,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -567,6 +568,7 @@ public class FasterNumberPicker extends LinearLayout {
                 SIZE_UNSPECIFIED);
         mMaxHeight = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_maxHeight", "styleable", "android"),
                 SIZE_UNSPECIFIED);
+        Log.i(getClass().getName(), "Max height: " + mMaxHeight);
         if (mMinHeight != SIZE_UNSPECIFIED && mMaxHeight != SIZE_UNSPECIFIED
                 && mMinHeight > mMaxHeight) {
             throw new IllegalArgumentException("minHeight > maxHeight");
@@ -583,7 +585,7 @@ public class FasterNumberPicker extends LinearLayout {
         attributesArray.recycle();
 
         mShowInputControlsAnimimationDuration = getResources().getInteger(
-        		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android"));
+        		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android")) / 10;
 
         // By default Linearlayout that we extend is not drawn. This is
         // its draw() method is not called but dispatchDraw() is called
@@ -636,6 +638,7 @@ public class FasterNumberPicker extends LinearLayout {
 
         // input text
         mInputText = (EditText) findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+        mInputText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 50);
         mInputText.setOnFocusChangeListener(new OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
@@ -766,6 +769,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    	Log.i(getClass().getName(), "Height measure spec: " + heightMeasureSpec);
         // Try greedily to fit the max width and height.
         final int newWidthMeasureSpec = makeMeasureSpec(widthMeasureSpec, mMaxWidth);
         final int newHeightMeasureSpec = makeMeasureSpec(heightMeasureSpec, mMaxHeight);
@@ -773,8 +777,10 @@ public class FasterNumberPicker extends LinearLayout {
         // Flag if we are measured with width or height less than the respective min.
         final int widthSize = resolveSizeAndStateRespectingMinSize(mMinWidth, getMeasuredWidth(),
                 widthMeasureSpec);
-        final int heightSize = resolveSizeAndStateRespectingMinSize(mMinHeight, getMeasuredHeight(),
-                heightMeasureSpec);
+        //final int heightSize = resolveSizeAndStateRespectingMinSize(mMinHeight, getMeasuredHeight(),
+        //        heightMeasureSpec);
+        final int heightSize = (mTextSize + 4) * 5;
+    	Log.i(getClass().getName(), "Actual height measure: " + heightSize);
         setMeasuredDimension(widthSize, heightSize);
     }
 
@@ -1315,7 +1321,7 @@ public class FasterNumberPicker extends LinearLayout {
         // drawing ourselves.
         super.draw(canvas);
 
-        // Draw our children if we are not showing the selector wheel of fading
+        // Draw our children if we are not showing the selector wheel or fading
         // it out
         if (mShowInputControlsAnimator.isRunning()
                 || mSelectorWheelState != SELECTOR_WHEEL_STATE_LARGE) {
@@ -1331,11 +1337,11 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private int lastHashCode = 0;
-
 	private Bitmap saved;
     @Override
     protected void onDraw(Canvas canvas) {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
+        	Log.i(getClass().getName(), "Not showing selector wheel.");
             return;
         }
 
@@ -1344,17 +1350,33 @@ public class FasterNumberPicker extends LinearLayout {
 
         final int restoreCount = canvas.save();
 
+        Rect origBounds = canvas.getClipBounds();
+        Rect clipBounds = canvas.getClipBounds();
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_SMALL) {
-            Rect clipBounds = canvas.getClipBounds();
             clipBounds.inset(0, mSelectorElementHeight);
             canvas.clipRect(clipBounds);
         }
 
         // draw the selector wheel
         int[] selectorIndices = mSelectorIndices;
-        if (Arrays.hashCode(new int[] {Arrays.hashCode(selectorIndices), mCurrentScrollOffset}) != lastHashCode) {
-        	lastHashCode = Arrays.hashCode(selectorIndices);
-        	saved = Bitmap.createBitmap(canvas.getClipBounds().width(), canvas.getClipBounds().height(), Config.ARGB_8888);
+        int hashCode = Arrays.hashCode(new int[] {
+        		Arrays.hashCode(selectorIndices),
+        		mInputText.getVisibility(),
+        		origBounds.height()});
+        if (hashCode != lastHashCode) {
+        	Log.i(getClass().getName(), "Redrawing, params: " + mInputText.getVisibility() + ", " + origBounds.height());
+        	// this is applied when the bitmap is drawn, too
+        	Paint paint = new Paint(mSelectorWheelPaint);
+        	paint.setAlpha(255);
+        	y = mSelectorElementHeight;
+        	lastHashCode = hashCode;
+        	if (saved == null ||
+        			origBounds.height() + mSelectorElementHeight != saved.getHeight()) {
+            	saved = Bitmap.createBitmap(canvas.getClipBounds().width(),
+            			canvas.getClipBounds().height() + mSelectorElementHeight, Config.ARGB_8888);
+        	} else {
+        		saved.eraseColor(Color.TRANSPARENT);
+        	}
         	Canvas newCanvas = new Canvas(saved);
 	        for (int i = 0; i < selectorIndices.length; i++) {
 	            int selectorIndex = selectorIndices[i];
@@ -1364,12 +1386,12 @@ public class FasterNumberPicker extends LinearLayout {
 	            // starts editing the text via the IME he may see a dimmed version of the old
 	            // value intermixed with the new one.
 	            if (i != SELECTOR_MIDDLE_ITEM_INDEX || mInputText.getVisibility() != VISIBLE) {
-	                newCanvas.drawText(scrollSelectorValue, x, y, mSelectorWheelPaint);
+	                newCanvas.drawText(scrollSelectorValue, x, y, paint);
 	            }
 	            y += mSelectorElementHeight;
 	        }
         }
-        canvas.drawBitmap(saved, 0, y, mSelectorWheelPaint);
+        canvas.drawBitmap(saved, 0, mCurrentScrollOffset - mSelectorElementHeight, mSelectorWheelPaint);
 
         // draw the selection dividers (only if scrolling and drawable specified)
         if (mSelectionDivider != null) {

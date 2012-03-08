@@ -61,7 +61,7 @@ public class CountdownTextView extends TextView {
 		remainingTime /= 60;
 		long mins = remainingTime % 60;
 		remainingTime /= 60;
-		long hours = remainingTime % 60;
+		long hours = remainingTime;
 		return String.format("%02d:%02d:%02d", hours, mins, secs);
 	}
 }

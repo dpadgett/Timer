@@ -1392,21 +1392,24 @@ public class FasterNumberPicker extends LinearLayout {
 
         // draw the selector wheel
         int[] selectorIndices = mSelectorIndices;
+        int viewHeight = getHeight();
+        int viewWidth = getWidth();
         int hashCode = Arrays.hashCode(new int[] {
         		Arrays.hashCode(selectorIndices),
         		mInputText.getVisibility(),
-        		origBounds.height()});
+        		viewHeight});
         if (hashCode != lastHashCode) {
-        	Log.i(getClass().getName(), "Redrawing, params: " + mInputText.getVisibility() + ", " + origBounds.height());
+        	Log.i(getClass().getName(), "Redrawing, params: " + mInputText.getVisibility() + ", " + viewHeight);
+        	Log.i(getClass().getName(), "bounds: " + origBounds.top + ", " + origBounds.bottom);
         	// this is applied when the bitmap is drawn, too
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
         	y = mSelectorElementHeight;
         	lastHashCode = hashCode;
         	if (saved == null
-        			|| origBounds.height() + mSelectorElementHeight != saved.getHeight()) {
-            	saved = Bitmap.createBitmap(canvas.getClipBounds().width(),
-            			canvas.getClipBounds().height() + mSelectorElementHeight, Config.ARGB_8888);
+        			|| viewHeight + mSelectorElementHeight != saved.getHeight()) {
+            	saved = Bitmap.createBitmap(viewWidth,
+            			viewHeight + mSelectorElementHeight * 2, Config.ARGB_8888);
         	} else {
         		saved.eraseColor(Color.TRANSPARENT);
         	}

@@ -16,13 +16,8 @@
 
 package org.dpadgett.widget;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -47,6 +42,9 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.LayoutInflater.Filter;
+import android.view.View.OnDragListener;
+import android.view.View.OnGenericMotionListener;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -738,16 +736,44 @@ public class FasterNumberPicker extends LinearLayout {
         updateIncrementAndDecrementButtonsVisibilityState();
 
         if (mFlingable) {
-           if (isInEditMode()) {
+           // if (isInEditMode()) {
                setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
-           } else {
+           // } else {
                 // Start with shown selector wheel and hidden controls. When made
                 // visible hide the selector and fade-in the controls to suggest
                 // fling interaction.
-                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
-                hideInputControls();
-           }
+           //      setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
+           //      hideInputControls();
+           // }
         }
+        
+        this.setOnDragListener(new OnDragListener() {
+
+			@Override
+			public boolean onDrag(View v, DragEvent event) {
+				Log.i(getClass().getName(), "View's onDrag called!");
+				return false;
+			}
+        	
+        });
+        this.setOnGenericMotionListener(new OnGenericMotionListener() {
+
+			@Override
+			public boolean onGenericMotion(View v, MotionEvent event) {
+				Log.i(getClass().getName(), "View's onGenericMotion called with MotionEvent " + event.getActionMasked() + "!");
+				return false;
+			}
+        	
+        });
+        this.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View arg0, MotionEvent arg1) {
+				Log.i(getClass().getName(), "View's onTouch called with MotionEvent " + arg1.getActionMasked() + "!");
+				return false;
+			}
+        	
+        });
     }
 
     @Override
@@ -886,6 +912,7 @@ public class FasterNumberPicker extends LinearLayout {
                 invalidate();
                 mLastMotionEventY = currentMoveY;
                 break;
+            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 if (mBeginEditOnUpEvent) {
                     setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);

@@ -4,17 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.ActionBar.Tab;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.ListView;
 
 /**
@@ -83,11 +82,11 @@ public class TabsAdapter extends FragmentPagerAdapter
     	}
     }
 
-    public Fragment getCachedItem(ViewGroup container, int position) {
+    public Fragment getCachedItem(int position) {
         // Do we already have this fragment?
     	if (!mSingletonMap.containsKey(position)) {
     		Log.i(getClass().getName(), "Fragment cache miss");
-	        Fragment fragment = (Fragment) instantiateItem(container, position);
+	        Fragment fragment = (Fragment) instantiateItem(mViewPager, position);
 	        mSingletonMap.put(position, fragment);
 	        return fragment;
     	} else {

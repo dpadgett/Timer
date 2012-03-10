@@ -746,34 +746,6 @@ public class FasterNumberPicker extends LinearLayout {
            //      hideInputControls();
            // }
         }
-        
-        this.setOnDragListener(new OnDragListener() {
-
-			@Override
-			public boolean onDrag(View v, DragEvent event) {
-				Log.i(getClass().getName(), "View's onDrag called!");
-				return false;
-			}
-        	
-        });
-        this.setOnGenericMotionListener(new OnGenericMotionListener() {
-
-			@Override
-			public boolean onGenericMotion(View v, MotionEvent event) {
-				Log.i(getClass().getName(), "View's onGenericMotion called with MotionEvent " + event.getActionMasked() + "!");
-				return false;
-			}
-        	
-        });
-        this.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View arg0, MotionEvent arg1) {
-				Log.i(getClass().getName(), "View's onTouch called with MotionEvent " + arg1.getActionMasked() + "!");
-				return false;
-			}
-        	
-        });
     }
 
     @Override
@@ -1422,9 +1394,8 @@ public class FasterNumberPicker extends LinearLayout {
         int viewHeight = getHeight();
         int viewWidth = getWidth();
         int hashCode = Arrays.hashCode(new int[] {
-        		Arrays.hashCode(selectorIndices),
-        		mInputText.getVisibility(),
-        		viewHeight});
+        		mMinValue,
+        		mMaxValue});
         if (hashCode != lastHashCode) {
         	Log.i(getClass().getName(), "Redrawing, params: " + mInputText.getVisibility() + ", " + viewHeight);
         	Log.i(getClass().getName(), "bounds: " + origBounds.top + ", " + origBounds.bottom);
@@ -1433,28 +1404,38 @@ public class FasterNumberPicker extends LinearLayout {
         	paint.setAlpha(255);
         	y = mSelectorElementHeight;
         	lastHashCode = hashCode;
+        	int bitmapHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
         	if (saved == null
-        			|| viewHeight + mSelectorElementHeight != saved.getHeight()) {
+        			|| bitmapHeight != saved.getHeight()) {
             	saved = Bitmap.createBitmap(viewWidth,
-            			viewHeight + mSelectorElementHeight * 2, Config.ARGB_8888);
+            			bitmapHeight, Config.ARGB_8888);
         	} else {
         		saved.eraseColor(Color.TRANSPARENT);
         	}
         	Canvas newCanvas = new Canvas(saved);
-	        for (int i = 0; i < selectorIndices.length; i++) {
-	            int selectorIndex = selectorIndices[i];
-	            String scrollSelectorValue = mSelectorIndexToStringCache.get(selectorIndex);
+	        for (int i = mMinValue; i <= mMaxValue; i++) {
+	        	ensureCachedScrollSelectorValue(i);
+	            String scrollSelectorValue = mSelectorIndexToStringCache.get(i);
 	            // Do not draw the middle item if input is visible since the input is shown only
 	            // if the wheel is static and it covers the middle item. Otherwise, if the user
 	            // starts editing the text via the IME he may see a dimmed version of the old
 	            // value intermixed with the new one.
-	            if (i != SELECTOR_MIDDLE_ITEM_INDEX || mInputText.getVisibility() != VISIBLE) {
+	            //if (i != SELECTOR_MIDDLE_ITEM_INDEX || mInputText.getVisibility() != VISIBLE) {
 	                newCanvas.drawText(scrollSelectorValue, x, y, paint);
-	            }
+	            //}
 	            y += mSelectorElementHeight;
 	        }
         }
-        canvas.drawBitmap(saved, 0, mCurrentScrollOffset - mSelectorElementHeight, mSelectorWheelPaint);
+        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
+        canvas.drawBitmap(saved, 0, offset, mSelectorWheelPaint);
+        if (mWrapSelectorWheel && offset + saved.getHeight() < canvas.getHeight()) {
+            canvas.drawBitmap(saved, 0, offset + saved.getHeight(), mSelectorWheelPaint);
+        }
+        if (mInputText.getVisibility() == VISIBLE) {
+        	Paint paint = new Paint(mSelectorWheelPaint);
+        	paint.setColor(0xFF000000);
+        	canvas.drawRect(new Rect(0, mSelectorElementHeight * 2, getWidth(), mSelectorElementHeight * 3), paint);
+        }
 
         // draw the selection dividers (only if scrolling and drawable specified)
         if (mSelectionDivider != null) {

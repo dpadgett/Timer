@@ -28,6 +28,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
@@ -1433,7 +1435,8 @@ public class FasterNumberPicker extends LinearLayout {
         }
         if (mInputText.getVisibility() == VISIBLE) {
         	Paint paint = new Paint(mSelectorWheelPaint);
-        	paint.setColor(0xFF000000);
+        	paint.setColor(0x00000000);
+        	paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         	canvas.drawRect(new Rect(0, mSelectorElementHeight * 2, getWidth(), mSelectorElementHeight * 3), paint);
         }
 

@@ -16,7 +16,11 @@
 
 package org.dpadgett.widget;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -31,6 +35,7 @@ import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Xfermode;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -1185,6 +1190,7 @@ public class FasterNumberPicker extends LinearLayout {
      *
      * @param wrapSelectorWheel Whether to wrap.
      */
+    //TODO(dpadgett): this is a bit broken, seems to get stuck at the extremities
     public void setWrapSelectorWheel(boolean wrapSelectorWheel) {
         if (wrapSelectorWheel && (mMaxValue - mMinValue) < mSelectorIndices.length) {
             throw new IllegalStateException("Range less than selector items count.");
@@ -1372,7 +1378,7 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private int lastHashCode = 0;
-	private Bitmap saved;
+	private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
     @Override
     protected void onDraw(Canvas canvas) {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
@@ -1395,7 +1401,11 @@ public class FasterNumberPicker extends LinearLayout {
         int[] selectorIndices = mSelectorIndices;
         int viewHeight = getHeight();
         int viewWidth = getWidth();
-        int hashCode = Arrays.hashCode(new int[] {
+
+        int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
+    	int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
+
+    	int hashCode = Arrays.hashCode(new int[] {
         		mMinValue,
         		mMaxValue});
         if (hashCode != lastHashCode) {
@@ -1404,40 +1414,65 @@ public class FasterNumberPicker extends LinearLayout {
         	// this is applied when the bitmap is drawn, too
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
-        	y = mSelectorElementHeight;
         	lastHashCode = hashCode;
-        	int bitmapHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
-        	if (saved == null
-        			|| bitmapHeight != saved.getHeight()) {
-            	saved = Bitmap.createBitmap(viewWidth,
-            			bitmapHeight, Config.ARGB_8888);
-        	} else {
-        		saved.eraseColor(Color.TRANSPARENT);
+        	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
+        	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
+        		int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
+        		Bitmap savedFrame = saved.get(idx);
+	        	if (savedFrame == null
+	        			|| height != savedFrame.getHeight()) {
+	            	savedFrame = Bitmap.createBitmap(viewWidth,
+	            			height, Config.ARGB_8888);
+	            	saved.put(idx, savedFrame);
+	        	} else {
+	        		savedFrame.eraseColor(Color.TRANSPARENT);
+	        	}
         	}
-        	Canvas newCanvas = new Canvas(saved);
-	        for (int i = mMinValue; i <= mMaxValue; i++) {
-	        	ensureCachedScrollSelectorValue(i);
-	            String scrollSelectorValue = mSelectorIndexToStringCache.get(i);
-	            // Do not draw the middle item if input is visible since the input is shown only
-	            // if the wheel is static and it covers the middle item. Otherwise, if the user
-	            // starts editing the text via the IME he may see a dimmed version of the old
-	            // value intermixed with the new one.
-	            //if (i != SELECTOR_MIDDLE_ITEM_INDEX || mInputText.getVisibility() != VISIBLE) {
+        	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
+        		y = mSelectorElementHeight;
+	        	Canvas newCanvas = new Canvas(saved.get(idx));
+		        for (int i = mMinValue + itemsPerBitmap * idx; i <= Math.min(mMaxValue, mMinValue + itemsPerBitmap * (idx + 1) - 1); i++) {
+		        	ensureCachedScrollSelectorValue(i);
+		            String scrollSelectorValue = mSelectorIndexToStringCache.get(i);
 	                newCanvas.drawText(scrollSelectorValue, x, y, paint);
-	            //}
-	            y += mSelectorElementHeight;
+		            y += mSelectorElementHeight;
+		        }
+        	}
+        }
+
+        // offset for the 0th bitmap
+        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
+        // this is a bit inefficient
+        if (mWrapSelectorWheel) {
+	        for(int idx = 0;
+	        		offset < getHeight();
+	        		offset += saved.get(idx).getHeight(), idx = (idx + 1) % saved.size()) {
+	        	int top = offset;
+	        	int bottom = offset + saved.get(idx).getHeight();
+	        	if (!(bottom < 0 || top > getHeight())) {
+	        		canvas.drawBitmap(saved.get(idx), 0, offset, mSelectorWheelPaint);
+	        	}
+	        }
+        } else {
+	        for(int idx = 0;
+	        		offset < getHeight() && idx < saved.size();
+	        		offset += saved.get(idx).getHeight(), idx++) {
+	        	int top = offset;
+	        	int bottom = offset + saved.get(idx).getHeight();
+	        	if (!(bottom < 0 || top > getHeight())) {
+	        		canvas.drawBitmap(saved.get(idx), 0, offset, mSelectorWheelPaint);
+	        	}
 	        }
         }
-        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
-        canvas.drawBitmap(saved, 0, offset, mSelectorWheelPaint);
-        if (mWrapSelectorWheel && offset + saved.getHeight() < canvas.getHeight()) {
-            canvas.drawBitmap(saved, 0, offset + saved.getHeight(), mSelectorWheelPaint);
-        }
+        //if (mWrapSelectorWheel && offset + saved.getHeight() < canvas.getHeight()) {
+        //    canvas.drawBitmap(saved, 0, offset + saved.getHeight(), mSelectorWheelPaint);
+        //}
         if (mInputText.getVisibility() == VISIBLE) {
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setColor(0x00000000);
-        	paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        	canvas.drawRect(new Rect(0, mSelectorElementHeight * 2, getWidth(), mSelectorElementHeight * 3), paint);
+        	paint.setAlpha(0);
+        	paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST));
+        	canvas.drawRect(new Rect(0, mSelectorElementHeight * 3, getWidth(), mSelectorElementHeight * 4), paint);
         }
 
         // draw the selection dividers (only if scrolling and drawable specified)

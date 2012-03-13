@@ -1514,6 +1514,10 @@ public class FasterNumberPicker extends LinearLayout {
 	        int offset = currentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
 	        // this is a bit inefficient
 	        if (mWrapSelectorWheel) {
+		        if (offset > 0) {
+		        	// in this case we would be missing parts on the top, so ensure they are drawn.
+		        	offset -= (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
+		        }
 		        for(int idx = 0;
 		        		offset < getHeight();
 		        		offset += saved.get(idx).getHeight(), idx = (idx + 1) % saved.size()) {

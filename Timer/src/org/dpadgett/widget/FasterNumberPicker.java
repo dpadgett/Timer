@@ -850,7 +850,8 @@ public class FasterNumberPicker extends LinearLayout {
         //        heightMeasureSpec);
         int heightSize = (mTextSize + 4) * 5;
         if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST) {
-        	heightSize = Math.min(heightSize, MeasureSpec.getSize(heightMeasureSpec));
+        	int maxSize = MeasureSpec.getSize(heightMeasureSpec);
+        	heightSize = Math.min(heightSize, maxSize - (maxSize % (mTextSize + 4)));
         }
     	Log.i(getClass().getName(), this + "Actual height measure: " + heightSize);
         setMeasuredDimension(widthSize, heightSize);

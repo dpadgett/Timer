@@ -16,10 +16,8 @@
 
 package org.dpadgett.widget;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
@@ -35,7 +33,6 @@ import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.Xfermode;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -49,9 +46,6 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.LayoutInflater.Filter;
-import android.view.View.OnDragListener;
-import android.view.View.OnGenericMotionListener;
-import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -1378,9 +1372,12 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private int lastHashCode = 0;
+    private int lastMetaHashCode = 0;
 	private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
+	private Bitmap metaSaved;
     @Override
     protected void onDraw(Canvas canvas) {
+    	long startTime = System.currentTimeMillis();
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
             return;
         }
@@ -1438,60 +1435,83 @@ public class FasterNumberPicker extends LinearLayout {
 		            y += mSelectorElementHeight;
 		        }
         	}
+        	
+        	// re-implementation of the fading edge effect, since it's horribly slow
         }
 
-        // offset for the 0th bitmap
-        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
-        // this is a bit inefficient
-        if (mWrapSelectorWheel) {
-	        for(int idx = 0;
-	        		offset < getHeight();
-	        		offset += saved.get(idx).getHeight(), idx = (idx + 1) % saved.size()) {
-	        	int top = offset;
-	        	int bottom = offset + saved.get(idx).getHeight();
-	        	if (!(bottom < 0 || top > getHeight())) {
-	        		canvas.drawBitmap(saved.get(idx), 0, offset, mSelectorWheelPaint);
-	        	}
-	        }
-        } else {
-	        for(int idx = 0;
-	        		offset < getHeight() && idx < saved.size();
-	        		offset += saved.get(idx).getHeight(), idx++) {
-	        	int top = offset;
-	        	int bottom = offset + saved.get(idx).getHeight();
-	        	if (!(bottom < 0 || top > getHeight())) {
-	        		canvas.drawBitmap(saved.get(idx), 0, offset, mSelectorWheelPaint);
-	        	}
-	        }
-        }
-        //if (mWrapSelectorWheel && offset + saved.getHeight() < canvas.getHeight()) {
-        //    canvas.drawBitmap(saved, 0, offset + saved.getHeight(), mSelectorWheelPaint);
-        //}
-        if (mInputText.getVisibility() == VISIBLE) {
+
+        // second layer of caching
+    	int metaHashCode = Arrays.hashCode(new int[] {
+        		mCurrentScrollOffset,
+        		mInputText.getVisibility(),
+        		mWrapSelectorWheel ? 0 : 1});
+    	if (metaHashCode != lastMetaHashCode) {
+    		lastMetaHashCode = metaHashCode;
+    		Log.i(getClass().getName(), "Redrawing metacache with parameter " + mCurrentScrollOffset);
+    		if (metaSaved == null) {
+    			metaSaved = Bitmap.createBitmap(getWidth(),
+            			getHeight(), Config.ARGB_8888);
+    		} else {
+    			metaSaved.eraseColor(Color.TRANSPARENT);
+    		}
+        	// this is applied when the bitmap is drawn, too
         	Paint paint = new Paint(mSelectorWheelPaint);
-        	paint.setColor(0x00000000);
-        	paint.setAlpha(0);
-        	paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST));
-        	canvas.drawRect(new Rect(0, mSelectorElementHeight * 3, getWidth(), mSelectorElementHeight * 4), paint);
-        }
-
-        // draw the selection dividers (only if scrolling and drawable specified)
-        if (mSelectionDivider != null) {
-            // draw the top divider
-            int topOfTopDivider =
-                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2;
-            int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
-            mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
-            mSelectionDivider.draw(canvas);
-
-            // draw the bottom divider
-            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight;
-            int bottomOfBottomDivider = bottomOfTopDivider + mSelectorElementHeight;
-            mSelectionDivider.setBounds(0, topOfBottomDivider, getRight(), bottomOfBottomDivider);
-            mSelectionDivider.draw(canvas);
-        }
-
+        	paint.setAlpha(255);
+    		Canvas metaCanvas = new Canvas(metaSaved);
+	        // offset for the 0th bitmap
+	        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
+	        // this is a bit inefficient
+	        if (mWrapSelectorWheel) {
+		        for(int idx = 0;
+		        		offset < getHeight();
+		        		offset += saved.get(idx).getHeight(), idx = (idx + 1) % saved.size()) {
+		        	int top = offset;
+		        	int bottom = offset + saved.get(idx).getHeight();
+		        	if (!(bottom < 0 || top > getHeight())) {
+		        		metaCanvas.drawBitmap(saved.get(idx), 0, offset, paint);
+		        	}
+		        }
+	        } else {
+		        for(int idx = 0;
+		        		offset < getHeight() && idx < saved.size();
+		        		offset += saved.get(idx).getHeight(), idx++) {
+		        	int top = offset;
+		        	int bottom = offset + saved.get(idx).getHeight();
+		        	if (!(bottom < 0 || top > getHeight())) {
+		        		metaCanvas.drawBitmap(saved.get(idx), 0, offset, paint);
+		        	}
+		        }
+	        }
+	        if (mInputText.getVisibility() == VISIBLE) {
+	        	Paint clearPaint = new Paint(mSelectorWheelPaint);
+	        	clearPaint.setColor(0x00000000);
+	        	clearPaint.setAlpha(0);
+	        	clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+	        	metaCanvas.drawRect(new Rect(0, mSelectorElementHeight * 3, getWidth(), mSelectorElementHeight * 4), clearPaint);
+	        }
+	
+	        // draw the selection dividers (only if scrolling and drawable specified)
+	        if (mSelectionDivider != null) {
+	            // draw the top divider
+	            int topOfTopDivider =
+	                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2;
+	            int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
+	            mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
+	            mSelectionDivider.draw(metaCanvas);
+	
+	            // draw the bottom divider
+	            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight;
+	            int bottomOfBottomDivider = bottomOfTopDivider + mSelectorElementHeight;
+	            mSelectionDivider.setBounds(0, topOfBottomDivider, getRight(), bottomOfBottomDivider);
+	            mSelectionDivider.draw(metaCanvas);
+	        }
+    	}
+    	
+    	canvas.drawBitmap(metaSaved, 0, 0, mSelectorWheelPaint);
+    	
         canvas.restoreToCount(restoreCount);
+        long endTime = System.currentTimeMillis();
+    	Log.i(getClass().getName(), "Drawing took " + (endTime - startTime) + " ms");
     }
 
     @Override
@@ -1696,8 +1716,8 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private void initializeFadingEdges() {
-        setVerticalFadingEdgeEnabled(true);
-        setFadingEdgeLength((getBottom() - getTop() - mTextSize) / 2);
+        //setVerticalFadingEdgeEnabled(true);
+        //setFadingEdgeLength((getBottom() - getTop() - mTextSize) / 2);
     }
 
     /**

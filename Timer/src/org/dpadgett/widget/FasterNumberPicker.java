@@ -28,11 +28,14 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -85,7 +88,7 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * The index of the middle selector item.
      */
-    private static final int SELECTOR_MIDDLE_ITEM_INDEX = 3;
+    private int SELECTOR_MIDDLE_ITEM_INDEX = 3;
 
     /**
      * The coefficient by which to adjust (divide) the max fling velocity.
@@ -298,7 +301,7 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * The selector indices whose value are show by the selector.
      */
-    private final int[] mSelectorIndices = new int[] {
+    private int[] mSelectorIndices = new int[] {
     		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
     		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
     };
@@ -458,6 +461,51 @@ public class FasterNumberPicker extends LinearLayout {
 
 	private boolean mIsLongPressed = false;
 
+	private ScrollabilityCache mScrollCache;
+
+    /**
+     * <p>ScrollabilityCache holds various fields used by a View when scrolling
+     * is supported. This avoids keeping too many unused fields in most
+     * instances of View.</p>
+     */
+    private static class ScrollabilityCache {
+
+        public int fadingEdgeLength;
+
+        public final Paint paint;
+        public final Matrix matrix;
+        public Shader shader;
+
+        private int mLastColor;
+
+        public ScrollabilityCache(ViewConfiguration configuration) {
+            fadingEdgeLength = configuration.getScaledFadingEdgeLength();
+
+            paint = new Paint();
+            matrix = new Matrix();
+            // use use a height of 1, and then wack the matrix each time we
+            // actually use it.
+            shader = new LinearGradient(0, 0, 0, 1, 0xFF000000, 0, Shader.TileMode.CLAMP);
+
+            paint.setShader(shader);
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+        }
+
+        public void setFadeColor(int color) {
+            if (color != 0 && color != mLastColor) {
+                mLastColor = color;
+                color |= 0xFF000000;
+
+                shader = new LinearGradient(0, 0, 0, 1, color | 0xFF000000,
+                        color & 0x00FFFFFF, Shader.TileMode.CLAMP);
+
+                paint.setShader(shader);
+                // Restore the default transfer mode (src_over)
+                paint.setXfermode(null);
+            }
+        }
+    }
+	
     /**
      * Interface to listen for changes of the current value.
      */
@@ -571,10 +619,8 @@ public class FasterNumberPicker extends LinearLayout {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
-		Log.i(getClass().getName(), "Attrs: " + Arrays.toString(attrsArray));
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 attrsArray /* R.styleable.NumberPicker */, defStyle, 0);
-        Log.i(getClass().getName(), "TypedAttrs: " + attributesArray);
         mSolidColor = attributesArray.getColor(Resources.getSystem().getIdentifier("NumberPicker_solidColor", "styleable", "android"), 0);
         mFlingable = attributesArray.getBoolean(Resources.getSystem().getIdentifier("NumberPicker_flingable", "styleable", "android"), true);
         mSelectionDivider = attributesArray.getDrawable(Resources.getSystem().getIdentifier("NumberPicker_selectionDivider", "styleable", "android"));
@@ -747,13 +793,16 @@ public class FasterNumberPicker extends LinearLayout {
            //      hideInputControls();
            // }
         }
+        
+        mScrollCache = new ScrollabilityCache(ViewConfiguration.get(context));
+        mScrollCache.fadingEdgeLength = (getBottom() - getTop() - mTextSize) / 2;
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final int msrdWdth = getMeasuredWidth();
         final int msrdHght = getMeasuredHeight();
-
+        
         // Increment button at the top.
         final int inctBtnMsrdWdth = mIncrementButton.getMeasuredWidth();
         final int incrBtnLeft = (msrdWdth - inctBtnMsrdWdth) / 2;
@@ -789,7 +838,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	Log.i(getClass().getName(), "Height measure spec: " + heightMeasureSpec);
+    	Log.i(getClass().getName(), "Height measure spec: " + MeasureSpec.toString(heightMeasureSpec));
         // Try greedily to fit the max width and height.
         final int newWidthMeasureSpec = makeMeasureSpec(widthMeasureSpec, mMaxWidth);
         final int newHeightMeasureSpec = makeMeasureSpec(heightMeasureSpec, mMaxHeight);
@@ -799,8 +848,11 @@ public class FasterNumberPicker extends LinearLayout {
                 widthMeasureSpec);
         //final int heightSize = resolveSizeAndStateRespectingMinSize(mMinHeight, getMeasuredHeight(),
         //        heightMeasureSpec);
-        final int heightSize = (mTextSize + 4) * 5;
-    	Log.i(getClass().getName(), "Actual height measure: " + heightSize);
+        int heightSize = (mTextSize + 4) * 5;
+        if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST) {
+        	heightSize = Math.min(heightSize, MeasureSpec.getSize(heightMeasureSpec));
+        }
+    	Log.i(getClass().getName(), this + "Actual height measure: " + heightSize);
         setMeasuredDimension(widthSize, heightSize);
     }
 
@@ -1377,7 +1429,6 @@ public class FasterNumberPicker extends LinearLayout {
 	private Bitmap metaSaved;
     @Override
     protected void onDraw(Canvas canvas) {
-    	long startTime = System.currentTimeMillis();
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
             return;
         }
@@ -1406,8 +1457,6 @@ public class FasterNumberPicker extends LinearLayout {
         		mMinValue,
         		mMaxValue});
         if (hashCode != lastHashCode) {
-        	Log.i(getClass().getName(), "Redrawing, params: " + mInputText.getVisibility() + ", " + viewHeight);
-        	Log.i(getClass().getName(), "bounds: " + origBounds.top + ", " + origBounds.bottom);
         	// this is applied when the bitmap is drawn, too
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
@@ -1435,8 +1484,6 @@ public class FasterNumberPicker extends LinearLayout {
 		            y += mSelectorElementHeight;
 		        }
         	}
-        	
-        	// re-implementation of the fading edge effect, since it's horribly slow
         }
 
 
@@ -1447,7 +1494,6 @@ public class FasterNumberPicker extends LinearLayout {
         		mWrapSelectorWheel ? 0 : 1});
     	if (metaHashCode != lastMetaHashCode) {
     		lastMetaHashCode = metaHashCode;
-    		Log.i(getClass().getName(), "Redrawing metacache with parameter " + mCurrentScrollOffset);
     		if (metaSaved == null) {
     			metaSaved = Bitmap.createBitmap(getWidth(),
             			getHeight(), Config.ARGB_8888);
@@ -1487,31 +1533,80 @@ public class FasterNumberPicker extends LinearLayout {
 	        	clearPaint.setColor(0x00000000);
 	        	clearPaint.setAlpha(0);
 	        	clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-	        	metaCanvas.drawRect(new Rect(0, mSelectorElementHeight * 3, getWidth(), mSelectorElementHeight * 4), clearPaint);
+	        	metaCanvas.drawRect(new Rect(0,
+	        			mSelectorElementHeight * SELECTOR_MIDDLE_ITEM_INDEX,
+	        			getWidth(),
+	        			mSelectorElementHeight * (SELECTOR_MIDDLE_ITEM_INDEX + 1)), clearPaint);
 	        }
-	
-	        // draw the selection dividers (only if scrolling and drawable specified)
-	        if (mSelectionDivider != null) {
-	            // draw the top divider
-	            int topOfTopDivider =
-	                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2;
-	            int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
-	            mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
-	            mSelectionDivider.draw(metaCanvas);
-	
-	            // draw the bottom divider
-	            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight;
-	            int bottomOfBottomDivider = bottomOfTopDivider + mSelectorElementHeight;
-	            mSelectionDivider.setBounds(0, topOfBottomDivider, getRight(), bottomOfBottomDivider);
-	            mSelectionDivider.draw(metaCanvas);
-	        }
+
+        	// re-implementation of the fading edge effect, since it's horribly slow
+            final int left = 0;
+            final int top = 0;
+            final int right = getWidth();
+            final int bottom = getHeight();
+
+            boolean drawTop = false;
+            boolean drawBottom = false;
+
+            float topFadeStrength = 0.0f;
+            float bottomFadeStrength = 0.0f;
+
+            mScrollCache.fadingEdgeLength = (getHeight() - mTextSize) / 2;
+            final ScrollabilityCache scrollabilityCache = mScrollCache;
+            final float fadeHeight = scrollabilityCache.fadingEdgeLength;
+            int length = (int) fadeHeight;
+            
+            // clip the fade length if top and bottom fades overlap
+            // overlapping fades produce odd-looking artifacts
+            if ((top + length > bottom - length)) {
+                length = (bottom - top) / 2;
+            }
+
+            topFadeStrength = 1.0f;
+            drawTop = topFadeStrength * fadeHeight > 1.0f;
+            bottomFadeStrength = 1.0f;
+            drawBottom = bottomFadeStrength * fadeHeight > 1.0f;
+
+            final Paint p = scrollabilityCache.paint;
+            final Matrix matrix = scrollabilityCache.matrix;
+            final Shader fade = scrollabilityCache.shader;
+            
+            if (drawTop) {
+                matrix.setScale(1, fadeHeight * topFadeStrength);
+                matrix.postTranslate(left, top);
+                fade.setLocalMatrix(matrix);
+                metaCanvas.drawRect(left, top, right, top + length, p);
+            }
+
+            if (drawBottom) {
+                matrix.setScale(1, fadeHeight * bottomFadeStrength);
+                matrix.postRotate(180);
+                matrix.postTranslate(left, bottom);
+                fade.setLocalMatrix(matrix);
+                metaCanvas.drawRect(left, bottom - length, right, bottom, p);
+            }
     	}
     	
     	canvas.drawBitmap(metaSaved, 0, 0, mSelectorWheelPaint);
     	
+    	
+        // draw the selection dividers (only if scrolling and drawable specified)
+        if (mSelectionDivider != null) {
+            // draw the top divider
+            int topOfTopDivider =
+                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2;
+            int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
+            mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
+            mSelectionDivider.draw(canvas);
+
+            // draw the bottom divider
+            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight;
+            int bottomOfBottomDivider = bottomOfTopDivider + mSelectorElementHeight;
+            mSelectionDivider.setBounds(0, topOfBottomDivider, getRight(), bottomOfBottomDivider);
+            mSelectionDivider.draw(canvas);
+        }
+
         canvas.restoreToCount(restoreCount);
-        long endTime = System.currentTimeMillis();
-    	Log.i(getClass().getName(), "Drawing took " + (endTime - startTime) + " ms");
     }
 
     @Override
@@ -1700,11 +1795,23 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private void initializeSelectorWheel() {
+        int height = getBottom() - getTop();
+        // mSelectorTextGapHeight must be > 0.  i.e. we should not have overlapping texts.
+        int numTexts = height / mTextSize;
+        // must be odd
+        if (numTexts % 2 == 0) {
+        	numTexts--;
+        }
+        SELECTOR_MIDDLE_ITEM_INDEX = numTexts / 2;
+        
+        //TODO(dpadgett): this is dumb and should be changed now that we're drawing differently.
+        mSelectorIndices = new int[numTexts + 2];
+
         initializeSelectorWheelIndices();
-        int[] selectorIndices = mSelectorIndices;
-        int totalTextHeight = (selectorIndices.length - 2) * mTextSize;
+
+        int totalTextHeight = (numTexts) * mTextSize;
         float totalTextGapHeight = (getBottom() - getTop()) - totalTextHeight;
-        float textGapCount = selectorIndices.length - 1;
+        float textGapCount = numTexts - 1;
         mSelectorTextGapHeight = (int) (totalTextGapHeight / textGapCount + 0.5f);
         mSelectorElementHeight = mTextSize + mSelectorTextGapHeight;
         // Ensure that the middle item is positioned the same as the text in mInputText

@@ -1428,6 +1428,7 @@ public class FasterNumberPicker extends LinearLayout {
     private int lastMetaHashCode = 0;
 	private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
 	private Bitmap metaSaved;
+	private int bumpOffset = 0;
     @Override
     protected void onDraw(Canvas canvas) {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
@@ -1475,8 +1476,9 @@ public class FasterNumberPicker extends LinearLayout {
 	        		savedFrame.eraseColor(Color.TRANSPARENT);
 	        	}
         	}
+        	bumpOffset = mSelectorTextGapHeight;
         	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
-        		y = mSelectorElementHeight;
+        		y = mSelectorElementHeight - bumpOffset;
 	        	Canvas newCanvas = new Canvas(saved.get(idx));
 		        for (int i = mMinValue + itemsPerBitmap * idx; i <= Math.min(mMaxValue, mMinValue + itemsPerBitmap * (idx + 1) - 1); i++) {
 		        	ensureCachedScrollSelectorValue(i);
@@ -1505,8 +1507,11 @@ public class FasterNumberPicker extends LinearLayout {
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
     		Canvas metaCanvas = new Canvas(metaSaved);
+    		
+    		final int currentScrollOffset = mCurrentScrollOffset + bumpOffset;
+    		
 	        // offset for the 0th bitmap
-	        int offset = mCurrentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
+	        int offset = currentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
 	        // this is a bit inefficient
 	        if (mWrapSelectorWheel) {
 		        for(int idx = 0;

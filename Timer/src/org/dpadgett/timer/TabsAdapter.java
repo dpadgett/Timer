@@ -43,7 +43,7 @@ public class TabsAdapter extends FragmentPagerAdapter
             clss = _class;
             args = _args;
         }
-    }
+	}
 
     public TabsAdapter(Activity activity, ViewPager pager) {
         super(activity.getFragmentManager());
@@ -95,7 +95,7 @@ public class TabsAdapter extends FragmentPagerAdapter
     	}
     }
 
-    @Override
+	@Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
     }
 

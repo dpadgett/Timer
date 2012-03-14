@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -96,7 +97,9 @@ public class WorldClockFragment extends Fragment {
 		Drawable divider = new ListView(context).getDivider();
 		((LinearLayout) rootView).setDividerDrawable(divider);
 		
-        return rootView;
+		Log.i(getClass().getName(), "onCreateView finished");
+
+		return rootView;
     }
 
 	private void newClockDialog(final int position) {

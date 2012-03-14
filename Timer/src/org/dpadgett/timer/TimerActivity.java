@@ -50,6 +50,7 @@ public class TimerActivity extends Activity {
         
         ViewPager mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.viewPager);
+        mViewPager.setOffscreenPageLimit(Tab.values().length);
         setContentView(mViewPager);
 
         final ActionBar bar = getActionBar();
@@ -61,12 +62,15 @@ public class TimerActivity extends Activity {
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
 	                tab.getFragmentClass(), null);
+	        mViewPager.setCurrentItem(tab.ordinal(), false);
         }
 
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
         if (prefs.contains("tab")) {
+        	mViewPager.setCurrentItem(prefs.getInt("tab", 0), false);
             bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
         } else if (savedInstanceState != null) {
+        	mViewPager.setCurrentItem(savedInstanceState.getInt("tab", 0), false);
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
 

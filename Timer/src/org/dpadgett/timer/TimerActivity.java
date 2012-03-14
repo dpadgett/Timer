@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 
 public class TimerActivity extends Activity {
@@ -42,13 +43,14 @@ public class TimerActivity extends Activity {
 	
 	private AlertDialog alarmDialog;
 	private TabsAdapter mTabsAdapter;
+	private Handler handler = new Handler();
 
 	/** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        ViewPager mViewPager = new ViewPager(this);
+        final ViewPager mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.viewPager);
         mViewPager.setOffscreenPageLimit(Tab.values().length);
         setContentView(mViewPager);
@@ -58,6 +60,14 @@ public class TimerActivity extends Activity {
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);
 
+        SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
+        int tabToRestore = 0;
+        if (prefs.contains("tab")) {
+        	tabToRestore = prefs.getInt("tab", 0);
+        } else if (savedInstanceState != null) {
+        	tabToRestore = savedInstanceState.getInt("tab", 0);
+        }
+
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
@@ -65,14 +75,8 @@ public class TimerActivity extends Activity {
 	        mViewPager.setCurrentItem(tab.ordinal(), false);
         }
 
-        SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        if (prefs.contains("tab")) {
-        	mViewPager.setCurrentItem(prefs.getInt("tab", 0), false);
-            bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
-        } else if (savedInstanceState != null) {
-        	mViewPager.setCurrentItem(savedInstanceState.getInt("tab", 0), false);
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
-        }
+    	mViewPager.setCurrentItem(tabToRestore, false);
+        bar.setSelectedNavigationItem(tabToRestore);
 
 		alarmDialog = new AlertDialog.Builder(this)
 				.setTitle("Countdown timer finished")

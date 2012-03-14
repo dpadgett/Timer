@@ -792,6 +792,7 @@ public class FasterNumberPicker extends LinearLayout {
         mWrapSelectorWheel = true;
     }
 
+    private int lastSizeHash = 0;
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final int msrdWdth = getMeasuredWidth();
@@ -822,7 +823,9 @@ public class FasterNumberPicker extends LinearLayout {
         final int decrBtnBottom = msrdHght;
         mDecrementButton.layout(decrBtnLeft, decrBtnTop, decrBtnRight, decrBtnBottom);
 
-        if (!mScrollWheelAndFadingEdgesInitialized) {
+        int sizeHash = Arrays.hashCode(new int[] {msrdWdth, msrdHght, mInputText.getBaseline() + mInputText.getTop()});
+        if (!mScrollWheelAndFadingEdgesInitialized || sizeHash != lastSizeHash) {
+        	lastSizeHash = sizeHash;
             mScrollWheelAndFadingEdgesInitialized = true;
             // need to do all this when we know our size
             initializeSelectorWheel();
@@ -1448,7 +1451,8 @@ public class FasterNumberPicker extends LinearLayout {
 
     	int hashCode = Arrays.hashCode(new int[] {
         		mMinValue,
-        		mMaxValue});
+        		mMaxValue,
+        		mSelectorElementHeight});
         if (hashCode != lastHashCode) {
         	// this is applied when the bitmap is drawn, too
         	Paint paint = new Paint(mSelectorWheelPaint);
@@ -1485,7 +1489,8 @@ public class FasterNumberPicker extends LinearLayout {
     	int metaHashCode = Arrays.hashCode(new int[] {
         		mCurrentScrollOffset,
         		mInputText.getVisibility(),
-        		mWrapSelectorWheel ? 0 : 1});
+        		mWrapSelectorWheel ? 0 : 1,
+        		hashCode});
     	if (metaHashCode != lastMetaHashCode) {
     		lastMetaHashCode = metaHashCode;
     		if (metaSaved == null) {
@@ -1798,7 +1803,6 @@ public class FasterNumberPicker extends LinearLayout {
         	numTexts--;
         }
         mSelectorMiddleItemIndex = numTexts / 2;
-        int totalHeight = mSelectorElementHeight * (mMaxValue - mMinValue + 1);
         
         initializeSelectorWheelIndices();
 
@@ -1812,6 +1816,9 @@ public class FasterNumberPicker extends LinearLayout {
         mInitialScrollOffset = editTextTextPosition - mSelectorElementHeight;
         mCurrentScrollOffset = mInitialScrollOffset;
         updateInputTextView();
+        
+        // force scroll wheel refresh
+        lastMetaHashCode = 0;
     }
 
     private void initializeFadingEdges() {

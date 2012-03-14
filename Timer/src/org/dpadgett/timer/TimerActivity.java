@@ -72,10 +72,10 @@ public class TimerActivity extends Activity {
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
 	                tab.getFragmentClass(), null);
-	        mViewPager.setCurrentItem(tab.ordinal(), false);
+	        // mViewPager.setCurrentItem(tab.ordinal(), false);
         }
 
-    	mViewPager.setCurrentItem(tabToRestore, false);
+    	// mViewPager.setCurrentItem(tabToRestore, false);
         bar.setSelectedNavigationItem(tabToRestore);
 
 		alarmDialog = new AlertDialog.Builder(this)

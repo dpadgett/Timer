@@ -16,12 +16,14 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -97,7 +99,10 @@ public class WorldClockFragment extends Fragment {
 		Drawable divider = new ListView(context).getDivider();
 		((LinearLayout) rootView).setDividerDrawable(divider);
 		
-		Log.i(getClass().getName(), "onCreateView finished");
+		// forcefully pre-render content so it is cached
+		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+		rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
+		rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
 
 		return rootView;
     }

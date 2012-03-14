@@ -5,9 +5,12 @@ import org.dpadgett.widget.TimerTextView;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -107,6 +110,11 @@ public class StopwatchFragment extends Fragment {
         });
 
     	restoreState();
+
+		// forcefully pre-render content so it is cached
+		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+		rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
+		rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
 
         return rootView;
     }

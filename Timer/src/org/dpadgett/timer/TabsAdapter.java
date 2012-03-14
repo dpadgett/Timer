@@ -62,6 +62,8 @@ public class TabsAdapter extends FragmentPagerAdapter
         tab.setTabListener(this);
         mTabs.add(info);
         mActionBar.addTab(tab);
+        // instantiateItem(mViewPager, tab.getPosition());
+        // finishUpdate(mViewPager);
         notifyDataSetChanged();
     }
 

@@ -88,7 +88,7 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * The index of the middle selector item.
      */
-    private int SELECTOR_MIDDLE_ITEM_INDEX = 3;
+    private int mSelectorMiddleItemIndex = 3;
 
     /**
      * The coefficient by which to adjust (divide) the max fling velocity.
@@ -297,14 +297,6 @@ public class FasterNumberPicker extends LinearLayout {
      * Cache for the string representation of selector indices.
      */
     private final SparseArray<String> mSelectorIndexToStringCache = new SparseArray<String>();
-
-    /**
-     * The selector indices whose value are show by the selector.
-     */
-    private int[] mSelectorIndices = new int[] {
-    		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
-    		Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
-    };
 
     /**
      * The {@link Paint} for drawing the selector.
@@ -796,6 +788,8 @@ public class FasterNumberPicker extends LinearLayout {
         
         mScrollCache = new ScrollabilityCache(ViewConfiguration.get(context));
         mScrollCache.fadingEdgeLength = (getBottom() - getTop() - mTextSize) / 2;
+        
+        mWrapSelectorWheel = true;
     }
 
     @Override
@@ -1051,34 +1045,33 @@ public class FasterNumberPicker extends LinearLayout {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
             return;
         }
-        int[] selectorIndices = mSelectorIndices;
+        //TODO(dpadgett): fixme
         if (!mWrapSelectorWheel && y > 0
-                && selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX] <= mMinValue) {
+                && mValue <= mMinValue) {
             mCurrentScrollOffset = mInitialScrollOffset;
             return;
         }
         if (!mWrapSelectorWheel && y < 0
-                && selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX] >= mMaxValue) {
+                && mValue >= mMaxValue) {
             mCurrentScrollOffset = mInitialScrollOffset;
             return;
         }
+
         mCurrentScrollOffset += y;
-        while (mCurrentScrollOffset - mInitialScrollOffset > mSelectorTextGapHeight) {
-            mCurrentScrollOffset -= mSelectorElementHeight;
-            decrementSelectorIndices(selectorIndices);
-            changeCurrent(selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX]);
-            if (!mWrapSelectorWheel && selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX] <= mMinValue) {
-                mCurrentScrollOffset = mInitialScrollOffset;
-            }
+
+        int totalHeight = mSelectorElementHeight * (mMaxValue - mMinValue + 1);
+        mCurrentScrollOffset = mCurrentScrollOffset % totalHeight;
+        // clamp to the range (-totalHeight, 0]
+        if (mCurrentScrollOffset > 0) {
+        	mCurrentScrollOffset -= totalHeight;
         }
-        while (mCurrentScrollOffset - mInitialScrollOffset < -mSelectorTextGapHeight) {
-            mCurrentScrollOffset += mSelectorElementHeight;
-            incrementSelectorIndices(selectorIndices);
-            changeCurrent(selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX]);
-            if (!mWrapSelectorWheel && selectorIndices[SELECTOR_MIDDLE_ITEM_INDEX] >= mMaxValue) {
-                mCurrentScrollOffset = mInitialScrollOffset;
-            }
+        // the current item is the one at getHeight() / 2
+        int offsetForCurrent = mCurrentScrollOffset;
+        if (offsetForCurrent + totalHeight < getHeight() / 2) {
+        	offsetForCurrent += totalHeight;
         }
+        int current = ((getHeight() / 2) - offsetForCurrent) / mSelectorElementHeight + mMinValue;
+        changeCurrent(current);
     }
 
     @Override
@@ -1157,6 +1150,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mValue == value) {
             return;
         }
+        //TODO(dpadgett): fix wrapping for delta > 1
         if (value < mMinValue) {
             value = mWrapSelectorWheel ? mMaxValue : mMinValue;
         }
@@ -1239,7 +1233,8 @@ public class FasterNumberPicker extends LinearLayout {
      */
     //TODO(dpadgett): this is a bit broken, seems to get stuck at the extremities
     public void setWrapSelectorWheel(boolean wrapSelectorWheel) {
-        if (wrapSelectorWheel && (mMaxValue - mMinValue) < mSelectorIndices.length) {
+    	int numTexts = (getBottom() - getTop()) / mTextSize;
+        if (wrapSelectorWheel && (mMaxValue - mMinValue) < numTexts) {
             throw new IllegalStateException("Range less than selector items count.");
         }
         if (wrapSelectorWheel != mWrapSelectorWheel) {
@@ -1296,8 +1291,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mMinValue > mValue) {
             mValue = mMinValue;
         }
-        boolean wrapSelectorWheel = mMaxValue - mMinValue > mSelectorIndices.length;
-        setWrapSelectorWheel(wrapSelectorWheel);
+        setWrapSelectorWheel(mWrapSelectorWheel);
         initializeSelectorWheelIndices();
         updateInputTextView();
         tryComputeMaxWidth();
@@ -1328,8 +1322,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mMaxValue < mValue) {
             mValue = mMaxValue;
         }
-        boolean wrapSelectorWheel = mMaxValue - mMinValue > mSelectorIndices.length;
-        setWrapSelectorWheel(wrapSelectorWheel);
+        setWrapSelectorWheel(mWrapSelectorWheel);
         initializeSelectorWheelIndices();
         updateInputTextView();
         tryComputeMaxWidth();
@@ -1440,7 +1433,6 @@ public class FasterNumberPicker extends LinearLayout {
 
         final int restoreCount = canvas.save();
 
-        Rect origBounds = canvas.getClipBounds();
         //Rect clipBounds = canvas.getClipBounds();
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_SMALL) {
             //clipBounds.inset(0, mSelectorElementHeight / 2);
@@ -1448,7 +1440,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
 
         // draw the selector wheel
-        int[] selectorIndices = mSelectorIndices;
         int viewHeight = getHeight();
         int viewWidth = getWidth();
 
@@ -1511,7 +1502,7 @@ public class FasterNumberPicker extends LinearLayout {
     		final int currentScrollOffset = mCurrentScrollOffset + bumpOffset;
     		
 	        // offset for the 0th bitmap
-	        int offset = currentScrollOffset - ((selectorIndices[0] + 1) * mSelectorElementHeight);
+	        int offset = currentScrollOffset;
 	        // this is a bit inefficient
 	        if (mWrapSelectorWheel) {
 		        if (offset > 0) {
@@ -1544,9 +1535,9 @@ public class FasterNumberPicker extends LinearLayout {
 	        	clearPaint.setAlpha(0);
 	        	clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 	        	metaCanvas.drawRect(new Rect(0,
-	        			mSelectorElementHeight * SELECTOR_MIDDLE_ITEM_INDEX,
+	        			mSelectorElementHeight * mSelectorMiddleItemIndex,
 	        			getWidth(),
-	        			mSelectorElementHeight * (SELECTOR_MIDDLE_ITEM_INDEX + 1)), clearPaint);
+	        			mSelectorElementHeight * (mSelectorMiddleItemIndex + 1)), clearPaint);
 	        }
 
         	// re-implementation of the fading edge effect, since it's horribly slow
@@ -1676,15 +1667,9 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private void initializeSelectorWheelIndices() {
         mSelectorIndexToStringCache.clear();
-        int[] selectorIdices = mSelectorIndices;
         int current = getValue();
-        for (int i = 0; i < mSelectorIndices.length; i++) {
-            int selectorIndex = current + (i - SELECTOR_MIDDLE_ITEM_INDEX);
-            if (mWrapSelectorWheel) {
-                selectorIndex = getWrappedSelectorIndex(selectorIndex);
-            }
-            mSelectorIndices[i] = selectorIndex;
-            ensureCachedScrollSelectorValue(mSelectorIndices[i]);
+        for (int i = mMinValue; i < mMaxValue; i++) {
+            ensureCachedScrollSelectorValue(i);
         }
     }
 
@@ -1812,11 +1797,9 @@ public class FasterNumberPicker extends LinearLayout {
         if (numTexts % 2 == 0) {
         	numTexts--;
         }
-        SELECTOR_MIDDLE_ITEM_INDEX = numTexts / 2;
+        mSelectorMiddleItemIndex = numTexts / 2;
+        int totalHeight = mSelectorElementHeight * (mMaxValue - mMinValue + 1);
         
-        //TODO(dpadgett): this is dumb and should be changed now that we're drawing differently.
-        mSelectorIndices = new int[numTexts + 2];
-
         initializeSelectorWheelIndices();
 
         int totalTextHeight = (numTexts) * mTextSize;
@@ -1826,8 +1809,7 @@ public class FasterNumberPicker extends LinearLayout {
         mSelectorElementHeight = mTextSize + mSelectorTextGapHeight;
         // Ensure that the middle item is positioned the same as the text in mInputText
         int editTextTextPosition = mInputText.getBaseline() + mInputText.getTop();
-        mInitialScrollOffset = editTextTextPosition -
-                (mSelectorElementHeight * SELECTOR_MIDDLE_ITEM_INDEX);
+        mInitialScrollOffset = editTextTextPosition - mSelectorElementHeight;
         mCurrentScrollOffset = mInitialScrollOffset;
         updateInputTextView();
     }
@@ -2237,13 +2219,28 @@ public class FasterNumberPicker extends LinearLayout {
     class AdjustScrollerCommand implements Runnable {
         public void run() {
             mPreviousScrollerY = 0;
-            if (mInitialScrollOffset == mCurrentScrollOffset) {
+            int totalHeight = mSelectorElementHeight * (mMaxValue - mMinValue + 1);
+            // the current item should already be set correctly by scrollBy.
+            int correctOffset = mInitialScrollOffset - (mValue - mMinValue) * mSelectorElementHeight;
+            correctOffset = correctOffset % totalHeight;
+            if (correctOffset > 0) {
+            	correctOffset -= totalHeight;
+            }
+            if (correctOffset == mCurrentScrollOffset) {
                 updateInputTextView();
                 showInputControls(mShowInputControlsAnimimationDuration);
                 return;
             }
             // adjust to the closest value
-            int deltaY = mInitialScrollOffset - mCurrentScrollOffset;
+            int deltaY = correctOffset - mCurrentScrollOffset;
+            // special case for wrapping around
+            if (Math.abs(deltaY) > totalHeight / 2) {
+            	if (deltaY > 0) {
+            		deltaY -= totalHeight;
+            	} else {
+            		deltaY += totalHeight;
+            	}
+            }
             if (Math.abs(deltaY) > mSelectorElementHeight / 2) {
                 deltaY += (deltaY > 0) ? -mSelectorElementHeight : mSelectorElementHeight;
             }

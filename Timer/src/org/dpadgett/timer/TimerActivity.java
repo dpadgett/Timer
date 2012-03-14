@@ -60,23 +60,18 @@ public class TimerActivity extends Activity {
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);
 
-        SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        int tabToRestore = 0;
-        if (prefs.contains("tab")) {
-        	tabToRestore = prefs.getInt("tab", 0);
-        } else if (savedInstanceState != null) {
-        	tabToRestore = savedInstanceState.getInt("tab", 0);
-        }
-
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
 	                tab.getFragmentClass(), null);
-	        // mViewPager.setCurrentItem(tab.ordinal(), false);
         }
 
-    	// mViewPager.setCurrentItem(tabToRestore, false);
-        bar.setSelectedNavigationItem(tabToRestore);
+        SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
+        if (prefs.contains("tab")) {
+            bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
+        } else if (savedInstanceState != null) {
+            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+        }
 
 		alarmDialog = new AlertDialog.Builder(this)
 				.setTitle("Countdown timer finished")

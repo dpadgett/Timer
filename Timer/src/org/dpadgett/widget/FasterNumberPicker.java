@@ -1074,7 +1074,7 @@ public class FasterNumberPicker extends LinearLayout {
         	offsetForCurrent += totalHeight;
         }
         int current = ((getHeight() / 2) - offsetForCurrent) / mSelectorElementHeight + mMinValue;
-        changeCurrent(current);
+        mValue = current;
     }
 
     @Override
@@ -1150,9 +1150,12 @@ public class FasterNumberPicker extends LinearLayout {
      * @see #setMaxValue(int)
      */
     public void setValue(int value) {
-        if (mValue == value) {
-            return;
-        }
+    	Log.i(getClass().getName(),
+    			"Setting value " + value + " from value " + mValue + " and displayed value " + mInputText.getText().toString());
+        // this is one of those things that shouldn't matter, but apparently, it does.
+    	//if (mValue == value) {
+        //    return;
+        //}
         //TODO(dpadgett): fix wrapping for delta > 1
         if (value < mMinValue) {
             value = mWrapSelectorWheel ? mMaxValue : mMinValue;
@@ -1161,13 +1164,18 @@ public class FasterNumberPicker extends LinearLayout {
             value = mWrapSelectorWheel ? mMinValue : mMaxValue;
         }
         mValue = value;
+        updateScrollOffset();
         initializeSelectorWheelIndices();
         updateInputTextView();
         updateIncrementAndDecrementButtonsVisibilityState();
         invalidate();
     }
 
-    /**
+    private void updateScrollOffset() {
+		mCurrentScrollOffset = mInitialScrollOffset - (mValue - mMinValue) * mSelectorElementHeight;
+	}
+
+	/**
      * Computes the max width if no such specified as an attribute.
      */
     private void tryComputeMaxWidth() {
@@ -1430,6 +1438,8 @@ public class FasterNumberPicker extends LinearLayout {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
             return;
         }
+
+        Log.i(getClass().getName(), "Internal value vs external: " + mValue + ", " + mInputText + ": " + mInputText.getText().toString());
 
         float x = (getRight() - getLeft()) / 2;
         float y = mCurrentScrollOffset;
@@ -1759,10 +1769,11 @@ public class FasterNumberPicker extends LinearLayout {
             	finalY += mSelectorElementHeight;
             	finalY = Math.min(finalY, yBeforeAbort);
             }
-            scroller.setFinalY(finalY);
+            // scroller.setFinalY(finalY);
+            scroller.setFinalY(yBeforeAbort);
             scroller.abortAnimation();
-            final int yDelta = scroller.getCurrY() - yBeforeAbort;
-            scrollBy(0, yDelta);
+            // final int yDelta = scroller.getCurrY() - yBeforeAbort;
+            // scrollBy(0, yDelta);
         }
     }
 
@@ -1827,7 +1838,8 @@ public class FasterNumberPicker extends LinearLayout {
         // Ensure that the middle item is positioned the same as the text in mInputText
         int editTextTextPosition = mInputText.getBaseline() + mInputText.getTop();
         mInitialScrollOffset = editTextTextPosition - mSelectorElementHeight;
-        mCurrentScrollOffset = mInitialScrollOffset;
+        // mCurrentScrollOffset = mInitialScrollOffset;
+        updateScrollOffset();
         updateInputTextView();
         
         // force scroll wheel refresh
@@ -2043,6 +2055,7 @@ public class FasterNumberPicker extends LinearLayout {
         } else {
             mInputText.setText(mDisplayedValues[mValue - mMinValue]);
         }
+        Log.i(getClass().getName(), "Input text " + mInputText + " changed to: " + mInputText.getText());
         mInputText.setSelection(mInputText.getText().length());
 
         if (mFlingable && ((AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).isEnabled()) {

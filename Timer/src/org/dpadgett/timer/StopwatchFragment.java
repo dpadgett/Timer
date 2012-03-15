@@ -2,12 +2,12 @@ package org.dpadgett.timer;
 
 import org.dpadgett.widget.TimerTextView;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -43,8 +43,8 @@ public class StopwatchFragment extends Fragment {
         rootView = inflater.inflate(R.layout.stopwatch, container, false);
         context = rootView.getContext();
         
-        ((LinearLayout) rootView).setDividerDrawable(
-        		new ListView(rootView.getContext()).getDivider());
+//        ((LinearLayout) rootView).setDividerDrawable(
+//        		new ListView(rootView.getContext()).getDivider());
         
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
@@ -163,7 +163,7 @@ public class StopwatchFragment extends Fragment {
         prefs.putLong("timeStarted", timeStarted);
         prefs.putLong("additionalElapsed", additionalElapsed);
         prefs.putLong("additionalLapTimeElapsed", additionalLapTimeElapsed);
-        prefs.apply();
+        prefs.commit();
     }
 
     @Override

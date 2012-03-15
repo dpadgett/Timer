@@ -586,7 +586,7 @@ public class FasterNumberPicker extends LinearLayout {
      * @param defStyle The default style to apply to this view.
      */
     public FasterNumberPicker(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        super(context, attrs);//, defStyle);
 
         // process style attributes
         int[] attrsArray = {
@@ -653,6 +653,7 @@ public class FasterNumberPicker extends LinearLayout {
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
+        Log.i(getClass().getName(), "ID: " + Resources.getSystem().getIdentifier("number_picker", "layout", "android"));
         inflater.inflate(Resources.getSystem().getIdentifier("number_picker", "layout", "android"), this, true);
 
         OnClickListener onClickListener = new OnClickListener() {
@@ -694,7 +695,12 @@ public class FasterNumberPicker extends LinearLayout {
         mDecrementButton.setOnLongClickListener(onLongClickListener);
 
         // input text
-        mInputText = (EditText) findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+        //Log.i(getClass().getName(), this.getChildAt(1).getClass().getName());
+        EditText inputText = (EditText) findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+        if (inputText == null) {
+        	inputText = (EditText) getChildAt(1);
+        }
+        mInputText = inputText;
         mInputText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 50);
         mInputText.setOnFocusChangeListener(new OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
@@ -767,7 +773,7 @@ public class FasterNumberPicker extends LinearLayout {
         });*/
 
         // create the fling and adjust scrollers
-        mFlingScroller = new Scroller(getContext(), null, true);
+        mFlingScroller = new Scroller(getContext(), null);//, true);
         mAdjustScroller = new Scroller(getContext(), new DecelerateInterpolator(2.5f));
         mLongPressScroller = new Scroller(getContext(), new LinearInterpolator());
 
@@ -1451,7 +1457,8 @@ public class FasterNumberPicker extends LinearLayout {
         int viewWidth = getWidth();
 
         int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
-    	int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
+    	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
+        int bitmapHeight = Math.min(512 - (512 % mSelectorElementHeight), totalHeight);
 
     	int hashCode = Arrays.hashCode(new int[] {
         		mMinValue,
@@ -1464,6 +1471,9 @@ public class FasterNumberPicker extends LinearLayout {
         	lastHashCode = hashCode;
         	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
         	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
+        		if ((idx + 1) * bitmapHeight < mCurrentScrollOffset || idx * bitmapHeight > mCurrentScrollOffset) {
+        			continue;
+        		}
         		int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
         		Bitmap savedFrame = saved.get(idx);
 	        	if (savedFrame == null
@@ -1477,6 +1487,9 @@ public class FasterNumberPicker extends LinearLayout {
         	}
         	bumpOffset = mSelectorTextGapHeight;
         	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
+        		if (saved.get(idx) == null) {
+        			continue;
+        		}
         		y = mSelectorElementHeight - bumpOffset;
 	        	Canvas newCanvas = new Canvas(saved.get(idx));
 		        for (int i = mMinValue + itemsPerBitmap * idx; i <= Math.min(mMaxValue, mMinValue + itemsPerBitmap * (idx + 1) - 1); i++) {

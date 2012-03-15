@@ -33,17 +33,26 @@ public class LapTimes {
 		this.scrollView = scrollView;
 		this.lapTimesView = (LinearLayout) scrollView.findViewById(R.id.lapTimesView);
 		this.context = scrollView.getContext();
-		bottomScroller = new OnLayoutChangeListener() {
-			@Override
-			public void onLayoutChange(View v, int left, int top, int right,
-					int bottom, int oldLeft, int oldTop, int oldRight,
-					int oldBottom) {
-				LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
-			}
-		};
-		lapTimesView.addOnLayoutChangeListener(bottomScroller);
-		lapTimesView.setDividerDrawable(
-        		new ListView(lapTimesView.getContext()).getDivider());
+		
+		boolean classExists = false;
+		try {
+			Class clazz = Class.forName("android.view.View$OnLayoutChangeListener");
+		} catch (ClassNotFoundException e) {
+		}
+		
+		if (classExists) {
+			bottomScroller = new OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right,
+						int bottom, int oldLeft, int oldTop, int oldRight,
+						int oldBottom) {
+					LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
+				}
+			};
+			lapTimesView.addOnLayoutChangeListener(bottomScroller);
+		}
+//		lapTimesView.setDividerDrawable(
+//        		new ListView(lapTimesView.getContext()).getDivider());
 		lapTimes = new ArrayList<Long>();
 	}
 
@@ -70,7 +79,7 @@ public class LapTimes {
 		lapTimesView.addView(lapLayout);
 		
 		// hack to get it to draw the lower divider
-		Space space = new Space(lapTimesView.getContext());
+		LinearLayout space = new LinearLayout(lapTimesView.getContext());
 		space.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 1));
 		
 		lapTimesView.addView(space);
@@ -80,7 +89,7 @@ public class LapTimes {
 				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
 		prefs.putLong("lapTime" + (lapTimes.size() - 1), lapTime);
 		prefs.putInt("lapTimesCount", lapTimes.size());
-		prefs.apply();
+		prefs.commit();
 	}
 	
 	/**
@@ -90,7 +99,7 @@ public class LapTimes {
 		SharedPreferences.Editor prefs =
 				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
 		prefs.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
-		prefs.apply();
+		prefs.commit();
 	}
 
 	/**
@@ -99,7 +108,9 @@ public class LapTimes {
 	 * @param savedInstanceState
 	 */
 	public void restoreState(SharedPreferences prefs) {
-		lapTimesView.removeOnLayoutChangeListener(bottomScroller);
+		if (bottomScroller != null) {
+			lapTimesView.removeOnLayoutChangeListener(bottomScroller);
+		}
 		
 		lapTimes.clear();
 		lapTimesView.removeAllViews();
@@ -123,7 +134,9 @@ public class LapTimes {
 				lapTimesView.post(new Runnable() {
 					@Override
 					public void run() {
-						lapTimesView.addOnLayoutChangeListener(bottomScroller);
+						if (bottomScroller != null) {
+							lapTimesView.addOnLayoutChangeListener(bottomScroller);
+						}
 					}
 				});
 			}
@@ -142,7 +155,7 @@ public class LapTimes {
 			prefs.remove("lapTime" + idx);
 		}
 		prefs.putInt("lapTimesCount", 0);
-		prefs.apply();
+		prefs.commit();
 
 		lapTimes.clear();
 	}

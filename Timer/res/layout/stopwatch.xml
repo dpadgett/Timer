@@ -12,7 +12,7 @@
         android:gravity="center_horizontal"
         android:orientation="vertical" >
 
-        <Space
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="20sp" />
 
@@ -31,7 +31,7 @@
             android:gravity="center_horizontal"
             android:weightSum="3" >
 
-            <Space
+            <LinearLayout
                 android:layout_width="20sp"
                 android:layout_height="10sp"
                 android:layout_weight="2" />
@@ -46,7 +46,7 @@
             	class="org.dpadgett.widget.TimerTextView" />
             </LinearLayout>
 
-        <Space
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="20sp" />
 
@@ -56,7 +56,7 @@
             android:gravity="center_horizontal"
             android:weightSum="2" >
 
-            <Space
+            <LinearLayout
                 android:layout_width="20sp"
                 android:layout_height="match_parent" />
 
@@ -67,7 +67,7 @@
                 android:layout_weight="1"
                 android:text="Start" />
 
-            <Space
+            <LinearLayout
                 android:layout_width="20sp"
                 android:layout_height="match_parent" />
 
@@ -78,12 +78,12 @@
                 android:layout_weight="1"
                 android:text="Reset" />
 
-            <Space
+            <LinearLayout
                 android:layout_width="20sp"
                 android:layout_height="match_parent" />
         </LinearLayout>
 
-        <Space
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="20sp" />
     </LinearLayout>

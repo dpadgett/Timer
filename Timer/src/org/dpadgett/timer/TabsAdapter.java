@@ -1,20 +1,22 @@
 package org.dpadgett.timer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.ListView;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 /**
  * This is a helper class that implements the management of tabs and all
@@ -45,10 +47,10 @@ public class TabsAdapter extends FragmentPagerAdapter
         }
 	}
 
-    public TabsAdapter(Activity activity, ViewPager pager) {
-        super(activity.getFragmentManager());
+    public TabsAdapter(SherlockFragmentActivity activity, ViewPager pager) {
+        super(activity.getSupportFragmentManager());
         mContext = activity;
-        mActionBar = activity.getActionBar();
+        mActionBar = activity.getSupportActionBar();
         mViewPager = pager;
         mViewPager.setAdapter(this);
         mViewPager.setPageMargin(1);
@@ -106,7 +108,7 @@ public class TabsAdapter extends FragmentPagerAdapter
         mActionBar.setSelectedNavigationItem(position);
         SharedPreferences.Editor prefs = mContext.getSharedPreferences("TimerActivity", Context.MODE_PRIVATE).edit();
         prefs.putInt("tab", position);
-        prefs.apply();
+        prefs.commit();
     }
 
     @Override

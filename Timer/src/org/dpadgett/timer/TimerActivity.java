@@ -1,9 +1,10 @@
 package org.dpadgett.timer;
 
-import android.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,9 +13,11 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 
-public class TimerActivity extends Activity {
+public class TimerActivity extends SherlockFragmentActivity {
 
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
@@ -55,7 +58,7 @@ public class TimerActivity extends Activity {
         mViewPager.setOffscreenPageLimit(Tab.values().length);
         setContentView(mViewPager);
 
-        final ActionBar bar = getActionBar();
+        final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);

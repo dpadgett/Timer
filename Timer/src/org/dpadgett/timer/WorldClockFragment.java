@@ -14,7 +14,6 @@ import java.util.TreeSet;
 import org.dpadgett.widget.AnalogClockWithTimezone;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -23,6 +22,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -99,7 +99,7 @@ public class WorldClockFragment extends Fragment {
 		
 		// hack to get the bottom divider to be the same as the listview dividers
 		Drawable divider = new ListView(context).getDivider();
-		((LinearLayout) rootView).setDividerDrawable(divider);
+//		((LinearLayout) rootView).setDividerDrawable(divider);
 		
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
@@ -147,7 +147,7 @@ public class WorldClockFragment extends Fragment {
 						prefs.putString("clock" + idx, clockList.get(idx));
 					}
 					prefs.remove("clock" + idx);
-					prefs.apply();
+					prefs.commit();
 				}
 	    	});
     	}
@@ -231,7 +231,7 @@ public class WorldClockFragment extends Fragment {
 				context.getSharedPreferences("WorldClocks", Context.MODE_PRIVATE).edit();
 		prefs.putInt("numClocks", clockList.size());
 		prefs.putString("clock" + position, timeZone);
-		prefs.apply();
+		prefs.commit();
 	}
 	
 	private class ClockListAdapter extends BaseAdapter {

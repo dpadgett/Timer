@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.dpadgett.widget.AnalogClockWithTimezone;
+
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;

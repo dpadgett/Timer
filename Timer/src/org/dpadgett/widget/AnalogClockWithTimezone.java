@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dpadgett.timer;
+package org.dpadgett.widget;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,7 +128,8 @@ public class AnalogClockWithTimezone extends View {
 				}
 				invalidate();
                 long now = SystemClock.uptimeMillis();
-                long next = now + (1000 - now % 1000);
+                long realNow = System.currentTimeMillis();
+                long next = now + (1000 - (realNow % 1000));
                 mHandler.postAtTime(this, next);
 			}
         };

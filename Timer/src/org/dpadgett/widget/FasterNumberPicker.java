@@ -835,7 +835,6 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	Log.i(getClass().getName(), "Height measure spec: " + MeasureSpec.toString(heightMeasureSpec));
         // Try greedily to fit the max width and height.
         final int newWidthMeasureSpec = makeMeasureSpec(widthMeasureSpec, mMaxWidth);
         final int newHeightMeasureSpec = makeMeasureSpec(heightMeasureSpec, mMaxHeight);
@@ -850,7 +849,6 @@ public class FasterNumberPicker extends LinearLayout {
         	int maxSize = MeasureSpec.getSize(heightMeasureSpec);
         	heightSize = Math.min(heightSize, maxSize - (maxSize % (mTextSize + 4)));
         }
-    	Log.i(getClass().getName(), this + "Actual height measure: " + heightSize);
         setMeasuredDimension(widthSize, heightSize);
     }
 
@@ -1150,8 +1148,6 @@ public class FasterNumberPicker extends LinearLayout {
      * @see #setMaxValue(int)
      */
     public void setValue(int value) {
-    	Log.i(getClass().getName(),
-    			"Setting value " + value + " from value " + mValue + " and displayed value " + mInputText.getText().toString());
         // this is one of those things that shouldn't matter, but apparently, it does.
     	//if (mValue == value) {
         //    return;
@@ -1438,8 +1434,6 @@ public class FasterNumberPicker extends LinearLayout {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
             return;
         }
-
-        Log.i(getClass().getName(), "Internal value vs external: " + mValue + ", " + mInputText + ": " + mInputText.getText().toString());
 
         float x = (getRight() - getLeft()) / 2;
         float y = mCurrentScrollOffset;
@@ -2055,7 +2049,6 @@ public class FasterNumberPicker extends LinearLayout {
         } else {
             mInputText.setText(mDisplayedValues[mValue - mMinValue]);
         }
-        Log.i(getClass().getName(), "Input text " + mInputText + " changed to: " + mInputText.getText());
         mInputText.setSelection(mInputText.getText().length());
 
         if (mFlingable && ((AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).isEnabled()) {

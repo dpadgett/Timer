@@ -1746,7 +1746,20 @@ public class FasterNumberPicker extends LinearLayout {
 
         scroller = mLongPressScroller;
         if (!scroller.isFinished()) {
+        	// for the long press scroller, we set the final y to be twice as far
+        	// as it truly should, to prevent jitter when reposting the runnable.
+        	// so here, we subtract a full item's length from the final y before
+        	// forcing the scroll.
             final int yBeforeAbort = scroller.getCurrY();
+            int finalY = scroller.getFinalY();
+            if (finalY > yBeforeAbort) {
+            	finalY -= mSelectorElementHeight;
+            	finalY = Math.max(finalY, yBeforeAbort);
+            } else {
+            	finalY += mSelectorElementHeight;
+            	finalY = Math.min(finalY, yBeforeAbort);
+            }
+            scroller.setFinalY(finalY);
             scroller.abortAnimation();
             final int yDelta = scroller.getCurrY() - yBeforeAbort;
             scrollBy(0, yDelta);

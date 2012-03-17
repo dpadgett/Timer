@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.dpadgett.compat.ArrayAdapter;
 import org.dpadgett.widget.AnalogClockWithTimezone;
 
 import android.app.AlertDialog;
@@ -30,7 +31,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -157,8 +157,8 @@ public class WorldClockFragment extends Fragment {
     	final List<String> initialItems = new ArrayList<String>();
     	initialItems.add("GMT");
     	initialItems.add("UTC");
-    	final ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.timezone_dialog_list_item,
-    			initialItems);
+    	final ArrayAdapter<String> adapter =
+    			ArrayAdapter.newArrayAdapter(context, R.layout.timezone_dialog_list_item, initialItems);
     	ListView timezoneList = (ListView) tzView.findViewById(R.id.timezoneList);
     	timezoneList.setAdapter(adapter);
     	

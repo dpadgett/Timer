@@ -9,13 +9,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Space;
 import android.widget.TextView;
+import org.dpadgett.compat.LinearLayout.OnLayoutChangeListener;
 
 /**
  * Class to encapsulate the functionality and logic for the lap times list.
@@ -35,33 +35,15 @@ public class LapTimes {
 		this.lapTimesView = (LinearLayout) scrollView.findViewById(R.id.lapTimesView);
 		this.context = scrollView.getContext();
 		
-		boolean classExists = false;
-		try {
-			Class clazz = Class.forName("android.view.View$OnLayoutChangeListener");
-		} catch (ClassNotFoundException e) {
-		}
-		
-		if (classExists) {
-			bottomScroller = new OnLayoutChangeListener() {
-				@Override
-				public void onLayoutChange(View v, int left, int top, int right,
-						int bottom, int oldLeft, int oldTop, int oldRight,
-						int oldBottom) {
-					LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
-				}
-			};
-			lapTimesView.addOnLayoutChangeListener(bottomScroller);
-		} else {
-			bottomScroller = new OnLayoutChangeListener() {
-				@Override
-				public void onLayoutChange(View v, int left, int top, int right,
-						int bottom, int oldLeft, int oldTop, int oldRight,
-						int oldBottom) {
-					LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
-				}
-			};
-			lapTimesView.addOnLayoutChangeListener(bottomScroller);
-		}
+		bottomScroller = new OnLayoutChangeListener() {
+			@Override
+			public void onLayoutChange(View v, int left, int top, int right,
+					int bottom, int oldLeft, int oldTop, int oldRight,
+					int oldBottom) {
+				LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
+			}
+		};
+		lapTimesView.addOnLayoutChangeListener(bottomScroller);
 		lapTimesView.setDividerDrawable(
         		new ListView(lapTimesView.getContext()).getDivider());
 		lapTimes = new ArrayList<Long>();
@@ -78,7 +60,7 @@ public class LapTimes {
 			lapTimesView.removeViewAt(lapTimesView.getChildCount() - 1);
 		}
 		
-		LinearLayout lapLayout = (LinearLayout) LayoutInflater.from(lapTimesView.getContext())
+		android.widget.LinearLayout lapLayout = (android.widget.LinearLayout) LayoutInflater.from(lapTimesView.getContext())
 				.inflate(R.layout.single_lap_time, (ViewGroup) lapTimesView, false);
 
 		TextView lapLabel = (TextView) lapLayout.findViewById(R.id.lapLabel);
@@ -90,7 +72,7 @@ public class LapTimes {
 		lapTimesView.addView(lapLayout);
 		
 		// hack to get it to draw the lower divider
-		LinearLayout space = LinearLayout.newLinearLayout(lapTimesView.getContext());
+		android.widget.LinearLayout space = new android.widget.LinearLayout(lapTimesView.getContext());
 		space.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 1));
 		
 		lapTimesView.addView(space);

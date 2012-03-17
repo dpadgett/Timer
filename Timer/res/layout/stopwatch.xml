@@ -1,10 +1,13 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.dpadgett.compat.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:compat="http://schemas.android.com/apk/res/org.dpadgett.timer"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:divider="@android:drawable/divider_horizontal_dark"
+    compat:compat_divider="@android:drawable/divider_horizontal_dark"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:showDividers="middle" >
+    android:showDividers="middle"
+    compat:compat_showDividers="middle" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -94,15 +97,16 @@
         android:layout_height="fill_parent"
         android:gravity="center_horizontal" >
 
-        <LinearLayout
+        <org.dpadgett.compat.LinearLayout
             android:id="@+id/lapTimesView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:divider="@android:drawable/divider_horizontal_dark"
+		    compat:compat_divider="@android:drawable/divider_horizontal_dark"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:showDividers="middle" >
-        </LinearLayout>
+            android:showDividers="middle"
+            compat:compat_showDividers="middle" />
     </ScrollView>
 
-</LinearLayout>
+</org.dpadgett.compat.LinearLayout>

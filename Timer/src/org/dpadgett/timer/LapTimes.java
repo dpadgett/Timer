@@ -3,6 +3,8 @@ package org.dpadgett.timer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dpadgett.compat.LinearLayout;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
@@ -10,7 +12,6 @@ import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Space;
@@ -50,9 +51,19 @@ public class LapTimes {
 				}
 			};
 			lapTimesView.addOnLayoutChangeListener(bottomScroller);
+		} else {
+			bottomScroller = new OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right,
+						int bottom, int oldLeft, int oldTop, int oldRight,
+						int oldBottom) {
+					LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
+				}
+			};
+			lapTimesView.addOnLayoutChangeListener(bottomScroller);
 		}
-//		lapTimesView.setDividerDrawable(
-//        		new ListView(lapTimesView.getContext()).getDivider());
+		lapTimesView.setDividerDrawable(
+        		new ListView(lapTimesView.getContext()).getDivider());
 		lapTimes = new ArrayList<Long>();
 	}
 
@@ -79,7 +90,7 @@ public class LapTimes {
 		lapTimesView.addView(lapLayout);
 		
 		// hack to get it to draw the lower divider
-		LinearLayout space = new LinearLayout(lapTimesView.getContext());
+		LinearLayout space = LinearLayout.newLinearLayout(lapTimesView.getContext());
 		space.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 1));
 		
 		lapTimesView.addView(space);

@@ -1,5 +1,6 @@
 package org.dpadgett.timer;
 
+import org.dpadgett.compat.LinearLayout;
 import org.dpadgett.widget.TimerTextView;
 
 import android.content.Context;
@@ -14,7 +15,6 @@ import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 
@@ -43,8 +43,8 @@ public class StopwatchFragment extends Fragment {
         rootView = inflater.inflate(R.layout.stopwatch, container, false);
         context = rootView.getContext();
         
-//        ((LinearLayout) rootView).setDividerDrawable(
-//        		new ListView(rootView.getContext()).getDivider());
+        ((LinearLayout) rootView).setDividerDrawable(
+        		new ListView(rootView.getContext()).getDivider());
         
         Button startButton = (Button) rootView.findViewById(R.id.startButton);
         Button resetButton = (Button) rootView.findViewById(R.id.stopButton);

@@ -11,4 +11,23 @@
         <attr name="compat_divider" format="integer" />
     </declare-styleable>
 
+    <declare-styleable name="NumberPicker">
+        <!-- @hide Color for the solid color background if such for optimized rendering. -->
+        <attr name="solidColor" format="color|reference" />
+        <!-- @hide Whether the number picker supports flinging. -->
+        <attr name="flingable" format="boolean" />
+        <!-- @hide The divider for making the selection area. -->
+        <attr name="selectionDivider" format="reference" />
+        <!-- @hide The height of the selection divider. -->
+        <attr name="selectionDividerHeight" format="dimension" />
+        <!-- @hide The min height of the NumberPicker. -->
+        <attr name="minHeight" />
+        <!-- @hide The max height of the NumberPicker. -->
+        <attr name="maxHeight" />
+        <!-- @hide The min width of the NumberPicker. -->
+        <attr name="minWidth" />
+        <!-- @hide The max width of the NumberPicker. -->
+        <attr name="maxWidth" />
+    </declare-styleable>
+
 </resources>

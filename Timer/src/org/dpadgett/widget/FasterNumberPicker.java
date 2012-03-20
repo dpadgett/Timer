@@ -633,8 +633,8 @@ public class FasterNumberPicker extends LinearLayout {
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
-        Log.i(getClass().getName(), "ID: " + Resources.getSystem().getIdentifier("number_picker", "layout", "android"));
-        inflater.inflate(Resources.getSystem().getIdentifier("number_picker", "layout", "android"), this, true);
+        Log.i(getClass().getName(), "ID: " + R.layout.number_picker);
+        inflater.inflate(R.layout.number_picker, this, true);
 
         OnClickListener onClickListener = new OnClickListener() {
             public void onClick(View v) {
@@ -643,7 +643,7 @@ public class FasterNumberPicker extends LinearLayout {
                     inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
                 }
                 mInputText.clearFocus();
-                if (v.getId() == Resources.getSystem().getIdentifier("increment", "id", "android")) {
+                if (v.getId() == R.id.increment) {
                     changeCurrentByOne(true);
                 } else {
                     changeCurrentByOne(false);
@@ -655,7 +655,7 @@ public class FasterNumberPicker extends LinearLayout {
             public boolean onLongClick(View v) {
                 mInputText.clearFocus();
                 mIsLongPressed = true;
-                if (v.getId() == Resources.getSystem().getIdentifier("increment", "id", "android")) {
+                if (v.getId() == R.id.increment) {
                     postChangeCurrentByOneFromLongPress(true);
                 } else {
                     postChangeCurrentByOneFromLongPress(false);
@@ -665,18 +665,18 @@ public class FasterNumberPicker extends LinearLayout {
         };
 
         // increment button
-        mIncrementButton = (ImageButton) findViewById(Resources.getSystem().getIdentifier("increment", "id", "android"));
+        mIncrementButton = (ImageButton) findViewById(R.id.increment);
         mIncrementButton.setOnClickListener(onClickListener);
         mIncrementButton.setOnLongClickListener(onLongClickListener);
 
         // decrement button
-        mDecrementButton = (ImageButton) findViewById(Resources.getSystem().getIdentifier("decrement", "id", "android"));
+        mDecrementButton = (ImageButton) findViewById(R.id.decrement);
         mDecrementButton.setOnClickListener(onClickListener);
         mDecrementButton.setOnLongClickListener(onLongClickListener);
 
         // input text
         //Log.i(getClass().getName(), this.getChildAt(1).getClass().getName());
-        EditText inputText = (EditText) findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+        EditText inputText = (EditText) findViewById(R.id.numberpicker_input);
         if (inputText == null) {
         	inputText = (EditText) getChildAt(1);
         }
@@ -1798,7 +1798,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mFlingable && selectorWheelState == SELECTOR_WHEEL_STATE_LARGE
                 && ((AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).isEnabled()) {
         	((AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).interrupt();
-            String text = getContext().getString(Resources.getSystem().getIdentifier("number_picker_increment_scroll_action", "string", "android"));
+            String text = getContext().getString(R.string.number_picker_increment_scroll_action);
             mInputText.setContentDescription(text);
             mInputText.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
             mInputText.setContentDescription(null);
@@ -2045,7 +2045,7 @@ public class FasterNumberPicker extends LinearLayout {
         mInputText.setSelection(mInputText.getText().length());
 
         if (mFlingable && ((AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE)).isEnabled()) {
-            String text = getContext().getString(Resources.getSystem().getIdentifier("number_picker_increment_scroll_mode", "string", "android"),
+            String text = getContext().getString(R.string.number_picker_increment_scroll_mode,
                     mInputText.getText());
             mInputText.setContentDescription(text);
         }

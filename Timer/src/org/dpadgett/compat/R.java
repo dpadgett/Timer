@@ -1,17 +1,23 @@
 package org.dpadgett.compat;
 
 import android.content.res.Resources;
+import android.os.Build;
 
 public final class R {
 	private R() { }
 	
+	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
+
 	private static final int resolveId(String name, String defType, String defPackage, int def) {
 		int nativeId = Resources.getSystem().getIdentifier(name, defType, defPackage);
-		return nativeId == 0 ? def : nativeId;
+		return COMPAT_NEEDED ? def : nativeId;
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {
 		int[] nativeIds = def;
+		if (COMPAT_NEEDED) {
+			return nativeIds;
+		}
 		try {
 			Class<?> clazz = Class.forName("android.R$" + defType);
 	        nativeIds = (int[]) clazz.getField(name).get(clazz);
@@ -46,5 +52,26 @@ public final class R {
     			resolveId("NumberPicker_maxWidth", "styleable", "android", org.dpadgett.timer.R.styleable.NumberPicker_maxWidth);
     	public static final int[] NumberPicker = 
     			resolveArray("NumberPicker", "styleable", org.dpadgett.timer.R.styleable.NumberPicker);
+	}
+	
+	public static final class layout {
+		public static final int number_picker =
+				resolveId("number_picker", "layout", "android", org.dpadgett.timer.R.layout.number_picker);
+	}
+	
+	public static final class id {
+		public static final int increment =
+				resolveId("increment", "id", "android", org.dpadgett.timer.R.id.increment);
+		public static final int decrement =
+				resolveId("decrement", "id", "android", org.dpadgett.timer.R.id.decrement);
+		public static final int numberpicker_input =
+				resolveId("numberpicker_input", "id", "android", org.dpadgett.timer.R.id.numberpicker_input);
+	}
+	
+	public static final class string {
+		public static final int number_picker_increment_scroll_action =
+				resolveId("number_picker_increment_scroll_action", "string", "android", org.dpadgett.timer.R.string.number_picker_increment_scroll_action);
+		public static final int number_picker_increment_scroll_mode =
+				resolveId("number_picker_increment_scroll_mode", "string", "android", org.dpadgett.timer.R.string.number_picker_increment_scroll_mode);
 	}
 }

@@ -21,13 +21,13 @@
         <!-- @hide The height of the selection divider. -->
         <attr name="selectionDividerHeight" format="dimension" />
         <!-- @hide The min height of the NumberPicker. -->
-        <attr name="minHeight" />
+        <attr name="minHeight" format="dimension" />
         <!-- @hide The max height of the NumberPicker. -->
-        <attr name="maxHeight" />
+        <attr name="maxHeight" format="dimension" />
         <!-- @hide The min width of the NumberPicker. -->
-        <attr name="minWidth" />
+        <attr name="minWidth" format="dimension" />
         <!-- @hide The max width of the NumberPicker. -->
-        <attr name="maxWidth" />
+        <attr name="maxWidth" format="dimension" />
     </declare-styleable>
 
 </resources>

@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.dpadgett.compat.R;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -589,49 +591,27 @@ public class FasterNumberPicker extends LinearLayout {
         super(context, attrs);//, defStyle);
 
         // process style attributes
-        int[] attrsArray = {
-            	Resources.getSystem().getIdentifier("NumberPicker_solidColor", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_flingable", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_selectionDivider", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_selectionDividerHeight", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_minHeight", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_maxHeight", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_minWidth", "styleable", "android"),
-            	Resources.getSystem().getIdentifier("NumberPicker_maxWidth", "styleable", "android"),
-        };
-		try {
-			Class clazz = Class.forName("android.R$styleable");
-	        attrsArray = (int[]) clazz.getField("NumberPicker").get(clazz);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		}
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
-                attrsArray /* R.styleable.NumberPicker */, defStyle, 0);
-        mSolidColor = attributesArray.getColor(Resources.getSystem().getIdentifier("NumberPicker_solidColor", "styleable", "android"), 0);
-        mFlingable = attributesArray.getBoolean(Resources.getSystem().getIdentifier("NumberPicker_flingable", "styleable", "android"), true);
-        mSelectionDivider = attributesArray.getDrawable(Resources.getSystem().getIdentifier("NumberPicker_selectionDivider", "styleable", "android"));
+                R.styleable.NumberPicker, defStyle, 0);
+        mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
+        mFlingable = attributesArray.getBoolean(R.styleable.NumberPicker_flingable, true);
+        mSelectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
         int defSelectionDividerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 UNSCALED_DEFAULT_SELECTION_DIVIDER_HEIGHT,
                 getResources().getDisplayMetrics());
         mSelectionDividerHeight = attributesArray.getDimensionPixelSize(
-        		Resources.getSystem().getIdentifier("NumberPicker_selectionDividerHeight", "styleable", "android"), defSelectionDividerHeight);
-        mMinHeight = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_minHeight", "styleable", "android"),
+        		R.styleable.NumberPicker_selectionDividerHeight, defSelectionDividerHeight);
+        mMinHeight = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_minHeight,
                 SIZE_UNSPECIFIED);
-        mMaxHeight = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_maxHeight", "styleable", "android"),
+        mMaxHeight = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_maxHeight,
                 SIZE_UNSPECIFIED);
         if (mMinHeight != SIZE_UNSPECIFIED && mMaxHeight != SIZE_UNSPECIFIED
                 && mMinHeight > mMaxHeight) {
             throw new IllegalArgumentException("minHeight > maxHeight");
         }
-        mMinWidth = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_minWidth", "styleable", "android"),
+        mMinWidth = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_minWidth,
                 SIZE_UNSPECIFIED);
-        mMaxWidth = attributesArray.getDimensionPixelSize(Resources.getSystem().getIdentifier("NumberPicker_maxWidth", "styleable", "android"),
+        mMaxWidth = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_maxWidth,
                 SIZE_UNSPECIFIED);
         if (mMinWidth != SIZE_UNSPECIFIED && mMaxWidth != SIZE_UNSPECIFIED
                 && mMinWidth > mMaxWidth) {

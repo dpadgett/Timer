@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="hello">Sup World, TimerActivity!</string>
     <string name="app_name">Timer</string>
+
+    <!-- NumberPicker - accessibility support -->
+    <!-- Description of the button to increment the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_button">Increment</string>
+    <!-- Description of the button to decrement the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_decrement_button">Decrement</string>
+    <!-- Description of the tap and hold action to get into scroll mode in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_mode"><xliff:g id="value" example="3">%s</xliff:g> tap and hold.</string>
+    <!-- Description of the scrolling action in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_action">Slide up to increment and down to decrement.</string>
 
 </resources>

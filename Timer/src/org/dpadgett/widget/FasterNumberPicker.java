@@ -1454,9 +1454,9 @@ public class FasterNumberPicker extends LinearLayout {
         	lastHashCode = hashCode;
         	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
         	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
-        		if ((idx + 1) * bitmapHeight < mCurrentScrollOffset || idx * bitmapHeight > mCurrentScrollOffset) {
-        			continue;
-        		}
+        		// if ((idx + 1) * bitmapHeight < mCurrentScrollOffset || idx * bitmapHeight > mCurrentScrollOffset) {
+        		// 	continue;
+        		// }
         		int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
         		Bitmap savedFrame = saved.get(idx);
 	        	if (savedFrame == null

@@ -67,7 +67,7 @@ public class CountdownFragment extends Fragment {
         countdownHours.setMaxValue(99);
 		countdownHours.setFormatter(twoDigitFormatter);
 		// I will burn in hell for this
-		View view = countdownHours.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		View view = countdownHours.findViewById(org.dpadgett.compat.R.id.numberpicker_input);
 		if (view != null) {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
@@ -76,7 +76,7 @@ public class CountdownFragment extends Fragment {
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
 		countdownMinutes.setFormatter(twoDigitFormatter);
-		view = countdownMinutes.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		view = countdownMinutes.findViewById(org.dpadgett.compat.R.id.numberpicker_input);
 		if (view != null) {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
@@ -85,7 +85,7 @@ public class CountdownFragment extends Fragment {
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
 		countdownSeconds.setFormatter(twoDigitFormatter);
-		view = countdownSeconds.findViewById(Resources.getSystem().getIdentifier("numberpicker_input", "id", "android"));
+		view = countdownSeconds.findViewById(org.dpadgett.compat.R.id.numberpicker_input);
 		if (view != null) {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);

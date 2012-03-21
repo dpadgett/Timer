@@ -39,6 +39,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
@@ -82,7 +83,9 @@ import android.widget.TextView;
  */
 public class FasterNumberPicker extends LinearLayout {
 
-    /**
+	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
+
+	/**
      * The default update interval during long press.
      */
     private static final long DEFAULT_LONG_PRESS_UPDATE_INTERVAL = 300 / 2;
@@ -718,7 +721,7 @@ public class FasterNumberPicker extends LinearLayout {
         paint.setTextSize(mTextSize);
         paint.setTypeface(mInputText.getTypeface());
         ColorStateList colors = mInputText.getTextColors();
-        int color = colors.getColorForState(ENABLED_STATE_SET, Color.WHITE);
+        int color = COMPAT_NEEDED ? Color.WHITE : colors.getColorForState(ENABLED_STATE_SET, Color.WHITE);
         paint.setColor(color);
         mSelectorWheelPaint = paint;
 
@@ -843,7 +846,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (!isEnabled() || !mFlingable) {
             return false;
         }
-        switch (event.getActionMasked()) {
+        switch (COMPAT_NEEDED ? event.getAction() : event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mLastMotionEventY = mLastDownEventY = event.getY();
                 removeAllCallbacks();
@@ -902,7 +905,7 @@ public class FasterNumberPicker extends LinearLayout {
             mVelocityTracker = VelocityTracker.obtain();
         }
         mVelocityTracker.addMovement(ev);
-        int action = ev.getActionMasked();
+        int action = COMPAT_NEEDED ? ev.getAction() : ev.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 float currentMoveY = ev.getY();
@@ -951,7 +954,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        final int action = event.getActionMasked();
+        final int action = COMPAT_NEEDED ? event.getAction() : event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 if (mSelectorWheelState == SELECTOR_WHEEL_STATE_LARGE) {
@@ -983,7 +986,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
     public boolean dispatchTrackballEvent(MotionEvent event) {
-        int action = event.getActionMasked();
+        int action = COMPAT_NEEDED ? event.getAction() : event.getActionMasked();
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             removeAllCallbacks();
         }

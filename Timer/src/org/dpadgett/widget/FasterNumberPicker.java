@@ -1449,13 +1449,48 @@ public class FasterNumberPicker extends LinearLayout {
         }
     }
 
+    private class TileLoader implements LRUCache.Loader<Integer, Bitmap> {
+		@Override
+		public Bitmap load(Integer idx, Bitmap unusedValue) {
+	        int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
+	    	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
+	        int bitmapHeight = Math.min(512 - (512 % mSelectorElementHeight), totalHeight);
+    		int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
+
+	        Bitmap bitmap;
+			if (unusedValue == null ||
+					unusedValue.getHeight() != height) {
+				bitmap = Bitmap.createBitmap(getWidth(),
+            			height, Config.ARGB_8888);
+			} else {
+				bitmap = unusedValue;
+        		bitmap.eraseColor(Color.TRANSPARENT);
+			}
+        	Paint paint = new Paint(mSelectorWheelPaint);
+        	paint.setAlpha(255);
+        	bumpOffset = mSelectorTextGapHeight;
+            float x = (getRight() - getLeft()) / 2;
+    		float y = mSelectorElementHeight - bumpOffset;
+        	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
+        	Canvas newCanvas = new Canvas(bitmap);
+	        for (int i = mMinValue + itemsPerBitmap * idx; i <= Math.min(mMaxValue, mMinValue + itemsPerBitmap * (idx + 1) - 1); i++) {
+	        	ensureCachedScrollSelectorValue(i);
+	            String scrollSelectorValue = mSelectorIndexToStringCache.get(i);
+                newCanvas.drawText(scrollSelectorValue, x, y, paint);
+	            y += mSelectorElementHeight;
+	        }
+			return bitmap;
+		}
+    }
+    
     private int lastHashCode = 0;
     private int lastMetaHashCode = 0;
     private int lastFakeInputHashCode = 0;
-	private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
+	// private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
 	private Bitmap metaSaved;
 	private Bitmap fakeInputSaved;
 	private int bumpOffset = 0;
+	private LRUCache<Integer, Bitmap> savedCache = new LRUCache<Integer, Bitmap>(new TileLoader(), 3);
     @Override
     protected void onDraw(Canvas canvas) {
         if (mSelectorWheelState == SELECTOR_WHEEL_STATE_NONE) {
@@ -1487,10 +1522,11 @@ public class FasterNumberPicker extends LinearLayout {
         		mSelectorElementHeight});
         if (hashCode != lastHashCode) {
         	// this is applied when the bitmap is drawn, too
-        	Paint paint = new Paint(mSelectorWheelPaint);
+/*        	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
-        	lastHashCode = hashCode;
-        	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
+*/        	lastHashCode = hashCode;
+			savedCache.clear();
+/*        	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
         	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
         		// if ((idx + 1) * bitmapHeight < mCurrentScrollOffset || idx * bitmapHeight > mCurrentScrollOffset) {
         		// 	continue;
@@ -1520,6 +1556,7 @@ public class FasterNumberPicker extends LinearLayout {
 		            y += mSelectorElementHeight;
 		        }
         	}
+*/
         }
 
 
@@ -1548,6 +1585,7 @@ public class FasterNumberPicker extends LinearLayout {
 	        // offset for the 0th bitmap
 	        int offset = currentScrollOffset;
 	        // this is a bit inefficient
+        	int numTiles = (int) Math.ceil(((double) totalHeight) / bitmapHeight);
 	        if (mWrapSelectorWheel) {
 		        if (offset > 0) {
 		        	// in this case we would be missing parts on the top, so ensure they are drawn.
@@ -1555,21 +1593,21 @@ public class FasterNumberPicker extends LinearLayout {
 		        }
 		        for(int idx = 0;
 		        		offset < getHeight();
-		        		offset += saved.get(idx).getHeight(), idx = (idx + 1) % saved.size()) {
+		        		offset += savedCache.get(idx).getHeight(), idx = (idx + 1) % numTiles) {
 		        	int top = offset;
-		        	int bottom = offset + saved.get(idx).getHeight();
+		        	int bottom = offset + savedCache.get(idx).getHeight();
 		        	if (!(bottom < 0 || top > getHeight())) {
-		        		metaCanvas.drawBitmap(saved.get(idx), 0, offset, paint);
+		        		metaCanvas.drawBitmap(savedCache.get(idx), 0, offset, paint);
 		        	}
 		        }
 	        } else {
 		        for(int idx = 0;
-		        		offset < getHeight() && idx < saved.size();
-		        		offset += saved.get(idx).getHeight(), idx++) {
+		        		offset < getHeight() && idx < numTiles;
+		        		offset += savedCache.get(idx).getHeight(), idx++) {
 		        	int top = offset;
-		        	int bottom = offset + saved.get(idx).getHeight();
+		        	int bottom = offset + savedCache.get(idx).getHeight();
 		        	if (!(bottom < 0 || top > getHeight())) {
-		        		metaCanvas.drawBitmap(saved.get(idx), 0, offset, paint);
+		        		metaCanvas.drawBitmap(savedCache.get(idx), 0, offset, paint);
 		        	}
 		        }
 	        }

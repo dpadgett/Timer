@@ -223,7 +223,10 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private final EditText mInputText;
 
-    /**
+
+	private boolean mInputTextVisible;
+
+	/**
      * The min height of this widget.
      */
     private final int mMinHeight;
@@ -460,7 +463,9 @@ public class FasterNumberPicker extends LinearLayout {
 
 	private ScrollabilityCache mScrollCache;
 
-    /**
+	private boolean mDisableInputText;
+
+	/**
      * <p>ScrollabilityCache holds various fields used by a View when scrolling
      * is supported. This avoids keeping too many unused fields in most
      * instances of View.</p>
@@ -599,6 +604,9 @@ public class FasterNumberPicker extends LinearLayout {
         mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
         mFlingable = attributesArray.getBoolean(R.styleable.NumberPicker_flingable, true);
         mSelectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
+        Log.i(getClass().getName(), "Got divider " + mSelectionDivider
+        		+ " from " + attributesArray.getString(R.styleable.NumberPicker_selectionDivider)
+        		+ " from " + toString(attrs));
         int defSelectionDividerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 UNSCALED_DEFAULT_SELECTION_DIVIDER_HEIGHT,
                 getResources().getDisplayMetrics());
@@ -679,6 +687,7 @@ public class FasterNumberPicker extends LinearLayout {
 
         // input text
         //Log.i(getClass().getName(), this.getChildAt(1).getClass().getName());
+        mDisableInputText = false;
         EditText inputText = (EditText) findViewById(R.id.numberpicker_input);
         if (inputText == null) {
         	inputText = (EditText) getChildAt(1);
@@ -775,13 +784,25 @@ public class FasterNumberPicker extends LinearLayout {
            // }
         }
         
+    	mInputTextVisible = true;
+        
         mScrollCache = new ScrollabilityCache(ViewConfiguration.get(context));
         mScrollCache.fadingEdgeLength = (getBottom() - getTop() - mTextSize) / 2;
         
         mWrapSelectorWheel = true;
     }
 
-    private int lastSizeHash = 0;
+    private String toString(AttributeSet attrs) {
+    	final StringBuilder sb = new StringBuilder();
+    	sb.append("Number of attrs: " + attrs.getAttributeCount() + ": [");
+    	for (int i = 0; i < attrs.getAttributeCount(); i++, sb.append(i < attrs.getAttributeCount() ? ", " : "")) {
+    		sb.append("{" + attrs.getAttributeName(i) + ": " + attrs.getAttributeValue(i) + "}");
+    	}
+    	sb.append("]");
+		return sb.toString();
+	}
+
+	private int lastSizeHash = 0;
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final int msrdWdth = getMeasuredWidth();
@@ -825,7 +846,14 @@ public class FasterNumberPicker extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Try greedily to fit the max width and height.
-        final int newWidthMeasureSpec = makeMeasureSpec(widthMeasureSpec, mMaxWidth);
+        final int newWidthMeasureSpec = MeasureSpec.makeMeasureSpec(
+        		Math.max(Math.min(MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED ? MeasureSpec.getSize(widthMeasureSpec) : Integer.MAX_VALUE,
+        						(int) (mSelectorWheelPaint.measureText("00") + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 4.0f, getContext().getResources().getDisplayMetrics()))
+        					), 1),
+        		MeasureSpec.AT_MOST);
+        		// widthMeasureSpec; // makeMeasureSpec(widthMeasureSpec, mMaxWidth);
+        Log.i(getClass().getName(), "Width measurespec: " + MeasureSpec.toString(newWidthMeasureSpec));
+        Log.i(getClass().getName(), "Original width measurespec: " + MeasureSpec.toString(widthMeasureSpec));
         final int newHeightMeasureSpec = makeMeasureSpec(heightMeasureSpec, mMaxHeight);
         super.onMeasure(newWidthMeasureSpec, newHeightMeasureSpec);
         // Flag if we are measured with width or height less than the respective min.
@@ -1156,6 +1184,14 @@ public class FasterNumberPicker extends LinearLayout {
         invalidate();
     }
 
+    public void setDisableInputText(boolean disable) {
+    	mDisableInputText = disable;
+    	if (mDisableInputText) {
+    		mInputText.setVisibility(INVISIBLE);
+    		mInputTextVisible = false;
+    	}
+    }
+
     private void updateScrollOffset() {
 		mCurrentScrollOffset = mInitialScrollOffset - (mValue - mMinValue) * mSelectorElementHeight;
 	}
@@ -1415,8 +1451,10 @@ public class FasterNumberPicker extends LinearLayout {
 
     private int lastHashCode = 0;
     private int lastMetaHashCode = 0;
+    private int lastFakeInputHashCode = 0;
 	private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
 	private Bitmap metaSaved;
+	private Bitmap fakeInputSaved;
 	private int bumpOffset = 0;
     @Override
     protected void onDraw(Canvas canvas) {
@@ -1489,6 +1527,7 @@ public class FasterNumberPicker extends LinearLayout {
     	int metaHashCode = Arrays.hashCode(new int[] {
         		mCurrentScrollOffset,
         		mInputText.getVisibility(),
+        		mInputTextVisible ? 0 : 1,
         		mWrapSelectorWheel ? 0 : 1,
         		hashCode});
     	if (metaHashCode != lastMetaHashCode) {
@@ -1534,7 +1573,7 @@ public class FasterNumberPicker extends LinearLayout {
 		        	}
 		        }
 	        }
-	        if (mInputText.getVisibility() == VISIBLE) {
+	        if (mInputTextVisible) {
 	        	Paint clearPaint = new Paint(mSelectorWheelPaint);
 	        	clearPaint.setColor(0x00000000);
 	        	clearPaint.setAlpha(0);
@@ -1594,7 +1633,33 @@ public class FasterNumberPicker extends LinearLayout {
     	}
     	
     	canvas.drawBitmap(metaSaved, 0, 0, mSelectorWheelPaint);
-    	
+
+        if (mInputTextVisible && mDisableInputText) {
+        	// manually draw the full alpha middle value
+        	Paint fullAlpha = new Paint(mSelectorWheelPaint);
+        	fullAlpha.setAlpha(255);
+        	int fakeInputHashCode = Arrays.hashCode(new int[] {
+        		mValue,
+        		mSelectorElementHeight
+        	});
+        	if (fakeInputHashCode != lastFakeInputHashCode) {
+        		lastFakeInputHashCode = fakeInputHashCode;
+        		int height = mInputText.getHeight();
+        		if (fakeInputSaved == null ||
+        				fakeInputSaved.getHeight() != height) {
+        			fakeInputSaved = Bitmap.createBitmap(getWidth(),
+                			height, Config.ARGB_8888);
+        		} else {
+        			fakeInputSaved.eraseColor(Color.TRANSPARENT);
+        		}
+        		Canvas newCanvas = new Canvas(fakeInputSaved);
+            	// draw current text with full alpha
+            	ensureCachedScrollSelectorValue(mValue);
+                String scrollSelectorValue = mSelectorIndexToStringCache.get(mValue);
+                newCanvas.drawText(scrollSelectorValue, x, mInputText.getBaseline(), fullAlpha);
+        	}
+        	canvas.drawBitmap(fakeInputSaved, 0, mInputText.getTop(), fullAlpha);
+        }
     	
         // draw the selection dividers (only if scrolling and drawable specified)
         if (mSelectionDivider != null) {
@@ -1710,6 +1775,7 @@ public class FasterNumberPicker extends LinearLayout {
         	cancelDim();
             //mDimSelectorWheelAnimator.cancel();
             mInputText.setVisibility(View.INVISIBLE);
+            mInputTextVisible = false;
             mSelectorWheelPaint.setAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
             mPreviousScrollerY = 0;
             forceCompleteChangeCurrentByOneViaScroll();
@@ -1898,6 +1964,7 @@ public class FasterNumberPicker extends LinearLayout {
         mIncrementButton.setVisibility(INVISIBLE);
         mDecrementButton.setVisibility(INVISIBLE);
         mInputText.setVisibility(INVISIBLE);
+        mInputTextVisible = false;
     }
 
     /**
@@ -1908,7 +1975,10 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private void showInputControls(long animationDuration) {
         updateIncrementAndDecrementButtonsVisibilityState();
-        mInputText.setVisibility(VISIBLE);
+        if (!mDisableInputText) {
+        	mInputText.setVisibility(VISIBLE);
+        }
+        mInputTextVisible = true;
     	setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
         setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
         //mShowInputControlsAnimator.setDuration(animationDuration);
@@ -1921,7 +1991,10 @@ public class FasterNumberPicker extends LinearLayout {
      * @param animationDuration The duration of the animation.
      */
     private void fadeSelectorWheel(long animationDuration) {
-    	//mInputText.setVisibility(VISIBLE);
+    	//if (!mDisableInputText) {
+    	//  mInputText.setVisibility(VISIBLE);
+    	//}
+    	//mInputTextVisible = true;
     	//setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
     	showInputControls(animationDuration);
     //    mDimSelectorWheelAnimator.setDuration(animationDuration);
@@ -2286,6 +2359,7 @@ public class FasterNumberPicker extends LinearLayout {
             if (mFlingable) {
             	cancelDim();
                 mInputText.setVisibility(View.INVISIBLE);
+                mInputTextVisible = false;
                 mSelectorWheelPaint.setAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
                 mPreviousScrollerY = 0;
                 if (mIncrement) {

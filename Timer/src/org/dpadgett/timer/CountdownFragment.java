@@ -8,9 +8,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -25,6 +25,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 public class CountdownFragment extends Fragment {
+
+	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
 
 	private boolean inputMode;
 	private LinearLayout inputLayout;
@@ -72,6 +74,9 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
+		if (COMPAT_NEEDED) {
+			countdownHours.setDisableInputText(true);
+		}
 		countdownMinutes = (FasterNumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
@@ -81,6 +86,9 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
+		if (COMPAT_NEEDED) {
+			countdownMinutes.setDisableInputText(true);
+		}
 		countdownSeconds = (FasterNumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
@@ -89,6 +97,9 @@ public class CountdownFragment extends Fragment {
 		if (view != null) {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
+		}
+		if (COMPAT_NEEDED) {
+			countdownSeconds.setDisableInputText(true);
 		}
         this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);

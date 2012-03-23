@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="CompatLinearLayout">
-        <attr name="compat_showDividers">
+    <declare-styleable name="LinearLayout">
+        <attr name="showDividers">
             <enum name="none" value="0" />
             <enum name="beginning" value="1" />
             <enum name="middle" value="2" />

@@ -7,7 +7,7 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:showDividers="middle"
-    compat:compat_showDividers="middle" >
+    compat:showDividers="middle" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -106,7 +106,7 @@
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:showDividers="middle"
-            compat:compat_showDividers="middle" />
+            compat:showDividers="middle" />
     </ScrollView>
 
 </org.dpadgett.compat.LinearLayout>

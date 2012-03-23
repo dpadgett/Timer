@@ -74,9 +74,7 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
-		if (COMPAT_NEEDED) {
-			countdownHours.setDisableInputText(true);
-		}
+		countdownHours.setDisableInputText(true);
 		countdownMinutes = (FasterNumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
@@ -86,9 +84,7 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
-		if (COMPAT_NEEDED) {
-			countdownMinutes.setDisableInputText(true);
-		}
+		countdownMinutes.setDisableInputText(true);
 		countdownSeconds = (FasterNumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
@@ -98,9 +94,7 @@ public class CountdownFragment extends Fragment {
 			EditText inputText = (EditText) view;
 			inputText.setFocusable(false);
 		}
-		if (COMPAT_NEEDED) {
-			countdownSeconds.setDisableInputText(true);
-		}
+		countdownSeconds.setDisableInputText(true);
         this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
 		startButton.setOnClickListener(new OnClickListener() {

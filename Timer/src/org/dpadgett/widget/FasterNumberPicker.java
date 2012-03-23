@@ -17,8 +17,6 @@
 package org.dpadgett.widget;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.dpadgett.compat.R;
 
@@ -1452,6 +1450,7 @@ public class FasterNumberPicker extends LinearLayout {
     private class TileLoader implements LRUCache.Loader<Integer, Bitmap> {
 		@Override
 		public Bitmap load(Integer idx, Bitmap unusedValue) {
+			Log.i(getClass().getName(), "Loading index " + idx);
 	        int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
 	    	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
 	        int bitmapHeight = Math.min(512 - (512 % mSelectorElementHeight), totalHeight);
@@ -1486,7 +1485,6 @@ public class FasterNumberPicker extends LinearLayout {
     private int lastHashCode = 0;
     private int lastMetaHashCode = 0;
     private int lastFakeInputHashCode = 0;
-	// private Map<Integer, Bitmap> saved = new HashMap<Integer, Bitmap>();
 	private Bitmap metaSaved;
 	private Bitmap fakeInputSaved;
 	private int bumpOffset = 0;
@@ -1498,7 +1496,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
 
         float x = (getRight() - getLeft()) / 2;
-        float y = mCurrentScrollOffset;
 
         final int restoreCount = canvas.save();
 
@@ -1509,8 +1506,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
 
         // draw the selector wheel
-        int viewHeight = getHeight();
-        int viewWidth = getWidth();
 
         int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
     	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
@@ -1521,42 +1516,8 @@ public class FasterNumberPicker extends LinearLayout {
         		mMaxValue,
         		mSelectorElementHeight});
         if (hashCode != lastHashCode) {
-        	// this is applied when the bitmap is drawn, too
-/*        	Paint paint = new Paint(mSelectorWheelPaint);
-        	paint.setAlpha(255);
-*/        	lastHashCode = hashCode;
+        	lastHashCode = hashCode;
 			savedCache.clear();
-/*        	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
-        	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
-        		// if ((idx + 1) * bitmapHeight < mCurrentScrollOffset || idx * bitmapHeight > mCurrentScrollOffset) {
-        		// 	continue;
-        		// }
-        		int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
-        		Bitmap savedFrame = saved.get(idx);
-	        	if (savedFrame == null
-	        			|| height != savedFrame.getHeight()) {
-	            	savedFrame = Bitmap.createBitmap(viewWidth,
-	            			height, Config.ARGB_8888);
-	            	saved.put(idx, savedFrame);
-	        	} else {
-	        		savedFrame.eraseColor(Color.TRANSPARENT);
-	        	}
-        	}
-        	bumpOffset = mSelectorTextGapHeight;
-        	for (int idx = 0; idx * bitmapHeight < totalHeight; idx++) {
-        		if (saved.get(idx) == null) {
-        			continue;
-        		}
-        		y = mSelectorElementHeight - bumpOffset;
-	        	Canvas newCanvas = new Canvas(saved.get(idx));
-		        for (int i = mMinValue + itemsPerBitmap * idx; i <= Math.min(mMaxValue, mMinValue + itemsPerBitmap * (idx + 1) - 1); i++) {
-		        	ensureCachedScrollSelectorValue(i);
-		            String scrollSelectorValue = mSelectorIndexToStringCache.get(i);
-	                newCanvas.drawText(scrollSelectorValue, x, y, paint);
-		            y += mSelectorElementHeight;
-		        }
-        	}
-*/
         }
 
 
@@ -1593,9 +1554,9 @@ public class FasterNumberPicker extends LinearLayout {
 		        }
 		        for(int idx = 0;
 		        		offset < getHeight();
-		        		offset += savedCache.get(idx).getHeight(), idx = (idx + 1) % numTiles) {
+		        		offset += getBitmapHeight(idx), idx = (idx + 1) % numTiles) {
 		        	int top = offset;
-		        	int bottom = offset + savedCache.get(idx).getHeight();
+		        	int bottom = offset + getBitmapHeight(idx);
 		        	if (!(bottom < 0 || top > getHeight())) {
 		        		metaCanvas.drawBitmap(savedCache.get(idx), 0, offset, paint);
 		        	}
@@ -1718,7 +1679,15 @@ public class FasterNumberPicker extends LinearLayout {
         canvas.restoreToCount(restoreCount);
     }
 
-    @Override
+    private int getBitmapHeight(int idx) {
+    	int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
+    	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
+        int bitmapHeight = Math.min(512 - (512 % mSelectorElementHeight), totalHeight);
+        int height = Math.min(totalHeight - (idx * bitmapHeight), bitmapHeight);
+        return height;
+	}
+
+	@Override
     public void sendAccessibilityEvent(int eventType) {
         // Do not send accessibility events - we want the user to
         // perceive this widget as several controls rather as a whole.
@@ -1775,7 +1744,6 @@ public class FasterNumberPicker extends LinearLayout {
      */
     private void initializeSelectorWheelIndices() {
         mSelectorIndexToStringCache.clear();
-        int current = getValue();
         for (int i = mMinValue; i < mMaxValue; i++) {
             ensureCachedScrollSelectorValue(i);
         }
@@ -2065,38 +2033,6 @@ public class FasterNumberPicker extends LinearLayout {
             return mMaxValue - (mMinValue - selectorIndex) % (mMaxValue - mMinValue) + 1;
         }
         return selectorIndex;
-    }
-
-    /**
-     * Increments the <code>selectorIndices</code> whose string representations
-     * will be displayed in the selector.
-     */
-    private void incrementSelectorIndices(int[] selectorIndices) {
-        for (int i = 0; i < selectorIndices.length - 1; i++) {
-            selectorIndices[i] = selectorIndices[i + 1];
-        }
-        int nextScrollSelectorIndex = selectorIndices[selectorIndices.length - 2] + 1;
-        if (mWrapSelectorWheel && nextScrollSelectorIndex > mMaxValue) {
-            nextScrollSelectorIndex = mMinValue;
-        }
-        selectorIndices[selectorIndices.length - 1] = nextScrollSelectorIndex;
-        ensureCachedScrollSelectorValue(nextScrollSelectorIndex);
-    }
-
-    /**
-     * Decrements the <code>selectorIndices</code> whose string representations
-     * will be displayed in the selector.
-     */
-    private void decrementSelectorIndices(int[] selectorIndices) {
-        for (int i = selectorIndices.length - 1; i > 0; i--) {
-            selectorIndices[i] = selectorIndices[i - 1];
-        }
-        int nextScrollSelectorIndex = selectorIndices[1] - 1;
-        if (mWrapSelectorWheel && nextScrollSelectorIndex < mMinValue) {
-            nextScrollSelectorIndex = mMaxValue;
-        }
-        selectorIndices[0] = nextScrollSelectorIndex;
-        ensureCachedScrollSelectorValue(nextScrollSelectorIndex);
     }
 
     /**

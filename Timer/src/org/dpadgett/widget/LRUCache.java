@@ -69,8 +69,8 @@ public class LRUCache<K, V> {
 		if (nodes.size() >= capacity) {
 			// push out the least recently used item (leaf)
 			nodes.remove(leaf.key);
-			remove(leaf);
 			unusedValues.add(leaf.value);
+			remove(leaf);
 		}
 		Node<K, V> node = new Node<K, V>(null, null, key, loader.load(key, unusedValues.poll()));
 		nodes.put(key, node);
@@ -107,6 +107,8 @@ public class LRUCache<K, V> {
 		node.parent = null;
 		if (root == null) {
 			leaf = node;
+		} else {
+			root.parent = node;
 		}
 		root = node;
 	}

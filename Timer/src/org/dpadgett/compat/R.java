@@ -74,4 +74,9 @@ public final class R {
 		public static final int number_picker_increment_scroll_mode =
 				resolveId("number_picker_increment_scroll_mode", "string", "android", org.dpadgett.timer.R.string.number_picker_increment_scroll_mode);
 	}
+	
+	public static final class drawable {
+		public static final int numberpicker_selection_divider =
+				resolveId("numberpicker_selection_divider", "drawable", "android", org.dpadgett.timer.R.drawable.numberpicker_selection_divider);
+	}
 }

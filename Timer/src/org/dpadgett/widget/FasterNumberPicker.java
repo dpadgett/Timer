@@ -599,12 +599,17 @@ public class FasterNumberPicker extends LinearLayout {
         // process style attributes
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 R.styleable.NumberPicker, defStyle, 0);
+        TypedArray defAttrArray = context.getTheme().obtainStyledAttributes(R.styleable.NumberPicker);
         mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
         mFlingable = attributesArray.getBoolean(R.styleable.NumberPicker_flingable, true);
-        mSelectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
-        Log.i(getClass().getName(), "Got divider " + mSelectionDivider
+        Drawable selectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
+        Log.i(getClass().getName(), "Got divider " + selectionDivider
         		+ " from " + attributesArray.getString(R.styleable.NumberPicker_selectionDivider)
         		+ " from " + toString(attrs));
+        if (selectionDivider == null) {
+        	selectionDivider = context.getResources().getDrawable(R.drawable.numberpicker_selection_divider);
+        }
+        mSelectionDivider = selectionDivider;
         int defSelectionDividerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 UNSCALED_DEFAULT_SELECTION_DIVIDER_HEIGHT,
                 getResources().getDisplayMetrics());
@@ -628,6 +633,7 @@ public class FasterNumberPicker extends LinearLayout {
         }
         mComputeMaxWidth = (mMaxWidth == Integer.MAX_VALUE);
         attributesArray.recycle();
+        defAttrArray.recycle();
 
         mShowInputControlsAnimimationDuration = getResources().getInteger(
         		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android")) / 10;
@@ -795,6 +801,16 @@ public class FasterNumberPicker extends LinearLayout {
     	sb.append("Number of attrs: " + attrs.getAttributeCount() + ": [");
     	for (int i = 0; i < attrs.getAttributeCount(); i++, sb.append(i < attrs.getAttributeCount() ? ", " : "")) {
     		sb.append("{" + attrs.getAttributeName(i) + ": " + attrs.getAttributeValue(i) + "}");
+    	}
+    	sb.append("]");
+		return sb.toString();
+	}
+
+    private String toString(TypedArray array) {
+    	final StringBuilder sb = new StringBuilder();
+    	sb.append("Number of items: " + array.getIndexCount() + ": [");
+    	for (int i = 0; i < array.getIndexCount(); i++, sb.append(i < array.getIndexCount() ? ", " : "")) {
+    		sb.append("{" + i + ": " + array.getIndex(i) + "}");
     	}
     	sb.append("]");
 		return sb.toString();
@@ -1663,8 +1679,10 @@ public class FasterNumberPicker extends LinearLayout {
         // draw the selection dividers (only if scrolling and drawable specified)
         if (mSelectionDivider != null) {
             // draw the top divider
-            int topOfTopDivider =
-                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2;
+        	// hacky workaround, idk why this is needed
+            int topOfTopDivider = COMPAT_NEEDED ?
+                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2 :
+            	(getHeight() - mSelectorElementHeight - mSelectionDividerHeight + bumpOffset) / 2;
             int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
             mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
             mSelectionDivider.draw(canvas);

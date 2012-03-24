@@ -65,6 +65,11 @@ import android.widget.LinearLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
 
+import com.actionbarsherlock.internal.nineoldandroids.animation.Animator;
+import com.actionbarsherlock.internal.nineoldandroids.animation.AnimatorListenerAdapter;
+import com.actionbarsherlock.internal.nineoldandroids.animation.AnimatorSet;
+import com.actionbarsherlock.internal.nineoldandroids.animation.ObjectAnimator;
+
 /**
  * A widget that enables the user to select a number form a predefined range.
  * The widget presents an input filed and up and down buttons for selecting the
@@ -358,12 +363,12 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * {@link Animator} for showing the up/down arrows.
      */
-    //private final AnimatorSet mShowInputControlsAnimator;
+    private final AnimatorSet mShowInputControlsAnimator;
 
     /**
      * {@link Animator} for dimming the selector wheel.
      */
-    //private final Animator mDimSelectorWheelAnimator;
+    private final Animator mDimSelectorWheelAnimator;
 
     /**
      * The Y position of the last down event.
@@ -739,16 +744,16 @@ public class FasterNumberPicker extends LinearLayout {
         mSelectorWheelPaint = paint;
 
         // create the animator for showing the input controls
-        //mDimSelectorWheelAnimator = ObjectAnimator.ofInt(this, PROPERTY_SELECTOR_PAINT_ALPHA,
-        //        SELECTOR_WHEEL_BRIGHT_ALPHA, SELECTOR_WHEEL_DIM_ALPHA);
-        //final ObjectAnimator showIncrementButton = ObjectAnimator.ofFloat(mIncrementButton,
-        //        PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
-        //final ObjectAnimator showDecrementButton = ObjectAnimator.ofFloat(mDecrementButton,
-        //        PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
-        //mShowInputControlsAnimator = new AnimatorSet();
-        //mShowInputControlsAnimator.playTogether(mDimSelectorWheelAnimator, showIncrementButton,
-        //        showDecrementButton);
-        /*mShowInputControlsAnimator.addListener(new AnimatorListenerAdapter() {
+        mDimSelectorWheelAnimator = ObjectAnimator.ofInt(this, PROPERTY_SELECTOR_PAINT_ALPHA,
+                SELECTOR_WHEEL_BRIGHT_ALPHA, SELECTOR_WHEEL_DIM_ALPHA);
+        final ObjectAnimator showIncrementButton = ObjectAnimator.ofFloat(mIncrementButton,
+                PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
+        final ObjectAnimator showDecrementButton = ObjectAnimator.ofFloat(mDecrementButton,
+                PROPERTY_BUTTON_ALPHA, BUTTON_ALPHA_TRANSPARENT, BUTTON_ALPHA_OPAQUE);
+        mShowInputControlsAnimator = new AnimatorSet();
+        mShowInputControlsAnimator.playTogether(mDimSelectorWheelAnimator, showIncrementButton,
+                showDecrementButton);
+        mShowInputControlsAnimator.addListener(new AnimatorListenerAdapter() {
             private boolean mCanceled = false;
 
             @Override
@@ -766,10 +771,14 @@ public class FasterNumberPicker extends LinearLayout {
                     mCanceled = true;
                 }
             }
-        });*/
+        });
 
         // create the fling and adjust scrollers
-        mFlingScroller = new Scroller(getContext(), null);//, true);
+        if (COMPAT_NEEDED) {
+        	mFlingScroller = new Scroller(getContext(), null);//, true);
+        } else {
+        	mFlingScroller = new Scroller(getContext(), null);
+        }
         mAdjustScroller = new Scroller(getContext(), new DecelerateInterpolator(2.5f));
         mLongPressScroller = new Scroller(getContext(), new LinearInterpolator());
 
@@ -777,15 +786,15 @@ public class FasterNumberPicker extends LinearLayout {
         updateIncrementAndDecrementButtonsVisibilityState();
 
         if (mFlingable) {
-           // if (isInEditMode()) {
+           if (isInEditMode()) {
                setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
-           // } else {
+           } else {
                 // Start with shown selector wheel and hidden controls. When made
                 // visible hide the selector and fade-in the controls to suggest
                 // fling interaction.
-           //      setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
-           //      hideInputControls();
-           // }
+                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
+                hideInputControls();
+           }
         }
         
     	mInputTextVisible = true;

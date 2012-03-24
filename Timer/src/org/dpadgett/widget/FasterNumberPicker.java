@@ -118,8 +118,8 @@ public class FasterNumberPicker extends LinearLayout {
      * The the delay for showing the input controls after a single tap on the
      * input text.
      */
-    private static final int SHOW_INPUT_CONTROLS_DELAY_MILLIS = ViewConfiguration
-            .getDoubleTapTimeout();
+    private static final int SHOW_INPUT_CONTROLS_DELAY_MILLIS = /*ViewConfiguration
+            .getDoubleTapTimeout()*/ 0;
 
     /**
      * The strength of fading in the top and bottom while drawing the selector.
@@ -641,7 +641,7 @@ public class FasterNumberPicker extends LinearLayout {
         defAttrArray.recycle();
 
         mShowInputControlsAnimimationDuration = getResources().getInteger(
-        		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android")) / 10;
+        		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android")) / 4;
 
         // By default Linearlayout that we extend is not drawn. This is
         // its draw() method is not called but dispatchDraw() is called
@@ -728,8 +728,8 @@ public class FasterNumberPicker extends LinearLayout {
         ViewConfiguration configuration = ViewConfiguration.get(context);
         mTouchSlop = configuration.getScaledTouchSlop();
         mMinimumFlingVelocity = configuration.getScaledMinimumFlingVelocity();
-        mMaximumFlingVelocity = configuration.getScaledMaximumFlingVelocity()
-                / SELECTOR_MAX_FLING_VELOCITY_ADJUSTMENT;
+        mMaximumFlingVelocity = Math.max(1500, configuration.getScaledMaximumFlingVelocity()
+                / SELECTOR_MAX_FLING_VELOCITY_ADJUSTMENT);
         mTextSize = (int) mInputText.getTextSize();
 
         // create the selector wheel paint
@@ -741,6 +741,7 @@ public class FasterNumberPicker extends LinearLayout {
         ColorStateList colors = mInputText.getTextColors();
         int color = COMPAT_NEEDED ? Color.WHITE : colors.getColorForState(ENABLED_STATE_SET, Color.WHITE);
         paint.setColor(color);
+        paint.setAlpha(SELECTOR_WHEEL_DIM_ALPHA);
         mSelectorWheelPaint = paint;
 
         // create the animator for showing the input controls
@@ -777,7 +778,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (COMPAT_NEEDED) {
         	mFlingScroller = new Scroller(getContext(), null);//, true);
         } else {
-        	mFlingScroller = new Scroller(getContext(), null);
+        	mFlingScroller = new Scroller(getContext(), null, true);
         }
         mAdjustScroller = new Scroller(getContext(), new DecelerateInterpolator(2.5f));
         mLongPressScroller = new Scroller(getContext(), new LinearInterpolator());
@@ -785,17 +786,18 @@ public class FasterNumberPicker extends LinearLayout {
         updateInputTextView();
         updateIncrementAndDecrementButtonsVisibilityState();
 
-        if (mFlingable) {
-           if (isInEditMode()) {
-               setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
-           } else {
-                // Start with shown selector wheel and hidden controls. When made
-                // visible hide the selector and fade-in the controls to suggest
-                // fling interaction.
-                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
-                hideInputControls();
-           }
-        }
+//        if (mFlingable) {
+//           if (isInEditMode()) {
+//               setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
+//           } else {
+//                // Start with shown selector wheel and hidden controls. When made
+//                // visible hide the selector and fade-in the controls to suggest
+//                // fling interaction.
+//                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
+//                hideInputControls();
+//           }
+//        }
+        
         
     	mInputTextVisible = true;
         
@@ -803,6 +805,8 @@ public class FasterNumberPicker extends LinearLayout {
         mScrollCache.fadingEdgeLength = (getBottom() - getTop() - mTextSize) / 2;
         
         mWrapSelectorWheel = true;
+        
+        invalidate();
     }
 
     private String toString(AttributeSet attrs) {
@@ -875,8 +879,8 @@ public class FasterNumberPicker extends LinearLayout {
         					), 1),
         		MeasureSpec.AT_MOST);
         		// widthMeasureSpec; // makeMeasureSpec(widthMeasureSpec, mMaxWidth);
-        Log.i(getClass().getName(), "Width measurespec: " + MeasureSpec.toString(newWidthMeasureSpec));
-        Log.i(getClass().getName(), "Original width measurespec: " + MeasureSpec.toString(widthMeasureSpec));
+        //Log.i(getClass().getName(), "Width measurespec: " + MeasureSpec.toString(newWidthMeasureSpec));
+        //Log.i(getClass().getName(), "Original width measurespec: " + MeasureSpec.toString(widthMeasureSpec));
         final int newHeightMeasureSpec = makeMeasureSpec(heightMeasureSpec, mMaxHeight);
         super.onMeasure(newWidthMeasureSpec, newHeightMeasureSpec);
         // Flag if we are measured with width or height less than the respective min.
@@ -944,7 +948,9 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private void cancelDim() {
-    	setSelectorPaintAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
+    	// setSelectorPaintAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
+    	mShowInputControlsAnimator.cancel();
+        mDimSelectorWheelAnimator.cancel();
 	}
 
 	@Override
@@ -1459,8 +1465,8 @@ public class FasterNumberPicker extends LinearLayout {
 
         // Draw our children if we are not showing the selector wheel or fading
         // it out
-        if (/*mShowInputControlsAnimator.isRunning()
-                || */ mSelectorWheelState != SELECTOR_WHEEL_STATE_LARGE) {
+        if (mShowInputControlsAnimator.isRunning()
+                || mSelectorWheelState != SELECTOR_WHEEL_STATE_LARGE) {
             long drawTime = getDrawingTime();
             for (int i = 0, count = getChildCount(); i < count; i++) {
                 View child = getChildAt(i);
@@ -1475,7 +1481,6 @@ public class FasterNumberPicker extends LinearLayout {
     private class TileLoader implements LRUCache.Loader<Integer, Bitmap> {
 		@Override
 		public Bitmap load(Integer idx, Bitmap unusedValue) {
-			Log.i(getClass().getName(), "Loading index " + idx);
 	        int totalHeight = (mMaxValue - mMinValue + 1) * mSelectorElementHeight;
 	    	//int bitmapHeight = Math.min(2048 - (2048 % mSelectorElementHeight), totalHeight);
 	        int bitmapHeight = Math.min(512 - (512 % mSelectorElementHeight), totalHeight);
@@ -1872,7 +1877,7 @@ public class FasterNumberPicker extends LinearLayout {
      */
     @SuppressWarnings("unused")
     // Called via reflection
-    private void setSelectorPaintAlpha(int alpha) {
+    public void setSelectorPaintAlpha(int alpha) {
         mSelectorWheelPaint.setAlpha(alpha);
         invalidate();
     }
@@ -1998,6 +2003,7 @@ public class FasterNumberPicker extends LinearLayout {
         mDecrementButton.setVisibility(INVISIBLE);
         mInputText.setVisibility(INVISIBLE);
         mInputTextVisible = false;
+        invalidate();
     }
 
     /**
@@ -2012,10 +2018,10 @@ public class FasterNumberPicker extends LinearLayout {
         	mInputText.setVisibility(VISIBLE);
         }
         mInputTextVisible = true;
-    	setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
-        setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
-        //mShowInputControlsAnimator.setDuration(animationDuration);
-        //mShowInputControlsAnimator.start();
+    	//setSelectorPaintAlpha(SELECTOR_WHEEL_DIM_ALPHA);
+        //setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
+        mShowInputControlsAnimator.setDuration(animationDuration);
+        mShowInputControlsAnimator.start();
     }
 
     /**

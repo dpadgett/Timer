@@ -123,7 +123,6 @@ public class LapTimes {
 			@Override
 			public void run() {
 				scrollView.scrollTo(0, scrollPosition - scrollView.getMeasuredHeight());
-		    	System.out.println("scrolled to " + (scrollPosition - scrollView.getMeasuredHeight()));
 				lapTimesView.post(new Runnable() {
 					@Override
 					public void run() {

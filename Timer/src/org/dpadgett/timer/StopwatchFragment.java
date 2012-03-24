@@ -179,7 +179,6 @@ public class StopwatchFragment extends Fragment {
     	super.onResume();
     	if (rootView != null) {
     		restoreState();
-    		System.out.println("resumed");
     	}
     }
 

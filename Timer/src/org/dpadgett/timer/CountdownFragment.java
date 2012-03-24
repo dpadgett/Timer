@@ -158,7 +158,6 @@ public class CountdownFragment extends Fragment {
     	super.onResume();
     	if (rootView != null) {
     		restoreState();
-    		System.out.println("resumed");
     	}
     }
     

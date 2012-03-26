@@ -2328,7 +2328,7 @@ public class FasterNumberPicker extends LinearLayout {
             if (correctOffset > 0) {
             	correctOffset -= totalHeight;
             }
-            if (correctOffset == mCurrentScrollOffset) {
+            if (correctOffset == ((mCurrentScrollOffset - totalHeight) % totalHeight)) {
                 updateInputTextView();
                 showInputControls(mShowInputControlsAnimimationDuration);
                 return;

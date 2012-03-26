@@ -92,6 +92,10 @@ public class TimerActivity extends SherlockFragmentActivity {
 				.setCancelable(false)
 				.create();
 
+		if (prefs.getBoolean("countdownDialogShowing", false)) {
+			alarmDialog.show();
+		}
+
 		getApplicationContext().registerReceiver(showDialogReceiver, new IntentFilter(ACTION_SHOW_DIALOG));
 		getApplicationContext().registerReceiver(dismissDialogReceiver, new IntentFilter(ACTION_DISMISS_DIALOG));
     }
@@ -101,6 +105,9 @@ public class TimerActivity extends SherlockFragmentActivity {
 		super.onDestroy();
     	getApplicationContext().unregisterReceiver(showDialogReceiver);
     	getApplicationContext().unregisterReceiver(dismissDialogReceiver);
+    	if (alarmDialog.isShowing()) {
+    		alarmDialog.dismiss();
+    	}
 	}
 
     private BroadcastReceiver showDialogReceiver = new BroadcastReceiver() {

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -25,8 +24,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 public class CountdownFragment extends Fragment {
-
-	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
 
 	private boolean inputMode;
 	private LinearLayout inputLayout;

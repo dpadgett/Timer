@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
@@ -115,9 +116,13 @@ public class AlarmService extends Service {
 	}
 	
 	private void handleCommand(Intent intent) {
+		SharedPreferences.Editor prefs =
+				getSharedPreferences("TimerActivity", Context.MODE_PRIVATE).edit();
 		if (intent.getBooleanExtra("startAlarm", false)) {
 			initRingtone();
 			countdownFinished();
+			prefs.putBoolean("countdownDialogShowing", true);
+			prefs.commit();
 			System.out.println("Starting alarm: " + intent + "; " + intent.getExtras());
 		} else {
 			dismissNotification();
@@ -126,6 +131,8 @@ public class AlarmService extends Service {
 				context.sendBroadcast(dismiss);
 				System.out.println("Sent request to dismiss dialog");
 			}
+			prefs.putBoolean("countdownDialogShowing", false);
+			prefs.commit();
 			context.stopService(new Intent(context, getClass()));
 		}
 	}

@@ -608,9 +608,6 @@ public class FasterNumberPicker extends LinearLayout {
         mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
         mFlingable = attributesArray.getBoolean(R.styleable.NumberPicker_flingable, true);
         Drawable selectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
-        Log.i(getClass().getName(), "Got divider " + selectionDivider
-        		+ " from " + attributesArray.getString(R.styleable.NumberPicker_selectionDivider)
-        		+ " from " + toString(attrs));
         if (selectionDivider == null) {
         	selectionDivider = context.getResources().getDrawable(R.drawable.numberpicker_selection_divider);
         }
@@ -653,7 +650,6 @@ public class FasterNumberPicker extends LinearLayout {
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
-        Log.i(getClass().getName(), "ID: " + R.layout.number_picker);
         inflater.inflate(R.layout.number_picker, this, true);
 
         OnClickListener onClickListener = new OnClickListener() {
@@ -963,7 +959,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
         mVelocityTracker.addMovement(ev);
         int action = COMPAT_NEEDED ? ev.getAction() : ev.getActionMasked();
-        Log.i(getClass().getName(), "touch action: " + action + " from " + ev);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 float currentMoveY = ev.getY();

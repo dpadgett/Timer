@@ -1499,7 +1499,6 @@ public class FasterNumberPicker extends LinearLayout {
 			}
         	Paint paint = new Paint(mSelectorWheelPaint);
         	paint.setAlpha(255);
-        	bumpOffset = mSelectorTextGapHeight;
             float x = (getRight() - getLeft()) / 2;
     		float y = mSelectorElementHeight - bumpOffset;
         	int itemsPerBitmap = bitmapHeight / mSelectorElementHeight;
@@ -1573,6 +1572,7 @@ public class FasterNumberPicker extends LinearLayout {
         	paint.setAlpha(255);
     		Canvas metaCanvas = new Canvas(metaSaved);
     		
+        	bumpOffset = mSelectorTextGapHeight;
     		final int currentScrollOffset = mCurrentScrollOffset + bumpOffset;
     		
 	        // offset for the 0th bitmap
@@ -1777,10 +1777,10 @@ public class FasterNumberPicker extends LinearLayout {
      * string representation of these indices.
      */
     private void initializeSelectorWheelIndices() {
-        mSelectorIndexToStringCache.clear();
-        for (int i = mMinValue; i < mMaxValue; i++) {
-            ensureCachedScrollSelectorValue(i);
-        }
+        //mSelectorIndexToStringCache.clear();
+        //for (int i = mMinValue; i < mMaxValue; i++) {
+        //    ensureCachedScrollSelectorValue(i);
+        //}
     }
 
     /**
@@ -1935,6 +1935,7 @@ public class FasterNumberPicker extends LinearLayout {
         int editTextTextPosition = mInputText.getBaseline() + mInputText.getTop();
         mInitialScrollOffset = editTextTextPosition - mSelectorElementHeight;
         // mCurrentScrollOffset = mInitialScrollOffset;
+        mCurrentScrollOffset = mInitialScrollOffset - (mValue - mMinValue) * mSelectorElementHeight;
         updateScrollOffset();
         updateInputTextView();
         

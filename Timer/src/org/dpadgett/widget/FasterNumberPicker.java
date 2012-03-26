@@ -963,6 +963,7 @@ public class FasterNumberPicker extends LinearLayout {
         }
         mVelocityTracker.addMovement(ev);
         int action = COMPAT_NEEDED ? ev.getAction() : ev.getActionMasked();
+        Log.i(getClass().getName(), "touch action: " + action + " from " + ev);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 float currentMoveY = ev.getY();
@@ -981,8 +982,9 @@ public class FasterNumberPicker extends LinearLayout {
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
-                if (mBeginEditOnUpEvent) {
+                if (mBeginEditOnUpEvent && !mDisableInputText) {
                     setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
+                    postAdjustScrollerCommand(0);
                     showInputControls(mShowInputControlsAnimimationDuration);
                     mInputText.requestFocus();
                     return true;

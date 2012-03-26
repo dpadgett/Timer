@@ -782,17 +782,17 @@ public class FasterNumberPicker extends LinearLayout {
         updateInputTextView();
         updateIncrementAndDecrementButtonsVisibilityState();
 
-//        if (mFlingable) {
-//           if (isInEditMode()) {
-//               setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
-//           } else {
-//                // Start with shown selector wheel and hidden controls. When made
-//                // visible hide the selector and fade-in the controls to suggest
-//                // fling interaction.
-//                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
-//                hideInputControls();
-//           }
-//        }
+        if (mFlingable) {
+           if (isInEditMode()) {
+               setSelectorWheelState(SELECTOR_WHEEL_STATE_SMALL);
+           } else {
+                // Start with shown selector wheel and hidden controls. When made
+                // visible hide the selector and fade-in the controls to suggest
+                // fling interaction.
+                setSelectorWheelState(SELECTOR_WHEEL_STATE_LARGE);
+                hideInputControls();
+           }
+        }
         
         
     	mInputTextVisible = true;
@@ -1434,7 +1434,9 @@ public class FasterNumberPicker extends LinearLayout {
         // first time the user sees this widget
         if (mFlingable && !isInEditMode()) {
             // animate a bit slower the very first time
-            showInputControls(mShowInputControlsAnimimationDuration * 2);
+            //showInputControls(mShowInputControlsAnimimationDuration * 2);
+        	showInputControls(0);
+            //postAdjustScrollerCommand(100);
         }
     }
 

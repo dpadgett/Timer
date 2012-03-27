@@ -24,14 +24,13 @@ public class AlarmService extends Service {
 		Uri alarmUri = getRingtoneUri();
 		if (alarmUri != null) {
 			alarmPlayer = new MediaPlayer();
-			alarmPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			alarmPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
 			try {
-				Context appContext = context;
-				alarmPlayer.setDataSource(appContext, alarmUri);
+				alarmPlayer.setDataSource(context, alarmUri);
 				alarmPlayer.setLooping(true);
 				alarmPlayer.prepare();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("Couldn't init ringtone " + alarmUri.toString(), e);
 			}
 		}
 	}

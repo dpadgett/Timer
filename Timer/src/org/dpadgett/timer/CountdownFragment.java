@@ -2,6 +2,7 @@ package org.dpadgett.timer;
 
 import org.dpadgett.widget.CountdownTextView;
 import org.dpadgett.widget.FasterNumberPicker;
+import org.dpadgett.widget.FasterNumberPicker.OnValueChangeListener;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -60,6 +61,16 @@ public class CountdownFragment extends Fragment {
 				return String.format("%02d", value);
 			}
         };
+        
+        FasterNumberPicker.OnValueChangeListener saveTimestampListener = new OnValueChangeListener() {
+			@Override
+			public void onValueChange(FasterNumberPicker picker, int oldVal, int newVal) {
+				SharedPreferences.Editor prefs = 
+						getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();    		
+				prefs.putLong("countdownInputs", getInputTimestamp());
+				prefs.commit();
+			}
+		};
 
         countdownHours = (FasterNumberPicker) rootView.findViewById(R.id.countdownHours);
         countdownHours.setMinValue(0);
@@ -72,6 +83,7 @@ public class CountdownFragment extends Fragment {
 			inputText.setFocusable(false);
 		}
 		countdownHours.setDisableInputText(true);
+		countdownHours.setOnValueChangedListener(saveTimestampListener);
 		countdownMinutes = (FasterNumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
@@ -82,6 +94,7 @@ public class CountdownFragment extends Fragment {
 			inputText.setFocusable(false);
 		}
 		countdownMinutes.setDisableInputText(true);
+		countdownMinutes.setOnValueChangedListener(saveTimestampListener);
 		countdownSeconds = (FasterNumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
@@ -92,6 +105,7 @@ public class CountdownFragment extends Fragment {
 			inputText.setFocusable(false);
 		}
 		countdownSeconds.setDisableInputText(true);
+		countdownSeconds.setOnValueChangedListener(saveTimestampListener);
         this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
 		startButton.setOnClickListener(new OnClickListener() {

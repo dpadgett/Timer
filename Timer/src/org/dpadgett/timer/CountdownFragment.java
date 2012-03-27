@@ -84,6 +84,7 @@ public class CountdownFragment extends Fragment {
 		}
 		countdownHours.setDisableInputText(true);
 		countdownHours.setOnValueChangedListener(saveTimestampListener);
+
 		countdownMinutes = (FasterNumberPicker) rootView.findViewById(R.id.countdownMinutes);
         countdownMinutes.setMinValue(0);
         countdownMinutes.setMaxValue(59);
@@ -95,6 +96,7 @@ public class CountdownFragment extends Fragment {
 		}
 		countdownMinutes.setDisableInputText(true);
 		countdownMinutes.setOnValueChangedListener(saveTimestampListener);
+
 		countdownSeconds = (FasterNumberPicker) rootView.findViewById(R.id.countdownSeconds);
         countdownSeconds.setMinValue(0);
         countdownSeconds.setMaxValue(59);
@@ -106,8 +108,10 @@ public class CountdownFragment extends Fragment {
 		}
 		countdownSeconds.setDisableInputText(true);
 		countdownSeconds.setOnValueChangedListener(saveTimestampListener);
-        this.timerLayout =
+
+		this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
+
 		startButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -118,6 +122,7 @@ public class CountdownFragment extends Fragment {
 				}
 			}
         });
+
 		restoreState();
 
 		// forcefully pre-render content so it is cached
@@ -146,7 +151,6 @@ public class CountdownFragment extends Fragment {
 	    	inputMode = !timingThread.isRunning();
 	    	if (!inputMode) {
 	    		// countdown view
-	    		inputMode = false;
 				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
 				Button startButton = (Button) rootView.findViewById(R.id.startButton);
 				inputs.removeAllViews();

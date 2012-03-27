@@ -14,6 +14,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 public class AlarmService extends Service {
 
@@ -46,7 +47,7 @@ public class AlarmService extends Service {
 			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		}
 		if (alarmUri == null) {
-			System.err.println("Could not find alert sound!");
+			Log.w(getClass().getName(), "Could not find alert sound!");
 		}
 		return alarmUri;
 	}
@@ -56,9 +57,9 @@ public class AlarmService extends Service {
 			alarmPlayer.stop();
 			alarmPlayer.release();
 			alarmPlayer = null;
-			System.out.println("Stopped ringtone");
+			Log.i(getClass().getName(), "Stopped ringtone");
 		} else {
-			System.out.println("Alarm not ringing!");
+			Log.i(getClass().getName(), "Alarm not ringing!");
 		}
 		NotificationManager manager = 
 				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -72,14 +73,14 @@ public class AlarmService extends Service {
 		NotificationManager mNotificationManager = 
 				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		int icon = drawable.ic_dialog_info;
-		CharSequence tickerText = "Countdown timer finished";
+		String tickerText = "Countdown timer finished";
 		long when = System.currentTimeMillis();
 
 		Notification notification = new Notification(icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONGOING_EVENT;
 		
-		CharSequence contentTitle = "Countdown timer finished";
-		CharSequence contentText = "Tap here to dismiss";
+		String contentTitle = "Countdown timer finished";
+		String contentText = "Tap here to dismiss";
 		Intent notificationIntent = new Intent(context, AlarmService.class)
 			.putExtra("startAlarm", false).putExtra("fromFragment", false)
 			.setAction("internalStopAlarm");
@@ -89,11 +90,11 @@ public class AlarmService extends Service {
 		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 		mNotificationManager.notify(R.id.countdownNotification, notification);
 		
-		System.out.println("Started ringtone");
+		Log.i(getClass().getName(), "Started ringtone");
 
 		Intent showDialog = new Intent(TimerActivity.ACTION_SHOW_DIALOG);
 		context.sendBroadcast(showDialog);
-		System.out.println("Sent request to show dialog");
+		Log.i(getClass().getName(), "Sent request to show dialog");
 	}
 	
 	// This is the old onStart method that will be called on the pre-2.0
@@ -122,13 +123,13 @@ public class AlarmService extends Service {
 			countdownFinished();
 			prefs.putBoolean("countdownDialogShowing", true);
 			prefs.commit();
-			System.out.println("Starting alarm: " + intent + "; " + intent.getExtras());
+			Log.i(getClass().getName(), "Starting alarm: " + intent + "; " + intent.getExtras());
 		} else {
 			dismissNotification();
 			if (!intent.getBooleanExtra("fromFragment", true)) {
 				Intent dismiss = new Intent(TimerActivity.ACTION_DISMISS_DIALOG);
 				context.sendBroadcast(dismiss);
-				System.out.println("Sent request to dismiss dialog");
+				Log.i(getClass().getName(), "Sent request to dismiss dialog");
 			}
 			prefs.putBoolean("countdownDialogShowing", false);
 			prefs.commit();

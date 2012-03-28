@@ -5,15 +5,13 @@
     android:gravity="center"
     android:orientation="horizontal" >
 
-    <view
+    <org.dpadgett.widget.AnalogClockWithTimezone
         android:id="@+id/analogClock"
         android:layout_width="100sp"
         android:layout_height="100sp"
-        android:layout_weight="0.5"
-        class="org.dpadgett.widget.AnalogClockWithTimezone" />
+        android:layout_weight="0.5" />
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"

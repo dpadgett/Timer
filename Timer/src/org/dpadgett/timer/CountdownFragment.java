@@ -24,6 +24,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+/**
+ * Fragment which handles the UI and logic for the countdown timer.
+ *
+ * @author dpadgett
+ */
 public class CountdownFragment extends Fragment {
 
 	private boolean inputMode;
@@ -34,7 +39,7 @@ public class CountdownFragment extends Fragment {
 	private FasterNumberPicker countdownHours;
 	private FasterNumberPicker countdownMinutes;
 	private FasterNumberPicker countdownSeconds;
-	private CountdownThread timingThread;
+	private CountdownState timingState;
 
 	public PendingIntent alarmPendingIntent;
 
@@ -137,7 +142,7 @@ public class CountdownFragment extends Fragment {
         SharedPreferences prefs =
 				getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE);
 
-    	timingThread = new CountdownThread(
+    	timingState = new CountdownState(
 				(CountdownTextView) timerLayout.findViewById(R.id.countdownTimer), prefs);
 		
         if (prefs.contains("countdownInputs")) {
@@ -148,7 +153,7 @@ public class CountdownFragment extends Fragment {
 	    	countdownMinutes.setValue((int) (countdownInputs % 60));
 	    	countdownInputs /= 60;
 	    	countdownHours.setValue((int) (countdownInputs % 100));
-	    	inputMode = !timingThread.isRunning();
+	    	inputMode = !timingState.isRunning();
 	    	if (!inputMode) {
 	    		// countdown view
 				LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
@@ -188,7 +193,7 @@ public class CountdownFragment extends Fragment {
 		SharedPreferences.Editor prefs = 
 			getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();    		
 		
-    	timingThread.onSaveState(prefs);
+    	timingState.onSaveState(prefs);
 		prefs.putLong("countdownInputs", getInputTimestamp());
     	prefs.commit();
     }
@@ -196,7 +201,7 @@ public class CountdownFragment extends Fragment {
     @Override
     public void onDestroy() {
     	super.onDestroy();
-    	timingThread.stopTimer();
+    	timingState.stopTimer();
     	handler.removeCallbacks(inputModeOff);
     }
 
@@ -219,7 +224,7 @@ public class CountdownFragment extends Fragment {
 			LinearLayout inputs = (LinearLayout) rootView.findViewById(R.id.inputsLayout);
 			Button startButton = (Button) rootView.findViewById(R.id.startButton);
 
-			timingThread.startTimer(getInputTimestamp());
+			timingState.startTimer(getInputTimestamp());
 			
 			inputs.removeAllViews();
 			inputs.addView(timerLayout);
@@ -229,14 +234,12 @@ public class CountdownFragment extends Fragment {
 			// should be unique
 			Intent intent = new Intent(getContext(), AlarmService.class)
 				.putExtra("startAlarm", true)
-				.setAction("startAlarmAt" + (timingThread.endTime));
+				.setAction("startAlarmAt" + (timingState.endTime));
 			alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
 					PendingIntent.FLAG_ONE_SHOT);
 			alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 					SystemClock.elapsedRealtime() + getInputTimestamp(), alarmPendingIntent);
 
-			//handler.postAtTime(this, 
-			//		SystemClock.uptimeMillis() + (timingThread.endTime - System.currentTimeMillis()));
 			saveState();
 		}
     	
@@ -259,12 +262,12 @@ public class CountdownFragment extends Fragment {
 			inputs.removeAllViews();
 			inputs.addView(inputLayout);
 			startButton.setText("Start");
-			timingThread.stopTimer();
+			timingState.stopTimer();
 			if (alarmPendingIntent == null) {
 				// should be unique
 				Intent intent = new Intent(getContext(), AlarmService.class)
 					.putExtra("startAlarm", true)
-					.setAction("startAlarmAt" + (timingThread.endTime));
+					.setAction("startAlarmAt" + (timingState.endTime));
 				alarmPendingIntent = PendingIntent.getService(getContext(), 0, intent,
 						PendingIntent.FLAG_ONE_SHOT);
 			}

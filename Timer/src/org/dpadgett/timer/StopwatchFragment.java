@@ -18,6 +18,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ScrollView;
 
+/**
+ * Fragment which handles the UI and logic for running a stopwatch.
+ *
+ * @author dpadgett
+ */
 public class StopwatchFragment extends Fragment {
 
 	private long additionalElapsed = 0L;
@@ -31,10 +36,6 @@ public class StopwatchFragment extends Fragment {
 	private TimerTextView lapTimeText;
 
 	private boolean isTimerRunning;
-
-	public StopwatchFragment() {
-		isTimerRunning = false;
-	}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,7 +61,7 @@ public class StopwatchFragment extends Fragment {
 			Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
 
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				isTimerRunning = !isTimerRunning;
 				if (isTimerRunning) { // start
 					timeStarted = System.currentTimeMillis();
@@ -86,7 +87,7 @@ public class StopwatchFragment extends Fragment {
         resetButton.setOnClickListener(new OnClickListener() {
         	
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				if (isTimerRunning) { // lap
 					long origTimeStarted = timeStarted;
 					timeStarted = System.currentTimeMillis();
@@ -181,15 +182,4 @@ public class StopwatchFragment extends Fragment {
     		restoreState();
     	}
     }
-
-	static String getTimerText(long elapsedTime) {
-		long millis = elapsedTime % 1000;
-		elapsedTime /= 1000;
-		long secs = elapsedTime % 60;
-		elapsedTime /= 60;
-		long mins = elapsedTime % 60;
-		elapsedTime /= 60;
-		long hours = elapsedTime % 60;
-		return String.format("%02d:%02d:%02d.%03d", hours, mins, secs, millis);
-	}
 }

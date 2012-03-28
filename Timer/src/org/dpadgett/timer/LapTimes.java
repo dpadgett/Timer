@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dpadgett.compat.LinearLayout;
+import org.dpadgett.compat.LinearLayout.OnLayoutChangeListener;
+import org.dpadgett.compat.Space;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,14 +15,12 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ListView;
 import android.widget.ScrollView;
-import android.widget.Space;
 import android.widget.TextView;
-import org.dpadgett.compat.LinearLayout.OnLayoutChangeListener;
 
 /**
  * Class to encapsulate the functionality and logic for the lap times list.
  *
- * @author dan
+ * @author dpadgett
  */
 public class LapTimes {
 
@@ -67,12 +67,12 @@ public class LapTimes {
 		lapLabel.setText("lap " + (lapTimes.size() + 1));
 		
 		TextView lapTimeView = (TextView) lapLayout.findViewById(R.id.lapTime);
-		lapTimeView.setText(StopwatchFragment.getTimerText(lapTime));
+		lapTimeView.setText(getTimerText(lapTime));
 		
 		lapTimesView.addView(lapLayout);
 		
 		// hack to get it to draw the lower divider
-		android.widget.LinearLayout space = new android.widget.LinearLayout(lapTimesView.getContext());
+		Space space = new Space(lapTimesView.getContext());
 		space.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 1));
 		
 		lapTimesView.addView(space);
@@ -150,5 +150,17 @@ public class LapTimes {
 		prefs.commit();
 
 		lapTimes.clear();
+	}
+
+
+	private static String getTimerText(long elapsedTime) {
+		long millis = elapsedTime % 1000;
+		elapsedTime /= 1000;
+		long secs = elapsedTime % 60;
+		elapsedTime /= 60;
+		long mins = elapsedTime % 60;
+		elapsedTime /= 60;
+		long hours = elapsedTime % 60;
+		return String.format("%02d:%02d:%02d.%03d", hours, mins, secs, millis);
 	}
 }

@@ -39,6 +39,11 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
+/**
+ * Fragment which shows a static list of live clocks from different timezones.
+ *
+ * @author dpadgett
+ */
 public class WorldClockFragment extends Fragment {
 	
 	private ResourceFinder finder;
@@ -99,7 +104,7 @@ public class WorldClockFragment extends Fragment {
 		
 		// hack to get the bottom divider to be the same as the listview dividers
 		Drawable divider = new ListView(context).getDivider();
-//		((LinearLayout) rootView).setDividerDrawable(divider);
+		((LinearLayout) rootView).setDividerDrawable(divider);
 		
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));

@@ -1,9 +1,5 @@
 package org.dpadgett.timer;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,11 +8,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
+/**
+ * Main activity class.  Its job is mainly to create the different fragments and put them
+ * into the tab host in the right order.  It also handles the popup dialog to dismiss the
+ * countdown completed notification, since we want this to show up regardless of which
+ * fragment the user is currently using.
+ *
+ * @author dpadgett
+ */
 public class TimerActivity extends SherlockFragmentActivity {
 
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
@@ -46,7 +51,6 @@ public class TimerActivity extends SherlockFragmentActivity {
 	
 	private AlertDialog alarmDialog;
 	private TabsAdapter mTabsAdapter;
-	private Handler handler = new Handler();
 
 	/** Called when the activity is first created. */
     @Override

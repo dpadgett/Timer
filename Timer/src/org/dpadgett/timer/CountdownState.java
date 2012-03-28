@@ -4,12 +4,17 @@ import org.dpadgett.widget.CountdownTextView;
 
 import android.content.SharedPreferences;
 
-public class CountdownThread {
+/**
+ * Maintains the timing state, and keeps the textview state up-to-date.
+ *
+ * @author dpadgett
+ */
+public class CountdownState {
 	public long endTime;
 	private final CountdownTextView timerText;
 	private boolean isRunning;
 	
-	public CountdownThread(CountdownTextView timerText, SharedPreferences prefs) {
+	public CountdownState(CountdownTextView timerText, SharedPreferences prefs) {
 		this.timerText = timerText;
 		isRunning = false;
 		endTime = 0L;

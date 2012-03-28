@@ -1,16 +1,26 @@
 package org.dpadgett.timer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dpadgett.widget.CountdownTextView;
 import org.dpadgett.widget.FasterNumberPicker;
 import org.dpadgett.widget.FasterNumberPicker.OnValueChangeListener;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -20,9 +30,11 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 /**
  * Fragment which handles the UI and logic for the countdown timer.
@@ -114,7 +126,23 @@ public class CountdownFragment extends Fragment {
 		countdownSeconds.setDisableInputText(true);
 		countdownSeconds.setOnValueChangedListener(saveTimestampListener);
 
-		this.timerLayout =
+		RingtoneManager manager = new RingtoneManager(getContext());
+		manager.setType(RingtoneManager.TYPE_ALARM);
+		List<String> names = new ArrayList<String>();
+		List<Uri> uris = new ArrayList<Uri>();
+		Cursor c = manager.getCursor();
+		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+			names.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
+			uris.add(Uri.parse(c.getString(RingtoneManager.URI_COLUMN_INDEX)));
+		}
+		Spinner alarmTones = (Spinner) rootView.findViewById(R.id.alarm_tones);
+		ArrayAdapter<String> adapter =
+				new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item,
+						names.toArray(new String[names.size()]));
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        alarmTones.setAdapter(adapter);
+
+        this.timerLayout =
         		(LinearLayout) inflater.inflate(R.layout.countdown_timer, container, false);
 
 		startButton.setOnClickListener(new OnClickListener() {

@@ -95,7 +95,7 @@ public class FasterNumberPicker extends LinearLayout {
     /**
      * The index of the middle selector item.
      */
-    private int mSelectorMiddleItemIndex = 3;
+    private double mSelectorMiddleItemIndex = 3;
 
     /**
      * The coefficient by which to adjust (divide) the max fling velocity.
@@ -1606,9 +1606,9 @@ public class FasterNumberPicker extends LinearLayout {
 	        	clearPaint.setAlpha(0);
 	        	clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 	        	metaCanvas.drawRect(new Rect(0,
-	        			mSelectorElementHeight * mSelectorMiddleItemIndex,
+	        			(int) (mSelectorElementHeight * mSelectorMiddleItemIndex),
 	        			getWidth(),
-	        			mSelectorElementHeight * (mSelectorMiddleItemIndex + 1)), clearPaint);
+	        			(int) (mSelectorElementHeight * (mSelectorMiddleItemIndex + 1))), clearPaint);
 	        }
 
         	// re-implementation of the fading edge effect, since it's horribly slow
@@ -1913,19 +1913,23 @@ public class FasterNumberPicker extends LinearLayout {
     private void initializeSelectorWheel() {
         int height = getBottom() - getTop();
         // mSelectorTextGapHeight must be > 0.  i.e. we should not have overlapping texts.
-        int numTexts = height / mTextSize;
+        int numTexts = Math.max(1, height / mTextSize);
         // must be odd
         if (numTexts % 2 == 0) {
         	numTexts--;
         }
-        mSelectorMiddleItemIndex = numTexts / 2;
+        mSelectorMiddleItemIndex = numTexts / 2.0;
         
         initializeSelectorWheelIndices();
 
         int totalTextHeight = (numTexts) * mTextSize;
         float totalTextGapHeight = (getBottom() - getTop()) - totalTextHeight;
         float textGapCount = numTexts - 1;
-        mSelectorTextGapHeight = (int) (totalTextGapHeight / textGapCount + 0.5f);
+        if (textGapCount == 0) {
+        	mSelectorTextGapHeight = 0;
+        } else {
+        	mSelectorTextGapHeight = (int) (totalTextGapHeight / textGapCount + 0.5f);
+        }
         mSelectorElementHeight = mTextSize + mSelectorTextGapHeight;
         // Ensure that the middle item is positioned the same as the text in mInputText
         int editTextTextPosition = mInputText.getBaseline() + mInputText.getTop();

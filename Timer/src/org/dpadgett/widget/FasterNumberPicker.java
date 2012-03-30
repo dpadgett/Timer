@@ -1918,7 +1918,10 @@ public class FasterNumberPicker extends LinearLayout {
         if (numTexts % 2 == 0) {
         	numTexts--;
         }
-        mSelectorMiddleItemIndex = numTexts / 2.0;
+        mSelectorMiddleItemIndex = numTexts / 2;
+        if (numTexts == 1) {
+        	mSelectorMiddleItemIndex = 1 / 2.0;
+        }
         
         initializeSelectorWheelIndices();
 

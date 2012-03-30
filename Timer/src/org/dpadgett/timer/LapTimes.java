@@ -29,18 +29,24 @@ public class LapTimes {
 	private final List<Long> lapTimes;
 	private OnLayoutChangeListener bottomScroller;
 	private final Context context;
+	private int lastLapTimesViewHeight;
 
 	public LapTimes(ScrollView scrollView) {
 		this.scrollView = scrollView;
 		this.lapTimesView = (LinearLayout) scrollView.findViewById(R.id.lapTimesView);
 		this.context = scrollView.getContext();
 		
+		lastLapTimesViewHeight = lapTimesView.getMeasuredHeight();
 		bottomScroller = new OnLayoutChangeListener() {
+			
 			@Override
 			public void onLayoutChange(View v, int left, int top, int right,
 					int bottom, int oldLeft, int oldTop, int oldRight,
 					int oldBottom) {
-				LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
+				if (v.getMeasuredHeight() != lastLapTimesViewHeight) {
+					lastLapTimesViewHeight = v.getMeasuredHeight();
+					LapTimes.this.scrollView.fullScroll(View.FOCUS_DOWN);
+				}
 			}
 		};
 		lapTimesView.addOnLayoutChangeListener(bottomScroller);
@@ -126,6 +132,7 @@ public class LapTimes {
 				lapTimesView.post(new Runnable() {
 					@Override
 					public void run() {
+						lastLapTimesViewHeight = lapTimesView.getMeasuredHeight();
 						if (bottomScroller != null) {
 							lapTimesView.addOnLayoutChangeListener(bottomScroller);
 						}

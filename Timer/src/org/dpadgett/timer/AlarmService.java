@@ -27,7 +27,7 @@ public class AlarmService extends Service {
 	private Context context;
 
 	private void initRingtone() {
-		Uri alarmUri = getRingtoneUri();
+		Uri alarmUri = getRingtoneUri(context.getSharedPreferences("Countdown", MODE_PRIVATE));
 		if (alarmUri != null) {
 			alarmPlayer = new MediaPlayer();
 			alarmPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
@@ -41,8 +41,15 @@ public class AlarmService extends Service {
 		}
 	}
 	
-	private Uri getRingtoneUri() {
-		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+	static Uri getRingtoneUri(SharedPreferences prefs) {
+        String alarmUriString = prefs.getString("alarmUri", null);
+		Uri alarmUri = null;
+		if (alarmUriString != null) {
+			alarmUri = Uri.parse(alarmUriString);
+		}
+		if (alarmUri == null) {
+			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		}
 		if (alarmUri == null) {
 			// alert is null, using backup
 			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -52,7 +59,7 @@ public class AlarmService extends Service {
 			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		}
 		if (alarmUri == null) {
-			Log.w(getClass().getName(), "Could not find alert sound!");
+			Log.w(AlarmService.class.getName(), "Could not find alert sound!");
 		}
 		return alarmUri;
 	}

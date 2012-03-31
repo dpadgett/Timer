@@ -44,6 +44,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -603,9 +604,8 @@ public class FasterNumberPicker extends LinearLayout {
         // process style attributes
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 R.styleable.NumberPicker, defStyle, 0);
-        TypedArray defAttrArray = context.getTheme().obtainStyledAttributes(R.styleable.NumberPicker);
         mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
-        mFlingable = attributesArray.getBoolean(R.styleable.NumberPicker_flingable, true);
+        mFlingable = resolveBoolean(attributesArray, R.styleable.NumberPicker_flingable, true);
         Drawable selectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
         if (selectionDivider == null) {
         	selectionDivider = context.getResources().getDrawable(R.drawable.numberpicker_selection_divider);
@@ -614,19 +614,19 @@ public class FasterNumberPicker extends LinearLayout {
         int defSelectionDividerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 UNSCALED_DEFAULT_SELECTION_DIVIDER_HEIGHT,
                 getResources().getDisplayMetrics());
-        mSelectionDividerHeight = attributesArray.getDimensionPixelSize(
+        mSelectionDividerHeight = resolveDimensionPixelSize(attributesArray,
         		R.styleable.NumberPicker_selectionDividerHeight, defSelectionDividerHeight);
-        mMinHeight = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_minHeight,
+        mMinHeight = resolveDimensionPixelSize(attributesArray, R.styleable.NumberPicker_minHeight,
                 SIZE_UNSPECIFIED);
-        mMaxHeight = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_maxHeight,
+        mMaxHeight = resolveDimensionPixelSize(attributesArray, R.styleable.NumberPicker_maxHeight,
                 SIZE_UNSPECIFIED);
         if (mMinHeight != SIZE_UNSPECIFIED && mMaxHeight != SIZE_UNSPECIFIED
                 && mMinHeight > mMaxHeight) {
             throw new IllegalArgumentException("minHeight > maxHeight");
         }
-        mMinWidth = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_minWidth,
+        mMinWidth = resolveDimensionPixelSize(attributesArray, R.styleable.NumberPicker_minWidth,
                 SIZE_UNSPECIFIED);
-        mMaxWidth = attributesArray.getDimensionPixelSize(R.styleable.NumberPicker_maxWidth,
+        mMaxWidth = resolveDimensionPixelSize(attributesArray, R.styleable.NumberPicker_maxWidth,
                 SIZE_UNSPECIFIED);
         if (mMinWidth != SIZE_UNSPECIFIED && mMaxWidth != SIZE_UNSPECIFIED
                 && mMinWidth > mMaxWidth) {
@@ -634,7 +634,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
         mComputeMaxWidth = (mMaxWidth == Integer.MAX_VALUE);
         attributesArray.recycle();
-        defAttrArray.recycle();
 
         mShowInputControlsAnimimationDuration = getResources().getInteger(
         		Resources.getSystem().getIdentifier("config_longAnimTime", "integer", "android")) / 4;
@@ -803,6 +802,22 @@ public class FasterNumberPicker extends LinearLayout {
         
         invalidate();
     }
+    
+    private boolean resolveBoolean(TypedArray attributesArray,
+			int index, boolean defValue) {
+    	if (index == 0) {
+    		return defValue;
+    	}
+		return attributesArray.getBoolean(index, defValue);
+	}
+
+	private static int resolveDimensionPixelSize(TypedArray attributesArray, int index,
+			int defValue) {
+    	if (index == 0) {
+    		return defValue;
+    	}
+		return attributesArray.getDimensionPixelSize(index, defValue);
+	}
 
     private String toString(AttributeSet attrs) {
     	final StringBuilder sb = new StringBuilder();
@@ -892,10 +907,17 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     @Override
+	public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+    	Log.i(getClass().getName(), "Requesting disallow intercept touch event");
+		super.requestDisallowInterceptTouchEvent(disallowIntercept);
+	}
+
+	@Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         if (!isEnabled() || !mFlingable) {
             return false;
         }
+        Log.i(getClass().getName(), "Intercepted, flags " + isEnabled() + " and " + mFlingable + ", motionevent: " + event.toString());
         switch (COMPAT_NEEDED ? event.getAction() : event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mLastMotionEventY = mLastDownEventY = event.getY();
@@ -956,6 +978,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain();
         }
+        Log.i(getClass().getName(), "Got motionevent: " + ev.toString());
         mVelocityTracker.addMovement(ev);
         int action = COMPAT_NEEDED ? ev.getAction() : ev.getActionMasked();
         switch (action) {

@@ -1,7 +1,10 @@
 package org.dpadgett.compat;
 
+import java.util.Arrays;
+
 import android.content.res.Resources;
 import android.os.Build;
+import android.util.Log;
 
 public final class R {
 	private R() { }
@@ -10,7 +13,23 @@ public final class R {
 
 	private static final int resolveId(String name, String defType, String defPackage, int def) {
 		int nativeId = Resources.getSystem().getIdentifier(name, defType, defPackage);
-		return COMPAT_NEEDED ? def : nativeId;
+		Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
+		if (nativeId != 0) {
+			return nativeId;
+		}
+		try {
+			Class<?> clazz = Class.forName("android.R$" + defType);
+	        nativeId = (int) clazz.getField(name).getInt(clazz);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		}
+		return COMPAT_NEEDED || nativeId == 0 ? def : nativeId;
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {
@@ -30,6 +49,7 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
+		Log.i(R.class.getName(), "Found id " + Arrays.toString(nativeIds) + " for " + defType + "." + name);
 		return nativeIds;
 	}
 	

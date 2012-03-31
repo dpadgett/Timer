@@ -97,7 +97,8 @@ public class LapTimes {
 	public void saveState() {
 		SharedPreferences.Editor prefs =
 				context.getSharedPreferences("Stopwatch", Context.MODE_PRIVATE).edit();
-		prefs.putInt("lapTimesScrollPosition", scrollView.getScrollY() + scrollView.getMeasuredHeight());
+		prefs.putFloat("lapTimesScrollPosition",
+				(scrollView.getScrollY() + scrollView.getMeasuredHeight()) / (float) lapTimesView.getMeasuredHeight());
 		prefs.commit();
 	}
 
@@ -124,11 +125,12 @@ public class LapTimes {
   			}
    		}
 
-    	final int scrollPosition = prefs.getInt("lapTimesScrollPosition", 0);
+    	final float scrollPosition = prefs.getFloat("lapTimesScrollPosition", 0);
     	scrollView.post(new Runnable() {
 			@Override
 			public void run() {
-				scrollView.scrollTo(0, scrollPosition - scrollView.getMeasuredHeight());
+				scrollView.scrollTo(0,
+						(int) (scrollPosition * lapTimesView.getMeasuredHeight()) - scrollView.getMeasuredHeight());
 				lapTimesView.post(new Runnable() {
 					@Override
 					public void run() {

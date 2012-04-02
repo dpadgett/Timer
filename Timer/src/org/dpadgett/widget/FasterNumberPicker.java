@@ -917,7 +917,6 @@ public class FasterNumberPicker extends LinearLayout {
         if (!isEnabled() || !mFlingable) {
             return false;
         }
-        Log.i(getClass().getName(), "Intercepted, flags " + isEnabled() + " and " + mFlingable + ", motionevent: " + event.toString());
         switch (COMPAT_NEEDED ? event.getAction() : event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mLastMotionEventY = mLastDownEventY = event.getY();
@@ -978,7 +977,6 @@ public class FasterNumberPicker extends LinearLayout {
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain();
         }
-        Log.i(getClass().getName(), "Got motionevent: " + ev.toString());
         mVelocityTracker.addMovement(ev);
         int action = COMPAT_NEEDED ? ev.getAction() : ev.getActionMasked();
         switch (action) {

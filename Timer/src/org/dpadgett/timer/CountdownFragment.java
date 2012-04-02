@@ -1,6 +1,7 @@
 package org.dpadgett.timer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.dpadgett.widget.CountdownTextView;
@@ -9,10 +10,12 @@ import org.dpadgett.widget.FasterNumberPicker.OnValueChangeListener;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.media.Ringtone;
@@ -21,6 +24,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,6 +61,7 @@ public class CountdownFragment extends Fragment {
 	public PendingIntent alarmPendingIntent;
 	private List<String> uris;
 	private ArrayAdapter<String> alarmTonesAdapter;
+	private List<String> paths;
 
 	public CountdownFragment() {
 		this.inputMode = true;
@@ -132,12 +138,15 @@ public class CountdownFragment extends Fragment {
 		manager.setType(RingtoneManager.TYPE_ALARM);
 		List<String> names = new ArrayList<String>();
 		uris = new ArrayList<String>();
+		paths = new ArrayList<String>();
 		Cursor c = manager.getCursor();
 		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 			names.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
 			// System.out.println("cursor uri: " + c.getString(RingtoneManager.URI_COLUMN_INDEX));
 			// System.out.println("manager uri: " + manager.getRingtoneUri(c.getPosition()));
 			uris.add(manager.getRingtoneUri(c.getPosition()).toString());
+			paths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
+			System.out.println("path: " + paths.get(paths.size() - 1));
 		}
 		c.close();
 		Spinner alarmTones = (Spinner) rootView.findViewById(R.id.alarm_tones);
@@ -215,8 +224,12 @@ public class CountdownFragment extends Fragment {
         }
         
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
+        Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
 		Spinner alarmTones = (Spinner) rootView.findViewById(R.id.alarm_tones);
 		int idx = uris.indexOf(alarmUri.toString());
+		if (idx == -1) {
+			idx = paths.indexOf(getRealPathFromURI(alarmUri));
+		}
 		if (idx != -1) {
 			alarmTones.setSelection(idx);
 		} else {
@@ -230,15 +243,36 @@ public class CountdownFragment extends Fragment {
 				prefsEdit.commit();
 				Log.i(getClass().getName(), "Saved default uri " + uris.get(sel).toString());
 			} else {
+				Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
 				alarmTonesAdapter.add(
 						ringtone.getTitle(getContext()));
 				uris.add(alarmUri.toString());
+				paths.add(getRealPathFromURI(alarmUri));
 				alarmTones.setSelection(uris.size() - 1);
 			}
 		}
     }
     
-    @Override
+	private String getRealPathFromURI(Uri contentUri) {
+        String toReturn = "unknown";
+        try {
+	        Cursor cursor = getContext().getContentResolver().query(contentUri, null, null, null, null);
+	        int column_index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+	        if (column_index != -1) {
+		        cursor.moveToFirst();
+		        toReturn = cursor.getString(column_index);
+	        } else {
+	        	cursor.moveToFirst();
+	        	toReturn = getRealPathFromURI(Uri.parse(cursor.getString(cursor.getColumnIndexOrThrow("value"))));
+	        }
+	        cursor.close();
+        } catch (SQLiteException e) {
+        	e.printStackTrace();
+        }
+        return toReturn;
+    }
+
+	@Override
     public void onPause() {
     	super.onPause();
     	saveState();

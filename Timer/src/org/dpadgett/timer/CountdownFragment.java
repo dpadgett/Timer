@@ -210,6 +210,7 @@ public class CountdownFragment extends Fragment {
     	super.onDestroy();
     	timingState.stopTimer();
     	handler.removeCallbacks(inputModeOff);
+    	alarmSelector.destroy();
     }
 
     public void inputModeOff() {

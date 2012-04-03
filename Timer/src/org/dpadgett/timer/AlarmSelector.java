@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteException;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -26,6 +27,8 @@ import android.widget.AdapterView.OnItemSelectedListener;
  * @author dpadgett
  */
 public class AlarmSelector {
+	
+	private static final long DELAY_MILLIS = 5 * 1000;
 
 	private final Spinner selector;
 	private final Context context;
@@ -33,6 +36,28 @@ public class AlarmSelector {
 	private List<String> uris;
 	private List<String> paths;
 	private ArrayAdapter<String> alarmTonesAdapter;
+	private final Handler handler;
+	private final Runnable reload = new Runnable() {
+		@Override
+		public void run() {
+			new Thread() {
+				@Override
+				public void run() {
+					List<String> oldNames = names;
+					fetchAlarms();
+					if (names != oldNames) {
+						handler.post(new Runnable() {
+							@Override
+							public void run() {
+								updateAlarms();
+							}
+						});
+					}
+				}
+			}.start();
+			handler.postDelayed(this, DELAY_MILLIS);
+		}
+	};
 
 	public AlarmSelector(Spinner selector) {
 		this.selector = selector;
@@ -41,10 +66,12 @@ public class AlarmSelector {
 		uris = new ArrayList<String>();
 		paths = new ArrayList<String>();
 		init();
+		handler = new Handler();
+		handler.postDelayed(reload, DELAY_MILLIS);
 	}
 
 	private void init() {
-		fetchAlarms();
+		reloadCache();
 
 		alarmTonesAdapter =
 				new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
@@ -68,6 +95,54 @@ public class AlarmSelector {
 			}
 		});
 	}
+	
+	private void updateAlarms() {
+		restoreState();
+		alarmTonesAdapter.notifyDataSetChanged();
+	}
+
+	private void reloadCache() {
+		SharedPreferences prefs =
+				context.getSharedPreferences("Countdown_alarmSelector", Context.MODE_PRIVATE);
+		if (!prefs.contains("paths_0")) {
+			Log.i(getClass().getName(), "Cache miss...");
+			fetchAlarms();
+			return;
+		}
+		
+		List<String> newPaths = new ArrayList<String>();
+		List<String> newNames = new ArrayList<String>();
+		List<String> newUris = new ArrayList<String>();
+		
+		{
+			String keyPrefix = "paths_";
+			for (int i = 0; prefs.contains(keyPrefix + i); i++) {
+				newPaths.add(prefs.getString(keyPrefix + i, null));
+			}
+		}
+
+		{
+			String keyPrefix = "names_";
+			for (int i = 0; prefs.contains(keyPrefix + i); i++) {
+				newNames.add(prefs.getString(keyPrefix + i, null));
+			}
+		}
+
+		{
+			String keyPrefix = "uris_";
+			for (int i = 0; prefs.contains(keyPrefix + i); i++) {
+				newUris.add(prefs.getString(keyPrefix + i, null));
+			}
+		}
+		
+		if (!names.equals(newNames) || !uris.equals(newUris) || !paths.equals(newPaths)) {
+			names = newNames;
+			uris = newUris;
+			paths = newPaths;
+		}
+
+		Log.i(getClass().getName(), "Cache hit!");
+	}
 
 	private void fetchAlarms() {
 		RingtoneManager manager = new RingtoneManager(context);
@@ -76,13 +151,58 @@ public class AlarmSelector {
 		if (c == null) {
 			return;
 		}
+		
+		List<String> newPaths = new ArrayList<String>();
+		List<String> newNames = new ArrayList<String>();
+		List<String> newUris = new ArrayList<String>();
+		
 		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-			names.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
-			uris.add(manager.getRingtoneUri(c.getPosition()).toString());
-			paths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
-			System.out.println("path: " + paths.get(paths.size() - 1));
+			newNames.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
+			newUris.add(manager.getRingtoneUri(c.getPosition()).toString());
+			newPaths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
+			System.out.println("path: " + newPaths.get(newPaths.size() - 1));
 		}
 		c.close();
+		
+		if (!names.equals(newNames) || !uris.equals(newUris) || !paths.equals(newPaths)) {
+			names = newNames;
+			uris = newUris;
+			paths = newPaths;
+		}
+
+		saveCache();
+	}
+
+	private void saveCache() {
+		SharedPreferences.Editor prefs =
+				context.getSharedPreferences("Countdown_alarmSelector", Context.MODE_PRIVATE).edit();
+
+		prefs.clear();
+
+		{
+			String keyPrefix = "paths_";
+			for (int i = 0; i < paths.size(); i++) {
+				prefs.putString(keyPrefix + i, paths.get(i));
+			}
+		}
+
+		{
+			String keyPrefix = "names_";
+			for (int i = 0; i < names.size(); i++) {
+				prefs.putString(keyPrefix + i, names.get(i));
+			}
+		}
+
+		{
+			String keyPrefix = "uris_";
+			for (int i = 0; i < uris.size(); i++) {
+				prefs.putString(keyPrefix + i, uris.get(i));
+			}
+		}
+		
+		prefs.commit();
+
+		Log.i(getClass().getName(), "Cache updated");
 	}
 
 	private String getRealPathFromURI(Uri contentUri) {
@@ -136,5 +256,9 @@ public class AlarmSelector {
 				selector.setSelection(uris.size() - 1);
 			}
 		}
+	}
+
+	public void destroy() {
+		handler.removeCallbacks(reload);
 	}
 }

@@ -28,7 +28,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
  */
 public class AlarmSelector {
 	
-	private static final long DELAY_MILLIS = 5 * 1000;
+	private static final long DELAY_MULTIPLIER = 5;
 
 	private final Spinner selector;
 	private final Context context;
@@ -43,6 +43,8 @@ public class AlarmSelector {
 			new Thread() {
 				@Override
 				public void run() {
+					long startTime = System.currentTimeMillis();
+					
 					List<String> oldNames = names;
 					fetchAlarms();
 					if (names != oldNames) {
@@ -53,9 +55,12 @@ public class AlarmSelector {
 							}
 						});
 					}
+					
+					long endTime = System.currentTimeMillis();
+					long elapsed = Math.max(1000, endTime - startTime);
+					handler.postDelayed(reload, DELAY_MULTIPLIER * elapsed);
 				}
 			}.start();
-			handler.postDelayed(this, DELAY_MILLIS);
 		}
 	};
 
@@ -67,7 +72,7 @@ public class AlarmSelector {
 		paths = new ArrayList<String>();
 		init();
 		handler = new Handler();
-		handler.postDelayed(reload, DELAY_MILLIS);
+		handler.postDelayed(reload, DELAY_MULTIPLIER * 1000);
 	}
 
 	private void init() {
@@ -85,9 +90,9 @@ public class AlarmSelector {
 					int position, long id) {
 				SharedPreferences.Editor prefs = 
 						context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
-				prefs.putString("alarmUri", uris.get(position).toString());
+				prefs.putString("alarmUri", "file://" + paths.get(position).toString());
 				prefs.commit();
-				Log.i(getClass().getName(), "Saved uri " + uris.get(position));
+				Log.i(getClass().getName(), "Saved uri " + paths.get(position));
 			}
 
 			@Override
@@ -207,6 +212,10 @@ public class AlarmSelector {
 
 	private String getRealPathFromURI(Uri contentUri) {
         String toReturn = "unknown";
+        String uri = contentUri.toString();
+        if (uri.startsWith("file://")) {
+        	return uri.substring("file://".length());
+        }
         try {
 	        Cursor cursor = context.getContentResolver().query(contentUri, null, null, null, null);
 	        int column_index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
@@ -231,10 +240,7 @@ public class AlarmSelector {
 
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
         Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
-		int idx = uris.indexOf(alarmUri.toString());
-		if (idx == -1) {
-			idx = paths.indexOf(getRealPathFromURI(alarmUri));
-		}
+		int idx = paths.indexOf(getRealPathFromURI(alarmUri));
 		if (idx != -1) {
 			selector.setSelection(idx);
 		} else {
@@ -244,9 +250,9 @@ public class AlarmSelector {
 				int sel = selector.getSelectedItemPosition();
 				SharedPreferences.Editor prefsEdit = 
 						context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
-				prefsEdit.putString("alarmUri", uris.get(sel));
+				prefsEdit.putString("alarmUri", "file://" + paths.get(sel));
 				prefsEdit.commit();
-				Log.i(getClass().getName(), "Saved default uri " + uris.get(sel).toString());
+				Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
 			} else {
 				Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
 				alarmTonesAdapter.add(
@@ -260,5 +266,6 @@ public class AlarmSelector {
 
 	public void destroy() {
 		handler.removeCallbacks(reload);
+		handler.getLooper().quit();
 	}
 }

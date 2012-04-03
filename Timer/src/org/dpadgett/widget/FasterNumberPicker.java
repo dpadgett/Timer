@@ -606,7 +606,7 @@ public class FasterNumberPicker extends LinearLayout {
                 R.styleable.NumberPicker, defStyle, 0);
         mSolidColor = attributesArray.getColor(R.styleable.NumberPicker_solidColor, 0);
         mFlingable = resolveBoolean(attributesArray, R.styleable.NumberPicker_flingable, true);
-        Drawable selectionDivider = attributesArray.getDrawable(R.styleable.NumberPicker_selectionDivider);
+        Drawable selectionDivider = resolveDrawable(attributesArray, R.styleable.NumberPicker_selectionDivider);
         if (selectionDivider == null) {
         	selectionDivider = context.getResources().getDrawable(R.drawable.numberpicker_selection_divider);
         }
@@ -630,7 +630,7 @@ public class FasterNumberPicker extends LinearLayout {
                 SIZE_UNSPECIFIED);
         if (mMinWidth != SIZE_UNSPECIFIED && mMaxWidth != SIZE_UNSPECIFIED
                 && mMinWidth > mMaxWidth) {
-            throw new IllegalArgumentException("minWidth > maxWidth");
+            throw new IllegalArgumentException("minWidth (" + mMinWidth + ") > maxWidth (" + mMaxWidth + ")");
         }
         mComputeMaxWidth = (mMaxWidth == Integer.MAX_VALUE);
         attributesArray.recycle();
@@ -803,7 +803,15 @@ public class FasterNumberPicker extends LinearLayout {
         invalidate();
     }
     
-    private boolean resolveBoolean(TypedArray attributesArray,
+    private Drawable resolveDrawable(TypedArray attributesArray,
+			int index) {
+    	if (index == 0) {
+    		return null;
+    	}
+    	return attributesArray.getDrawable(index);
+	}
+
+	private boolean resolveBoolean(TypedArray attributesArray,
 			int index, boolean defValue) {
     	if (index == 0) {
     		return defValue;

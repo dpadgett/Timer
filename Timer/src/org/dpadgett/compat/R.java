@@ -29,7 +29,7 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
-		return COMPAT_NEEDED || nativeId == 0 ? def : nativeId;
+		return COMPAT_NEEDED ? def : nativeId;
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {

@@ -6,6 +6,7 @@ import java.util.List;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteException;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -37,6 +38,7 @@ public class AlarmSelector {
 	private List<String> paths;
 	private ArrayAdapter<String> alarmTonesAdapter;
 	private final Handler handler;
+	private boolean destroyed = false;
 	private final Runnable reload = new Runnable() {
 		@Override
 		public void run() {
@@ -58,7 +60,9 @@ public class AlarmSelector {
 					
 					long endTime = System.currentTimeMillis();
 					long elapsed = Math.max(1000, endTime - startTime);
-					handler.postDelayed(reload, DELAY_MULTIPLIER * elapsed);
+					if (!destroyed) {
+						handler.postDelayed(reload, DELAY_MULTIPLIER * elapsed);
+					}
 				}
 			}.start();
 		}
@@ -230,6 +234,8 @@ public class AlarmSelector {
 	        cursor.close();
         } catch (SQLiteException e) {
         	e.printStackTrace();
+        } catch (CursorIndexOutOfBoundsException e) {
+        	e.printStackTrace();
         }
         return toReturn;
     }
@@ -248,11 +254,15 @@ public class AlarmSelector {
 			if (ringtone == null) {
 				// in this case our default url is bogus, so we should fix it
 				int sel = selector.getSelectedItemPosition();
-				SharedPreferences.Editor prefsEdit = 
-						context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
-				prefsEdit.putString("alarmUri", "file://" + paths.get(sel));
-				prefsEdit.commit();
-				Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
+				if (sel != Spinner.INVALID_POSITION) {
+					SharedPreferences.Editor prefsEdit = 
+							context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
+					prefsEdit.putString("alarmUri", "file://" + paths.get(sel));
+					prefsEdit.commit();
+					Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
+				} else {
+					Log.i(getClass().getName(), "No ringtones found...");
+				}
 			} else {
 				Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
 				alarmTonesAdapter.add(
@@ -265,7 +275,7 @@ public class AlarmSelector {
 	}
 
 	public void destroy() {
+		destroyed  = true;
 		handler.removeCallbacks(reload);
-		handler.getLooper().quit();
 	}
 }

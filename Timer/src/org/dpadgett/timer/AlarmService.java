@@ -36,7 +36,9 @@ public class AlarmService extends Service {
 				alarmPlayer.setLooping(true);
 				alarmPlayer.prepare();
 			} catch (Exception e) {
-				throw new RuntimeException("Couldn't init ringtone " + alarmUri.toString(), e);
+				Log.e(getClass().getName(), "Couldn't init ringtone " + alarmUri.toString(), e);
+				alarmPlayer.release();
+				alarmPlayer = null;
 			}
 		}
 	}
@@ -80,7 +82,9 @@ public class AlarmService extends Service {
 
 	private void countdownFinished() {
 		// creates the notification, notification dialog, and starts the ringtone
-		alarmPlayer.start();
+		if (alarmPlayer != null) {
+			alarmPlayer.start();
+		}
 		
 		NotificationManager mNotificationManager = 
 				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

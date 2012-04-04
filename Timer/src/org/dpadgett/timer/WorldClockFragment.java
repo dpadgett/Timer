@@ -104,7 +104,7 @@ public class WorldClockFragment extends Fragment {
 		
 		// hack to get the bottom divider to be the same as the listview dividers
 		Drawable divider = new ListView(context).getDivider();
-		((LinearLayout) rootView).setDividerDrawable(divider);
+		((org.dpadgett.compat.LinearLayout) rootView).setDividerDrawable(divider);
 		
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));

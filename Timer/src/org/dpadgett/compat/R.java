@@ -12,6 +12,9 @@ public final class R {
 	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
 
 	private static final int resolveId(String name, String defType, String defPackage, int def) {
+		if (COMPAT_NEEDED) {
+			return def;
+		}
 		int nativeId = Resources.getSystem().getIdentifier(name, defType, defPackage);
 		Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
 		if (nativeId != 0) {
@@ -29,7 +32,7 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
-		return COMPAT_NEEDED ? def : nativeId;
+		return nativeId;
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {

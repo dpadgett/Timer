@@ -128,7 +128,7 @@ public class LinearLayout extends android.widget.LinearLayout {
 			final View child = getChildAt(i);
 
 			if (child != null && child.getVisibility() != GONE) {
-				if (hasDividerBeforeChildAt(i)) {
+				if (hasDividerBeforeChildAt_compat(i)) {
 					final LayoutParams lp = (LayoutParams) child
 							.getLayoutParams();
 					final int top = child.getTop() - lp.topMargin;
@@ -137,7 +137,7 @@ public class LinearLayout extends android.widget.LinearLayout {
 			}
 		}
 
-		if (hasDividerBeforeChildAt(count)) {
+		if (hasDividerBeforeChildAt_compat(count)) {
 			final View child = getChildAt(count - 1);
 			int bottom = 0;
 			if (child == null) {
@@ -156,7 +156,7 @@ public class LinearLayout extends android.widget.LinearLayout {
 			final View child = getChildAt(i);
 
 			if (child != null && child.getVisibility() != GONE) {
-				if (hasDividerBeforeChildAt(i)) {
+				if (hasDividerBeforeChildAt_compat(i)) {
 					final LayoutParams lp = (LayoutParams) child
 							.getLayoutParams();
 					final int left = child.getLeft() - lp.leftMargin;
@@ -165,7 +165,7 @@ public class LinearLayout extends android.widget.LinearLayout {
 			}
 		}
 
-		if (hasDividerBeforeChildAt(count)) {
+		if (hasDividerBeforeChildAt_compat(count)) {
 			final View child = getChildAt(count - 1);
 			int right = 0;
 			if (child == null) {
@@ -191,7 +191,7 @@ public class LinearLayout extends android.widget.LinearLayout {
 		mDivider.draw(canvas);
 	}
 
-	protected boolean hasDividerBeforeChildAt(int childIndex) {
+	protected boolean hasDividerBeforeChildAt_compat(int childIndex) {
 		if (childIndex == 0) {
 			return (mShowDividers & SHOW_DIVIDER_BEGINNING) != 0;
 		} else if (childIndex == getChildCount()) {

@@ -907,20 +907,18 @@ public class FasterNumberPicker extends LinearLayout {
             case MotionEvent.ACTION_DOWN:
                 mLastMotionEventY = mLastDownEventY = event.getY();
                 removeAllCallbacks();
-                //mShowInputControlsAnimator.cancel();
-                //mDimSelectorWheelAnimator.cancel();
                 cancelDim();
                 mBeginEditOnUpEvent = false;
                 mAdjustScrollerOnUpEvent = true;
+                boolean scrollersFinished = mFlingScroller.isFinished()
+                        && mAdjustScroller.isFinished();
+                if (!scrollersFinished) {
+                    mFlingScroller.forceFinished(true);
+                    mAdjustScroller.forceFinished(true);
+                    onScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
+                }
                 if (mSelectorWheelState == SELECTOR_WHEEL_STATE_LARGE) {
                     mSelectorWheelPaint.setAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
-                    boolean scrollersFinished = mFlingScroller.isFinished()
-                            && mAdjustScroller.isFinished();
-                    if (!scrollersFinished) {
-                        mFlingScroller.forceFinished(true);
-                        mAdjustScroller.forceFinished(true);
-                        onScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-                    }
                     mBeginEditOnUpEvent = scrollersFinished;
                     mAdjustScrollerOnUpEvent = true;
                     hideInputControls();
@@ -950,7 +948,6 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private void cancelDim() {
-    	// setSelectorPaintAlpha(SELECTOR_WHEEL_BRIGHT_ALPHA);
     	mShowInputControlsAnimator.cancel();
         mDimSelectorWheelAnimator.cancel();
 	}

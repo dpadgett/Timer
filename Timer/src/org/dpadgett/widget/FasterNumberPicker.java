@@ -1664,9 +1664,7 @@ public class FasterNumberPicker extends LinearLayout {
         if (mSelectionDivider != null) {
             // draw the top divider
         	// hacky workaround, idk why this is needed
-            int topOfTopDivider = COMPAT_NEEDED ?
-                (getHeight() - mSelectorElementHeight) / 2 :
-            	(getHeight() - mSelectorElementHeight) / 2;
+            int topOfTopDivider = (getHeight() - mSelectorElementHeight) / 2;
             int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
             mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
             mSelectionDivider.draw(canvas);

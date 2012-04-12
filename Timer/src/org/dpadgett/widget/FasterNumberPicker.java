@@ -94,11 +94,6 @@ public class FasterNumberPicker extends LinearLayout {
     private static final long DEFAULT_LONG_PRESS_UPDATE_INTERVAL = 300 / 2;
 
     /**
-     * The index of the middle selector item.
-     */
-    private double mSelectorMiddleItemIndex = 3;
-
-    /**
      * The coefficient by which to adjust (divide) the max fling velocity.
      */
     private static final int SELECTOR_MAX_FLING_VELOCITY_ADJUSTMENT = 8;
@@ -481,8 +476,6 @@ public class FasterNumberPicker extends LinearLayout {
         public final Matrix matrix;
         public Shader shader;
 
-        private int mLastColor;
-
         public ScrollabilityCache(ViewConfiguration configuration) {
             fadingEdgeLength = configuration.getScaledFadingEdgeLength();
 
@@ -494,20 +487,6 @@ public class FasterNumberPicker extends LinearLayout {
 
             paint.setShader(shader);
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
-        }
-
-        public void setFadeColor(int color) {
-            if (color != 0 && color != mLastColor) {
-                mLastColor = color;
-                color |= 0xFF000000;
-
-                shader = new LinearGradient(0, 0, 0, 1, color | 0xFF000000,
-                        color & 0x00FFFFFF, Shader.TileMode.CLAMP);
-
-                paint.setShader(shader);
-                // Restore the default transfer mode (src_over)
-                paint.setXfermode(null);
-            }
         }
     }
 	
@@ -827,7 +806,7 @@ public class FasterNumberPicker extends LinearLayout {
 		return attributesArray.getDimensionPixelSize(index, defValue);
 	}
 
-    private String toString(AttributeSet attrs) {
+    /*private String toString(AttributeSet attrs) {
     	final StringBuilder sb = new StringBuilder();
     	sb.append("Number of attrs: " + attrs.getAttributeCount() + ": [");
     	for (int i = 0; i < attrs.getAttributeCount(); i++, sb.append(i < attrs.getAttributeCount() ? ", " : "")) {
@@ -845,7 +824,7 @@ public class FasterNumberPicker extends LinearLayout {
     	}
     	sb.append("]");
 		return sb.toString();
-	}
+	}*/
 
 	private int lastSizeHash = 0;
     @Override
@@ -884,7 +863,6 @@ public class FasterNumberPicker extends LinearLayout {
             mScrollWheelAndFadingEdgesInitialized = true;
             // need to do all this when we know our size
             initializeSelectorWheel();
-            initializeFadingEdges();
         }
     }
 
@@ -1186,7 +1164,6 @@ public class FasterNumberPicker extends LinearLayout {
             return;
         }
         mFormatter = formatter;
-        initializeSelectorWheelIndices();
         updateInputTextView();
     }
 
@@ -1232,7 +1209,6 @@ public class FasterNumberPicker extends LinearLayout {
         }
         mValue = value;
         updateScrollOffset();
-        initializeSelectorWheelIndices();
         updateInputTextView();
         updateIncrementAndDecrementButtonsVisibilityState();
         invalidate();
@@ -1378,7 +1354,6 @@ public class FasterNumberPicker extends LinearLayout {
             mValue = mMinValue;
         }
         setWrapSelectorWheel(mWrapSelectorWheel);
-        initializeSelectorWheelIndices();
         updateInputTextView();
         tryComputeMaxWidth();
     }
@@ -1409,39 +1384,7 @@ public class FasterNumberPicker extends LinearLayout {
             mValue = mMaxValue;
         }
         setWrapSelectorWheel(mWrapSelectorWheel);
-        initializeSelectorWheelIndices();
         updateInputTextView();
-        tryComputeMaxWidth();
-    }
-
-    /**
-     * Gets the values to be displayed instead of string values.
-     *
-     * @return The displayed values.
-     */
-    public String[] getDisplayedValues() {
-        return mDisplayedValues;
-    }
-
-    /**
-     * Sets the values to be displayed.
-     *
-     * @param displayedValues The displayed values.
-     */
-    public void setDisplayedValues(String[] displayedValues) {
-        if (mDisplayedValues == displayedValues) {
-            return;
-        }
-        mDisplayedValues = displayedValues;
-        if (mDisplayedValues != null) {
-            // Allow text entry rather than strictly numeric entry.
-            mInputText.setRawInputType(InputType.TYPE_CLASS_TEXT
-                    | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        } else {
-            mInputText.setRawInputType(InputType.TYPE_CLASS_NUMBER);
-        }
-        updateInputTextView();
-        initializeSelectorWheelIndices();
         tryComputeMaxWidth();
     }
 
@@ -1722,15 +1665,15 @@ public class FasterNumberPicker extends LinearLayout {
             // draw the top divider
         	// hacky workaround, idk why this is needed
             int topOfTopDivider = COMPAT_NEEDED ?
-                (getHeight() - mSelectorElementHeight - mSelectionDividerHeight) / 2 :
-            	(getHeight() - mSelectorElementHeight - mSelectionDividerHeight + bumpOffset) / 2;
+                (getHeight() - mSelectorElementHeight) / 2 :
+            	(getHeight() - mSelectorElementHeight) / 2;
             int bottomOfTopDivider = topOfTopDivider + mSelectionDividerHeight;
             mSelectionDivider.setBounds(0, topOfTopDivider, getRight(), bottomOfTopDivider);
             mSelectionDivider.draw(canvas);
 
             // draw the bottom divider
-            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight;
-            int bottomOfBottomDivider = bottomOfTopDivider + mSelectorElementHeight;
+            int topOfBottomDivider =  topOfTopDivider + mSelectorElementHeight + mSelectionDividerHeight;
+            int bottomOfBottomDivider = topOfBottomDivider + mSelectionDividerHeight;
             mSelectionDivider.setBounds(0, topOfBottomDivider, getRight(), bottomOfBottomDivider);
             mSelectionDivider.draw(canvas);
         }
@@ -1795,17 +1738,6 @@ public class FasterNumberPicker extends LinearLayout {
         } else {
             return measuredSize;
         }
-    }
-
-    /**
-     * Resets the selector indices and clear the cached
-     * string representation of these indices.
-     */
-    private void initializeSelectorWheelIndices() {
-        //mSelectorIndexToStringCache.clear();
-        //for (int i = mMinValue; i < mMaxValue; i++) {
-        //    ensureCachedScrollSelectorValue(i);
-        //}
     }
 
     /**
@@ -1902,7 +1834,6 @@ public class FasterNumberPicker extends LinearLayout {
      * Sets the <code>alpha</code> of the {@link Paint} for drawing the selector
      * wheel.
      */
-    @SuppressWarnings("unused")
     // Called via reflection
     public void setSelectorPaintAlpha(int alpha) {
         mSelectorWheelPaint.setAlpha(alpha);
@@ -1940,28 +1871,7 @@ public class FasterNumberPicker extends LinearLayout {
     }
 
     private void initializeSelectorWheel() {
-        int height = getBottom() - getTop();
-        // mSelectorTextGapHeight must be > 0.  i.e. we should not have overlapping texts.
-        int numTexts = Math.max(1, height / mTextSize);
-        // must be odd
-        if (numTexts % 2 == 0) {
-        	numTexts--;
-        }
-        mSelectorMiddleItemIndex = numTexts / 2;
-        if (numTexts == 1) {
-        	mSelectorMiddleItemIndex = 1 / 2.0;
-        }
-        
-        initializeSelectorWheelIndices();
-
-        int totalTextHeight = (numTexts) * mTextSize;
-        float totalTextGapHeight = (getBottom() - getTop()) - totalTextHeight;
-        float textGapCount = numTexts - 1;
-        if (textGapCount == 0) {
-        	mSelectorTextGapHeight = 0;
-        } else {
-        	mSelectorTextGapHeight = (int) (totalTextGapHeight / textGapCount + 0.5f);
-        }
+        mSelectorTextGapHeight = mTextSize / 15;
         mSelectorElementHeight = mTextSize + mSelectorTextGapHeight;
         // Ensure that the middle item is positioned the same as the text in mInputText
         int editTextTextPosition = mInputText.getBaseline() + mInputText.getTop();
@@ -1973,11 +1883,6 @@ public class FasterNumberPicker extends LinearLayout {
         
         // force scroll wheel refresh
         lastMetaHashCode = 0;
-    }
-
-    private void initializeFadingEdges() {
-        //setVerticalFadingEdgeEnabled(true);
-        //setFadingEdgeLength((getBottom() - getTop() - mTextSize) / 2);
     }
 
     /**

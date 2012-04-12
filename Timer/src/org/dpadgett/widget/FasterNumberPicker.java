@@ -870,7 +870,7 @@ public class FasterNumberPicker extends LinearLayout {
         final int inptTxtBottom = inptTxtTop + inptTxtMsrdHght;
         mInputText.layout(inptTxtLeft, inptTxtTop, inptTxtRight, inptTxtBottom);
 
-        // Decrement button at the top.
+        // Decrement button at the bottom.
         final int decrBtnMsrdWdth = mIncrementButton.getMeasuredWidth();
         final int decrBtnLeft = (msrdWdth - decrBtnMsrdWdth) / 2;
         final int decrBtnTop = msrdHght - mDecrementButton.getMeasuredHeight();
@@ -1635,9 +1635,9 @@ public class FasterNumberPicker extends LinearLayout {
 	        	clearPaint.setAlpha(0);
 	        	clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 	        	metaCanvas.drawRect(new Rect(0,
-	        			(int) (mSelectorElementHeight * mSelectorMiddleItemIndex),
+	        			(getHeight() - mSelectorElementHeight) / 2,
 	        			getWidth(),
-	        			(int) (mSelectorElementHeight * (mSelectorMiddleItemIndex + 1))), clearPaint);
+	        			(getHeight() + mSelectorElementHeight) / 2), clearPaint);
 	        }
 
         	// re-implementation of the fading edge effect, since it's horribly slow

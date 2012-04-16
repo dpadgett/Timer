@@ -2,7 +2,10 @@ package org.dpadgett.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.TypedValue;
 import android.widget.TextView;
 
 public class TimerTextView extends TextView {
@@ -73,6 +76,25 @@ public class TimerTextView extends TextView {
 			setTimerText();
 		}
 		super.onDraw(canvas);
+	}
+
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY ||
+				MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.AT_MOST) {
+			int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
+			Rect textBounds = new Rect();
+			getPaint().getTextBounds(getText().toString(), 0, getText().length(), textBounds);
+			int textWidth = textBounds.width();
+			if (textWidth > maxWidth) {
+				Log.i(getClass().getName(), "Timer text too wide, shrinking...");
+				setTextSize(TypedValue.COMPLEX_UNIT_PX, getTextSize() * maxWidth / textWidth - 2);
+				getPaint().getTextBounds(getText().toString(), 0, getText().length(), textBounds);
+				int newTextWidth = textBounds.width();
+				Log.i(getClass().getName(), "Changed textWidth from " + textWidth + " to " + newTextWidth + " with max of " + maxWidth);
+			}
+		}
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 
 	private static String getTimerText(long elapsedTime) {

@@ -169,7 +169,7 @@ public class AlarmSelector {
 			newNames.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
 			newUris.add(manager.getRingtoneUri(c.getPosition()).toString());
 			newPaths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
-			System.out.println("path: " + newPaths.get(newPaths.size() - 1));
+			// System.out.println("path: " + newPaths.get(newPaths.size() - 1));
 		}
 		c.close();
 		

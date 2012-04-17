@@ -30,7 +30,6 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.widget.RemoteViews.RemoteView;
 
 /**

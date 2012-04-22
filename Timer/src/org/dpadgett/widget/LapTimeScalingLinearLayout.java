@@ -3,7 +3,6 @@ package org.dpadgett.widget;
 import org.dpadgett.timer.R;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -35,27 +34,28 @@ public class LapTimeScalingLinearLayout extends LinearLayout {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY ||
 				MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.AT_MOST) {
-			TextView lapLabel = (TextView) findViewById(R.id.lapLabel);
-			TextView lapTimeView = (TextView) findViewById(R.id.lapTime);
+			int totalWidth = 0;
+			
+			{
+				int unspecifiedMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+				// find padding amount
+				super.onMeasure(unspecifiedMeasureSpec, unspecifiedMeasureSpec);
+				totalWidth = getMeasuredWidth();
+			}
 			
 			// scale the textviews so they don't wrap (looks ugly)
 			int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-			int textWidth = 0;
-			Rect textBounds = new Rect();
-			lapLabel.getPaint().getTextBounds("lap 00", 0, 6, textBounds);
-			textWidth += textBounds.width();
-			lapTimeView.getPaint().getTextBounds(lapTimeView.getText().toString(),
-					0, lapTimeView.getText().length(), textBounds);
-			textWidth += textBounds.width();
-			if (textWidth > maxWidth) {
+			if (totalWidth > maxWidth) {
+				TextView lapLabel = (TextView) findViewById(R.id.lapLabel);
+				TextView lapTimeView = (TextView) findViewById(R.id.lapTime);
+				
 				Log.i(getClass().getName(), "Lap time text too wide, shrinking...");
-				lapLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, lapLabel.getTextSize() * maxWidth / textWidth - 2);
-				lapTimeView.setTextSize(TypedValue.COMPLEX_UNIT_PX, lapTimeView.getTextSize() * maxWidth / textWidth - 2);
-				lapLabel.getPaint().getTextBounds("lap 00", 0, 6, textBounds);
-				int newTextWidth = textBounds.width();
-				lapTimeView.getPaint().getTextBounds(lapTimeView.getText().toString(), 0, lapTimeView.getText().length(), textBounds);
-				newTextWidth += textBounds.width();
-				Log.i(getClass().getName(), "Changed textWidth from " + textWidth + " to " + newTextWidth + " with max of " + maxWidth);
+				lapLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+						lapLabel.getTextSize() * maxWidth / totalWidth);
+				lapTimeView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+						lapTimeView.getTextSize() * maxWidth / totalWidth);
+				Log.i(getClass().getName(), "Changed textWidth from " + totalWidth
+						+ " with max of " + MeasureSpec.toString(widthMeasureSpec));
 			}
 		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);

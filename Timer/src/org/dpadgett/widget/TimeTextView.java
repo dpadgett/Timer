@@ -1,7 +1,6 @@
 package org.dpadgett.widget;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -30,17 +29,21 @@ public class TimeTextView extends TextView {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY ||
 				MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.AT_MOST) {
-			String text = "00:00:00 am";
+			int totalWidth = 0;
+			
+			{
+				int unspecifiedMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+				// find padding amount
+				super.onMeasure(unspecifiedMeasureSpec, unspecifiedMeasureSpec);
+				totalWidth = getMeasuredWidth();
+			}
+			
+			// scale the textview so it don't wrap (looks ugly)
 			int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-			Rect textBounds = new Rect();
-			getPaint().getTextBounds(text, 0, text.length(), textBounds);
-			int textWidth = textBounds.width();
-			if (textWidth > maxWidth) {
+			if (totalWidth > maxWidth) {
 				Log.i(getClass().getName(), "Time text too wide, shrinking...");
-				setTextSize(TypedValue.COMPLEX_UNIT_PX, getTextSize() * maxWidth / textWidth - 2);
-				getPaint().getTextBounds(text, 0, text.length(), textBounds);
-				int newTextWidth = textBounds.width();
-				Log.i(getClass().getName(), "Changed textWidth from " + textWidth + " to " + newTextWidth + " with max of " + maxWidth);
+				setTextSize(TypedValue.COMPLEX_UNIT_PX, getTextSize() * maxWidth / totalWidth);
+				Log.i(getClass().getName(), "Changed textWidth from " + totalWidth + " with max of " + maxWidth);
 			}
 		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);

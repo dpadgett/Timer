@@ -198,7 +198,7 @@ public class CountdownFragment extends Fragment {
 
     private void saveState() {
 		SharedPreferences.Editor prefs = 
-			getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();    		
+			getContext().getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
 		
     	timingState.onSaveState(prefs);
 		prefs.putLong("countdownInputs", getInputTimestamp());
@@ -226,6 +226,11 @@ public class CountdownFragment extends Fragment {
 		@Override
 		public void run() {
 			if (rootView == null) {
+				return;
+			}
+			SharedPreferences prefs = 
+					getContext().getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
+			if (prefs.getBoolean("countdownDialogShowing", false)) {
 				return;
 			}
 			inputMode = false;

@@ -132,14 +132,19 @@ public class AlarmService extends Service {
 	}
 	
 	private void handleCommand(Intent intent) {
-		SharedPreferences.Editor prefs =
-				getSharedPreferences("TimerActivity", Context.MODE_PRIVATE).edit();
+		SharedPreferences prefs =
+				getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
+		SharedPreferences.Editor prefsEditor = prefs.edit();
 		if (intent.getBooleanExtra("startAlarm", false)) {
-			initRingtone();
-			countdownFinished();
-			prefs.putBoolean("countdownDialogShowing", true);
-			prefs.commit();
-			Log.i(getClass().getName(), "Starting alarm: " + intent + "; " + intent.getExtras());
+			if (!prefs.getBoolean("countdownDialogShowing", false)) {
+				initRingtone();
+				countdownFinished();
+				prefsEditor.putBoolean("countdownDialogShowing", true);
+				prefsEditor.commit();
+				Log.i(getClass().getName(), "Starting alarm: " + intent + "; " + intent.getExtras());
+			} else {
+				Log.i(getClass().getName(), "Ignoring start alarm intent: " + intent + "; dialog already shown: " + intent.getExtras());
+			}
 		} else {
 			dismissNotification();
 			if (!intent.getBooleanExtra("fromFragment", true)) {
@@ -147,8 +152,8 @@ public class AlarmService extends Service {
 				context.sendBroadcast(dismiss);
 				Log.i(getClass().getName(), "Sent request to dismiss dialog");
 			}
-			prefs.putBoolean("countdownDialogShowing", false);
-			prefs.commit();
+			prefsEditor.putBoolean("countdownDialogShowing", false);
+			prefsEditor.commit();
 			context.stopService(new Intent(context, getClass()));
 		}
 	}

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -137,12 +138,15 @@ public class WorldClockFragment extends Fragment {
     	Set<Integer> timezones = new TreeSet<Integer>();
     	final Map<Integer, List<String>> offsetToName = new HashMap<Integer, List<String>>();
     	final long currentTime = System.currentTimeMillis();
+    	
     	for (String timezone : TimeZone.getAvailableIDs()) {
-    		String timezoneName = TimeZone.getTimeZone(timezone).getDisplayName();
+    		TimeZone tz = TimeZone.getTimeZone(timezone);
+    		boolean isDaylight = tz.useDaylightTime();
+    		String timezoneName = tz.getDisplayName(isDaylight, TimeZone.LONG, Locale.getDefault());
     		if (timezoneNameToId.containsKey(timezoneName)) {
     			continue;
     		}
-    		int millisOffset = TimeZone.getTimeZone(timezone).getOffset(currentTime);
+    		int millisOffset = tz.getOffset(currentTime);
 			timezones.add(millisOffset);
 			if (!offsetToName.containsKey(millisOffset)) {
 				offsetToName.put(millisOffset, new ArrayList<String>());
@@ -292,7 +296,10 @@ public class WorldClockFragment extends Fragment {
 			});
 	 
 			TextView timezoneText = (TextView) newClock.findViewById(R.id.timezone);
-			timezoneText.setText(TimeZone.getTimeZone(timezone).getDisplayName());
+			TimeZone tz = TimeZone.getTimeZone(timezone);
+			boolean isDaylight = tz.useDaylightTime();
+    		String timezoneName = tz.getDisplayName(isDaylight, TimeZone.LONG, Locale.getDefault());
+			timezoneText.setText(timezoneName);
 			updateClockTextView(clock, timezone);
 	        return newClock;
 	    }

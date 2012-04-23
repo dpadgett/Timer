@@ -103,12 +103,12 @@ public class TabsAdapter extends FragmentPagerAdapter
     public Fragment getCachedItem(int position) {
         // Do we already have this fragment?
     	if (!mSingletonMap.containsKey(position)) {
-    		Log.i(getClass().getName(), "Fragment cache miss");
+    		// Log.i(getClass().getName(), "Fragment cache miss");
 	        Fragment fragment = (Fragment) instantiateItem(mViewPager, position);
 	        mSingletonMap.put(position, fragment);
 	        return fragment;
     	} else {
-    		Log.i(getClass().getName(), "Fragment cache hit");
+    		// Log.i(getClass().getName(), "Fragment cache hit");
     		return mSingletonMap.get(position);
     	}
     }

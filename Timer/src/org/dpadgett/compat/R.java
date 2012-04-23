@@ -32,7 +32,7 @@ public final class R {
 			return def;
 		}
 		int nativeId = Resources.getSystem().getIdentifier(name, defType, defPackage);
-		Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
+		// Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
 		if (nativeId != 0) {
 			return nativeId;
 		}
@@ -40,13 +40,13 @@ public final class R {
 			Class<?> clazz = Class.forName("android.R$" + defType);
 	        nativeId = (int) clazz.getField(name).getInt(clazz);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return nativeId;
 	}
@@ -60,15 +60,15 @@ public final class R {
 			Class<?> clazz = Class.forName("android.R$" + defType);
 	        nativeIds = (int[]) clazz.getField(name).get(clazz);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
-		Log.i(R.class.getName(), "Found id " + Arrays.toString(nativeIds) + " for " + defType + "." + name);
+		// Log.i(R.class.getName(), "Found id " + Arrays.toString(nativeIds) + " for " + defType + "." + name);
 		return nativeIds;
 	}
 	

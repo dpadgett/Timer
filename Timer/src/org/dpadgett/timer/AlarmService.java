@@ -52,7 +52,7 @@ public class AlarmService extends Service {
 				alarmPlayer.setLooping(true);
 				alarmPlayer.prepare();
 			} catch (Exception e) {
-				Log.e(getClass().getName(), "Couldn't init ringtone " + alarmUri.toString(), e);
+				// Log.e(getClass().getName(), "Couldn't init ringtone " + alarmUri.toString(), e);
 				alarmPlayer.release();
 				alarmPlayer = null;
 			}
@@ -77,7 +77,7 @@ public class AlarmService extends Service {
 			alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		}
 		if (alarmUri == null) {
-			Log.w(AlarmService.class.getName(), "Could not find alert sound!");
+			// Log.w(AlarmService.class.getName(), "Could not find alert sound!");
 		}
 		return alarmUri;
 	}
@@ -87,9 +87,9 @@ public class AlarmService extends Service {
 			alarmPlayer.stop();
 			alarmPlayer.release();
 			alarmPlayer = null;
-			Log.i(getClass().getName(), "Stopped ringtone");
+			// Log.i(getClass().getName(), "Stopped ringtone");
 		} else {
-			Log.i(getClass().getName(), "Alarm not ringing!");
+			// Log.i(getClass().getName(), "Alarm not ringing!");
 		}
 		NotificationManager manager = 
 				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -122,11 +122,11 @@ public class AlarmService extends Service {
 		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 		mNotificationManager.notify(R.id.countdownNotification, notification);
 		
-		Log.i(getClass().getName(), "Started ringtone");
+		// Log.i(getClass().getName(), "Started ringtone");
 
 		Intent showDialog = new Intent(TimerActivity.ACTION_SHOW_DIALOG);
 		context.sendBroadcast(showDialog);
-		Log.i(getClass().getName(), "Sent request to show dialog");
+		// Log.i(getClass().getName(), "Sent request to show dialog");
 	}
 	
 	// This is the old onStart method that will be called on the pre-2.0
@@ -157,16 +157,16 @@ public class AlarmService extends Service {
 				countdownFinished();
 				prefsEditor.putBoolean("countdownDialogShowing", true);
 				prefsEditor.commit();
-				Log.i(getClass().getName(), "Starting alarm: " + intent + "; " + intent.getExtras());
+				// Log.i(getClass().getName(), "Starting alarm: " + intent + "; " + intent.getExtras());
 			} else {
-				Log.i(getClass().getName(), "Ignoring start alarm intent: " + intent + "; dialog already shown: " + intent.getExtras());
+				// Log.i(getClass().getName(), "Ignoring start alarm intent: " + intent + "; dialog already shown: " + intent.getExtras());
 			}
 		} else {
 			dismissNotification();
 			if (!intent.getBooleanExtra("fromFragment", true)) {
 				Intent dismiss = new Intent(TimerActivity.ACTION_DISMISS_DIALOG);
 				context.sendBroadcast(dismiss);
-				Log.i(getClass().getName(), "Sent request to dismiss dialog");
+				// Log.i(getClass().getName(), "Sent request to dismiss dialog");
 			}
 			prefsEditor.putBoolean("countdownDialogShowing", false);
 			prefsEditor.commit();

@@ -112,7 +112,7 @@ public class AlarmSelector {
 						context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
 				prefs.putString("alarmUri", "file://" + paths.get(position).toString());
 				prefs.commit();
-				Log.i(getClass().getName(), "Saved uri " + paths.get(position));
+				// Log.i(getClass().getName(), "Saved uri " + paths.get(position));
 			}
 
 			@Override
@@ -130,7 +130,7 @@ public class AlarmSelector {
 		SharedPreferences prefs =
 				context.getSharedPreferences("Countdown_alarmSelector", Context.MODE_PRIVATE);
 		if (!prefs.contains("paths_0")) {
-			Log.i(getClass().getName(), "Cache miss...");
+			// Log.i(getClass().getName(), "Cache miss...");
 			fetchAlarms();
 			return;
 		}
@@ -166,7 +166,7 @@ public class AlarmSelector {
 			paths = newPaths;
 		}
 
-		Log.i(getClass().getName(), "Cache hit!");
+		// Log.i(getClass().getName(), "Cache hit!");
 	}
 
 	private void fetchAlarms() {
@@ -227,7 +227,7 @@ public class AlarmSelector {
 		
 		prefs.commit();
 
-		Log.i(getClass().getName(), "Cache updated");
+		// Log.i(getClass().getName(), "Cache updated");
 	}
 
 	private String getRealPathFromURI(Uri contentUri) {
@@ -249,9 +249,9 @@ public class AlarmSelector {
 	        }
 	        cursor.close();
         } catch (SQLiteException e) {
-        	e.printStackTrace();
+        	// e.printStackTrace();
         } catch (CursorIndexOutOfBoundsException e) {
-        	e.printStackTrace();
+        	// e.printStackTrace();
         }
         return toReturn;
     }
@@ -261,7 +261,7 @@ public class AlarmSelector {
 				context.getSharedPreferences("Countdown", Context.MODE_PRIVATE);
 
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
-        Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
+        // Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
 		int idx = paths.indexOf(getRealPathFromURI(alarmUri));
 		if (idx != -1) {
 			selector.setSelection(idx);
@@ -275,12 +275,12 @@ public class AlarmSelector {
 							context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
 					prefsEdit.putString("alarmUri", "file://" + paths.get(sel));
 					prefsEdit.commit();
-					Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
+					// Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
 				} else {
-					Log.i(getClass().getName(), "No ringtones found...");
+					// Log.i(getClass().getName(), "No ringtones found...");
 				}
 			} else {
-				Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
+				// Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
 				alarmTonesAdapter.add(
 						ringtone.getTitle(context));
 				uris.add(alarmUri.toString());

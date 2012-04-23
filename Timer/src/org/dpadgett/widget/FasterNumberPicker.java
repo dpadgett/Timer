@@ -894,7 +894,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
 	public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-    	Log.i(getClass().getName(), "Requesting disallow intercept touch event");
+    	// Log.i(getClass().getName(), "Requesting disallow intercept touch event");
 		super.requestDisallowInterceptTouchEvent(disallowIntercept);
 	}
 

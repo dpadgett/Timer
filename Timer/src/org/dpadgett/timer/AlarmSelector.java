@@ -29,13 +29,11 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * Utility class to provide alarm sound selection capabilities.  Caches

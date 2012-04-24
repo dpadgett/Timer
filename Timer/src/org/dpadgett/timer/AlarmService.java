@@ -30,7 +30,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 /**
  * Service which controls playback of a single alarm, initiated by an {@link Intent}.

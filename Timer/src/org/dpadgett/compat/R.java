@@ -16,11 +16,8 @@
 
 package org.dpadgett.compat;
 
-import java.util.Arrays;
-
 import android.content.res.Resources;
 import android.os.Build;
-import android.util.Log;
 
 public final class R {
 	private R() { }

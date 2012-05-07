@@ -8,7 +8,9 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -114,8 +116,13 @@ public class StopwatchFragment extends Fragment {
 
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-		rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
-		rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
+    	new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
+				rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
+			}
+		}, 1000);
 
         return rootView;
     }

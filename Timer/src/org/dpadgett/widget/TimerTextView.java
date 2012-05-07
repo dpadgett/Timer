@@ -63,6 +63,7 @@ public class TimerTextView extends TextView {
 	private void setTimerText(long timestamp) {
 		long elapsedTime = timestamp - startingTime;
 		setText(textPrefix + getTimerText(elapsedTime));
+		invalidate();
 	}
 
 	private void setTimerText() {

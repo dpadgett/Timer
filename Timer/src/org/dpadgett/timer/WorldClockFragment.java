@@ -41,6 +41,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -78,7 +79,7 @@ public class WorldClockFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
     	uiHandler = new Handler();
-        View rootView = inflater.inflate(R.layout.world_clock, container, false);
+        final View rootView = inflater.inflate(R.layout.world_clock, container, false);
         finder = ResourceFinders.from(rootView);
         context = rootView.getContext();
         Button addClockButton = (Button) finder.findViewById(R.id.addClockButton);
@@ -125,8 +126,13 @@ public class WorldClockFragment extends Fragment {
 		
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-		rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
-		rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				rootView.layout(0, 0, rootView.getMeasuredWidth(), rootView.getMeasuredHeight());
+				rootView.draw(new Canvas(Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888)));
+			}
+		}, 1000);
 
 		return rootView;
     }

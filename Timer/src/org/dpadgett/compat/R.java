@@ -45,7 +45,13 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			// e.printStackTrace();
 		}
-		return nativeId;
+		// the missing "styleable" ids are manually resolved in FasterNumberPicker
+		if (nativeId != 0 || defType.equals("styleable")) {
+			return nativeId;
+		} else {
+			// this may still be needed since honeycomb is missing some strings.
+			return def;
+		}
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {

@@ -9,7 +9,10 @@ import android.util.Log;
 public final class R {
 	private R() { }
 	
-	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB;
+	// new jellybean stuff seems to break the numberpicker - buttons revert to gingerbread style, and
+	// selected text disappears on scroll.
+	private static final boolean COMPAT_NEEDED = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
+			|| Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1;
 
 	private static final int resolveId(String name, String defType, String defPackage, int def) {
 		if (COMPAT_NEEDED) {
@@ -32,7 +35,13 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
-		return nativeId;
+		// the missing "styleable" ids are manually resolved in FasterNumberPicker
+		if (nativeId != 0 || defType.equals("styleable")) {
+			return nativeId;
+		} else {
+			// this may still be needed since honeycomb is missing some strings.
+			return def;
+		}
 	}
 	
 	private static final int[] resolveArray(String name, String defType, int[] def) {

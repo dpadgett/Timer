@@ -1,10 +1,7 @@
 package org.dpadgett.compat;
 
-import java.util.Arrays;
-
 import android.content.res.Resources;
 import android.os.Build;
-import android.util.Log;
 
 public final class R {
 	private R() { }
@@ -19,7 +16,7 @@ public final class R {
 			return def;
 		}
 		int nativeId = Resources.getSystem().getIdentifier(name, defType, defPackage);
-		Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
+		// Log.i(R.class.getName(), "Found id " + nativeId + " for " + defPackage + "." + defType + "." + name);
 		if (nativeId != 0) {
 			return nativeId;
 		}
@@ -61,7 +58,7 @@ public final class R {
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		}
-		Log.i(R.class.getName(), "Found id " + Arrays.toString(nativeIds) + " for " + defType + "." + name);
+		// Log.i(R.class.getName(), "Found id " + Arrays.toString(nativeIds) + " for " + defType + "." + name);
 		return nativeIds;
 	}
 	

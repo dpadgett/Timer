@@ -11,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -87,12 +86,12 @@ public class TabsAdapter extends FragmentPagerAdapter
     public Fragment getCachedItem(int position) {
         // Do we already have this fragment?
     	if (!mSingletonMap.containsKey(position)) {
-    		Log.i(getClass().getName(), "Fragment cache miss");
+    		// Log.i(getClass().getName(), "Fragment cache miss");
 	        Fragment fragment = (Fragment) instantiateItem(mViewPager, position);
 	        mSingletonMap.put(position, fragment);
 	        return fragment;
     	} else {
-    		Log.i(getClass().getName(), "Fragment cache hit");
+    		// Log.i(getClass().getName(), "Fragment cache hit");
     		return mSingletonMap.get(position);
     	}
     }

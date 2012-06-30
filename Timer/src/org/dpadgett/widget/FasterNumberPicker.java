@@ -44,7 +44,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -894,7 +893,7 @@ public class FasterNumberPicker extends LinearLayout {
 
     @Override
 	public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-    	Log.i(getClass().getName(), "Requesting disallow intercept touch event");
+    	// Log.i(getClass().getName(), "Requesting disallow intercept touch event");
 		super.requestDisallowInterceptTouchEvent(disallowIntercept);
 	}
 

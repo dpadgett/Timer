@@ -4,7 +4,6 @@ import org.dpadgett.timer.R;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -49,13 +48,13 @@ public class LapTimeScalingLinearLayout extends LinearLayout {
 				TextView lapLabel = (TextView) findViewById(R.id.lapLabel);
 				TextView lapTimeView = (TextView) findViewById(R.id.lapTime);
 				
-				Log.i(getClass().getName(), "Lap time text too wide, shrinking...");
+				// Log.i(getClass().getName(), "Lap time text too wide, shrinking...");
 				lapLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX,
 						lapLabel.getTextSize() * maxWidth / totalWidth);
 				lapTimeView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
 						lapTimeView.getTextSize() * maxWidth / totalWidth);
-				Log.i(getClass().getName(), "Changed textWidth from " + totalWidth
-						+ " with max of " + MeasureSpec.toString(widthMeasureSpec));
+				// Log.i(getClass().getName(), "Changed textWidth from " + totalWidth
+				// 		+ " with max of " + MeasureSpec.toString(widthMeasureSpec));
 			}
 		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);

@@ -2,7 +2,6 @@ package org.dpadgett.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.widget.TextView;
 
@@ -41,9 +40,9 @@ public class TimeTextView extends TextView {
 			// scale the textview so it don't wrap (looks ugly)
 			int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
 			if (totalWidth > maxWidth) {
-				Log.i(getClass().getName(), "Time text too wide, shrinking...");
+				// Log.i(getClass().getName(), "Time text too wide, shrinking...");
 				setTextSize(TypedValue.COMPLEX_UNIT_PX, getTextSize() * maxWidth / totalWidth);
-				Log.i(getClass().getName(), "Changed textWidth from " + totalWidth + " with max of " + maxWidth);
+				// Log.i(getClass().getName(), "Changed textWidth from " + totalWidth + " with max of " + maxWidth);
 			}
 		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);

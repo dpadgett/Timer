@@ -26,6 +26,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -42,6 +43,9 @@ public class TimerActivity extends SherlockFragmentActivity {
 
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
+	static final String START_REASON = "START_REASON";
+	static final String START_REASON_NFC  = "START_REASON_NFC";
+	static final String START_REASON_NONE = "START_REASON_NONE";
 	
 	private static enum Tab {
 		WORLD_CLOCK("World Clock", WorldClockFragment.class),
@@ -83,19 +87,28 @@ public class TimerActivity extends SherlockFragmentActivity {
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);
 
+        Bundle extras = getIntent().getExtras();
+        
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
-	                tab.getFragmentClass(), null);
+	                tab.getFragmentClass(), extras);
         }
-
+        
+        String startReason = START_REASON_NONE;
+        if (extras != null) {
+            startReason = extras.getString(START_REASON);
+        }
+                
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        if (prefs.contains("tab")) {
-            bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
+        if (startReason.equals(START_REASON_NFC)) {
+            bar.setSelectedNavigationItem(1); // TODO, don't hard code this
+        } else if (prefs.contains("tab")) {
+        	bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
         } else if (savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+        	bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
-
+        
 		alarmDialog = new AlertDialog.Builder(this)
 				.setTitle("Countdown timer finished")
 				.setPositiveButton("Dismiss",

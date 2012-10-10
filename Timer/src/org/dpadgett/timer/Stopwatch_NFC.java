@@ -23,9 +23,9 @@ public class Stopwatch_NFC extends Activity {
         startActivity(intent);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_stopwatch__nfc, menu);
-        return true;
-    }
+    //@Override
+    //public boolean onCreateOptionsMenu(Menu menu) {
+        //getMenuInflater().inflate(R.menu.activity_stopwatch__nfc, menu);
+        //return true;
+    //}
 }

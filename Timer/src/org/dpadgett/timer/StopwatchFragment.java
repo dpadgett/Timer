@@ -202,6 +202,8 @@ public class StopwatchFragment extends Fragment {
     		if (isTimerRunning) {
     			lap();
     		} else {
+    			// TODO: if current stopped timer == 0, then start
+    			// if !=0, then lap and start, that way the time of a stopped timer is not lost.
     			reset();
     			start();
     		}

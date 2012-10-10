@@ -95,8 +95,10 @@ public class TimerActivity extends SherlockFragmentActivity {
 	                tab.getFragmentClass(), extras);
         }
         
-        String startReason = START_REASON_NONE;
-        if (extras != null) {
+        String startReason;
+        if (extras == null) {
+        	startReason = START_REASON_NONE;
+        } else {
             startReason = extras.getString(START_REASON);
         }
                 

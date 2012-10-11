@@ -24,10 +24,10 @@
         </activity>
 
         <service android:name=".AlarmService" />
-
         <activity
-            android:name=".Stopwatch_NFC"
-            android:label="@string/title_activity_stopwatch__nfc" android:exported="true">
+            android:name=".StopwatchAutostartActivity"
+            android:exported="true"
+            android:label="@string/title_activity_stopwatch_autostart" >
         </activity>
     </application>
 

@@ -44,7 +44,7 @@ public class TimerActivity extends SherlockFragmentActivity {
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
 	static final String START_REASON = "START_REASON";
-	static final String START_REASON_NFC  = "START_REASON_NFC";
+	static final String START_REASON_AUTOSTART_STOPWATCH  = "START_REASON_AUTOSTART_STOPWATCH";
 	static final String START_REASON_NONE = "START_REASON_NONE";
 	
 	private static enum Tab {
@@ -103,7 +103,7 @@ public class TimerActivity extends SherlockFragmentActivity {
         }
                 
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        if (startReason.equals(START_REASON_NFC)) {
+        if (startReason.equals(START_REASON_AUTOSTART_STOPWATCH)) {
             bar.setSelectedNavigationItem(1); // TODO, don't hard code this
         } else if (prefs.contains("tab")) {
         	bar.setSelectedNavigationItem(prefs.getInt("tab", 0));

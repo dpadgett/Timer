@@ -55,7 +55,7 @@ public class StopwatchFragment extends Fragment {
 
 	private boolean isTimerRunning;
 	
-	private boolean startedByNFC = false;
+	private boolean autoStartStopwatch = false;
 
 	public void start() {
 		// We can start the timer via something other than the button
@@ -117,8 +117,8 @@ public class StopwatchFragment extends Fragment {
         if (args != null) {
                startReason = args.getString(TimerActivity.START_REASON);
         }
-        if (startReason.equals(TimerActivity.START_REASON_NFC)) {
-        	startedByNFC = true;
+        if (startReason.equals(TimerActivity.START_REASON_AUTOSTART_STOPWATCH)) {
+        	autoStartStopwatch = true;
         }
 	}
     @Override
@@ -198,7 +198,7 @@ public class StopwatchFragment extends Fragment {
 		timerText.setStartingTime(timeStarted - additionalElapsed - additionalLapTimeElapsed);
 		lapTimeText.setStartingTime(timeStarted - additionalElapsed);
 
-    	if (startedByNFC == true) {
+    	if (autoStartStopwatch == true) {
     		if (isTimerRunning) {
     			lap();
     		} else {
@@ -207,7 +207,7 @@ public class StopwatchFragment extends Fragment {
     			reset();
     			start();
     		}
-    		startedByNFC = false;
+    		autoStartStopwatch = false;
     	}
 		
 		if (isTimerRunning) {

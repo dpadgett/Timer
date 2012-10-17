@@ -17,7 +17,7 @@ public class StopwatchAutostartActivity extends Activity {
         
         Intent intent = new Intent(this, TimerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.putExtra(TimerActivity.START_REASON, TimerActivity.START_REASON_NFC);
+        intent.putExtra(TimerActivity.START_REASON, TimerActivity.START_REASON_AUTOSTART_STOPWATCH);
         startActivity(intent);
     }
 }

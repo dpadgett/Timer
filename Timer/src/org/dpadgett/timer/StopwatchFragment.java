@@ -17,6 +17,7 @@
 package org.dpadgett.timer;
 
 import org.dpadgett.compat.LinearLayout;
+import org.dpadgett.timer.TimerActivity.StartReason;
 import org.dpadgett.widget.TimerTextView;
 
 import android.content.Context;
@@ -112,12 +113,12 @@ public class StopwatchFragment extends Fragment {
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        String startReason = TimerActivity.START_REASON_NONE;
+        TimerActivity.StartReason startReason = TimerActivity.StartReason.START_REASON_NONE;
         Bundle args = getArguments();
         if (args != null) {
-               startReason = args.getString(TimerActivity.START_REASON);
+        	startReason = (StartReason) args.getSerializable(TimerActivity.START_REASON);
         }
-        if (startReason.equals(TimerActivity.START_REASON_AUTOSTART_STOPWATCH)) {
+        if (startReason == TimerActivity.StartReason.START_REASON_AUTOSTART_STOPWATCH) {
         	autoStartStopwatch = true;
         }
 	}

@@ -26,7 +26,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -44,8 +43,10 @@ public class TimerActivity extends SherlockFragmentActivity {
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
 	static final String START_REASON = "START_REASON";
-	static final String START_REASON_AUTOSTART_STOPWATCH  = "START_REASON_AUTOSTART_STOPWATCH";
-	static final String START_REASON_NONE = "START_REASON_NONE";
+	public enum StartReason {
+		START_REASON_AUTOSTART_STOPWATCH,
+		START_REASON_NONE
+	};
 	
 	private static enum Tab {
 		WORLD_CLOCK("World Clock", WorldClockFragment.class),
@@ -95,16 +96,14 @@ public class TimerActivity extends SherlockFragmentActivity {
 	                tab.getFragmentClass(), extras);
         }
         
-        String startReason;
-        if (extras == null) {
-        	startReason = START_REASON_NONE;
-        } else {
-            startReason = extras.getString(START_REASON);
+        StartReason startReason = StartReason.START_REASON_NONE;
+        if (extras != null) {
+            startReason = (StartReason) extras.getSerializable(START_REASON);
         }
                 
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        if (startReason.equals(START_REASON_AUTOSTART_STOPWATCH)) {
-            bar.setSelectedNavigationItem(1); // TODO, don't hard code this
+        if (startReason == StartReason.START_REASON_AUTOSTART_STOPWATCH) {
+            bar.setSelectedNavigationItem(1); // TODO, Need a way to know Stopwatch index so I don't hard code this
         } else if (prefs.contains("tab")) {
         	bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
         } else if (savedInstanceState != null) {

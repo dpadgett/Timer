@@ -1,9 +1,8 @@
 package org.dpadgett.timer;
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
+import android.os.Bundle;
 
 /**
  * Autostart. This is an activity that is "exported" and can be started

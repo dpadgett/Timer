@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
 
-//This is an activity that is "exported" and can be started
-//by other applications. One use case is an NFC tag that 
-//automatically starts a new stopwatch counter.
+/**
+ * Autostart. This is an activity that is "exported" and can be started
+ * by other applications. One use case is an NFC tag that 
+ * automatically starts a new stopwatch counter.  
+ */
 public class StopwatchAutostartActivity extends Activity {
 
     @Override

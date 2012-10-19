@@ -77,6 +77,7 @@ public class StopwatchFragment extends Fragment {
 		resetButton.setText("Lap");
 		saveState();
 	}
+	
 	public void stop() {
 		Button startButton = (Button) rootView.findViewById(R.id.startButton);
 		Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
@@ -88,6 +89,7 @@ public class StopwatchFragment extends Fragment {
 		lapTimeText.pause(timeStopped);
 		saveState();
 	}
+	
 	public void lap() {
 		long origTimeStarted = timeStarted;
 		timeStarted = System.currentTimeMillis();
@@ -100,6 +102,7 @@ public class StopwatchFragment extends Fragment {
 		lapTimes.add(lapTime);
 		saveState();
 	}
+	
 	public void reset() {
 		timeStarted = 0L;
 		additionalElapsed = 0L;
@@ -109,6 +112,7 @@ public class StopwatchFragment extends Fragment {
 		lapTimes.clear();
 		saveState();
 	}
+	
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -122,6 +126,7 @@ public class StopwatchFragment extends Fragment {
         	autoStartStopwatch = true;
         }
 	}
+	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

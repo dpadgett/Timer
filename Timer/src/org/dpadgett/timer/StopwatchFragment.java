@@ -17,6 +17,7 @@
 package org.dpadgett.timer;
 
 import org.dpadgett.compat.LinearLayout;
+import org.dpadgett.timer.TimerActivity.StartReason;
 import org.dpadgett.widget.TimerTextView;
 
 import android.content.Context;
@@ -54,7 +55,78 @@ public class StopwatchFragment extends Fragment {
 	private TimerTextView lapTimeText;
 
 	private boolean isTimerRunning;
+	
+	private boolean autoStartStopwatch = false;
 
+	public void start() {
+		// We can start the timer via something other than the button
+		// If that is the case, then make sure we are tracking the timer as started.
+		if (isTimerRunning == false) {
+			isTimerRunning = true;
+		}
+		Button startButton = (Button) rootView.findViewById(R.id.startButton);
+		Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
+		timeStarted = System.currentTimeMillis();
+		timerText.setStartingTime(timeStarted - additionalElapsed - additionalLapTimeElapsed);
+		timerText.resume();
+		lapTimeText.setStartingTime(timeStarted - additionalElapsed);
+		lapTimeText.resume();
+		timerText.forceUpdate(timeStarted);
+		lapTimeText.forceUpdate(timeStarted);
+		startButton.setText("Stop");
+		resetButton.setText("Lap");
+		saveState();
+	}
+	
+	public void stop() {
+		Button startButton = (Button) rootView.findViewById(R.id.startButton);
+		Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
+		long timeStopped = System.currentTimeMillis();
+		startButton.setText("Start");
+		resetButton.setText("Reset");
+		additionalElapsed += timeStopped - timeStarted;
+		timerText.pause(timeStopped);
+		lapTimeText.pause(timeStopped);
+		saveState();
+	}
+	
+	public void lap() {
+		long origTimeStarted = timeStarted;
+		timeStarted = System.currentTimeMillis();
+		long lapTime = timeStarted - origTimeStarted + additionalElapsed; // this is the lap time
+		additionalLapTimeElapsed += lapTime;
+		additionalElapsed = 0L;
+		lapTimeText.setStartingTime(timeStarted - additionalElapsed);
+
+		// add it to the list of lap times
+		lapTimes.add(lapTime);
+		saveState();
+	}
+	
+	public void reset() {
+		timeStarted = 0L;
+		additionalElapsed = 0L;
+		additionalLapTimeElapsed = 0L;
+		timerText.reset();
+		lapTimeText.reset();
+		lapTimes.clear();
+		saveState();
+	}
+	
+	@Override
+	public void onCreate(final Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+        TimerActivity.StartReason startReason = TimerActivity.StartReason.START_REASON_NONE;
+        Bundle args = getArguments();
+        if (args != null) {
+        	startReason = (StartReason) args.getSerializable(TimerActivity.START_REASON);
+        }
+        if (startReason == TimerActivity.StartReason.START_REASON_AUTOSTART_STOPWATCH) {
+        	autoStartStopwatch = true;
+        }
+	}
+	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -73,62 +145,33 @@ public class StopwatchFragment extends Fragment {
         lapTimeText.setTextPrefix("lap: ");
         
         lapTimes = new LapTimes((ScrollView) rootView.findViewById(R.id.scrollView1));
-        
+ 
         startButton.setOnClickListener(new OnClickListener() {
-			Button startButton = (Button) rootView.findViewById(R.id.startButton);
-			Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
-
 			@Override
 			public void onClick(View view) {
 				isTimerRunning = !isTimerRunning;
 				if (isTimerRunning) { // start
-					timeStarted = System.currentTimeMillis();
-					timerText.setStartingTime(timeStarted - additionalElapsed - additionalLapTimeElapsed);
-					timerText.resume();
-					lapTimeText.setStartingTime(timeStarted - additionalElapsed);
-					lapTimeText.resume();
-					timerText.forceUpdate(timeStarted);
-					lapTimeText.forceUpdate(timeStarted);
-					startButton.setText("Stop");
-					resetButton.setText("Lap");
+					start();
 				} else { // stop
-					long timeStopped = System.currentTimeMillis();
-					startButton.setText("Start");
-					resetButton.setText("Reset");
-					additionalElapsed += timeStopped - timeStarted;
-					timerText.pause(timeStopped);
-					lapTimeText.pause(timeStopped);
+					stop();
 				}
-				saveState();
+
 			}
         });
         resetButton.setOnClickListener(new OnClickListener() {
-        	
 			@Override
 			public void onClick(View view) {
 				if (isTimerRunning) { // lap
-					long origTimeStarted = timeStarted;
-					timeStarted = System.currentTimeMillis();
-					long lapTime = timeStarted - origTimeStarted + additionalElapsed; // this is the lap time
-					additionalLapTimeElapsed += lapTime;
-					additionalElapsed = 0L;
-					lapTimeText.setStartingTime(timeStarted - additionalElapsed);
-
-					// add it to the list of lap times
-					lapTimes.add(lapTime);
+					lap();
 				} else { // reset
-					timeStarted = 0L;
-					additionalElapsed = 0L;
-					additionalLapTimeElapsed = 0L;
-					timerText.reset();
-					lapTimeText.reset();
-					lapTimes.clear();
+					reset();
 				}
-				saveState();
+
 			}
         });
 
     	restoreState();
+
 
 		// forcefully pre-render content so it is cached
 		rootView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
@@ -161,6 +204,18 @@ public class StopwatchFragment extends Fragment {
 		timerText.setStartingTime(timeStarted - additionalElapsed - additionalLapTimeElapsed);
 		lapTimeText.setStartingTime(timeStarted - additionalElapsed);
 
+    	if (autoStartStopwatch == true) {
+    		if (isTimerRunning) {
+    			lap();
+    		} else {
+    			// TODO: if current stopped timer == 0, then start
+    			// if !=0, then lap and start, that way the time of a stopped timer is not lost.
+    			reset();
+    			start();
+    		}
+    		autoStartStopwatch = false;
+    	}
+		
 		if (isTimerRunning) {
     		timerText.resume();
     		lapTimeText.resume();

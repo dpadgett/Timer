@@ -103,7 +103,7 @@ public class TimerActivity extends SherlockFragmentActivity {
                 
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
         if (startReason == StartReason.START_REASON_AUTOSTART_STOPWATCH) {
-            bar.setSelectedNavigationItem(1); // TODO, Need a way to know Stopwatch index so I don't hard code this
+            bar.setSelectedNavigationItem(Tab.STOPWATCH.ordinal());
         } else if (prefs.contains("tab")) {
         	bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
         } else if (savedInstanceState != null) {

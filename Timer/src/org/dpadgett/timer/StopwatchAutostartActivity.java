@@ -13,7 +13,6 @@ public class StopwatchAutostartActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_stopwatch_autostart);
         
         Intent intent = new Intent(this, TimerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);

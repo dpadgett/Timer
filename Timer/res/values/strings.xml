@@ -14,4 +14,6 @@
     <!-- Description of the scrolling action in NumberPicker. [CHAR LIMIT=NONE] -->
     <string name="number_picker_increment_scroll_action">Slide up to increment and down to decrement.</string>
 
+    <string name="title_activity_stopwatch_autostart">StopwatchAutostartActivity</string>
+
 </resources>

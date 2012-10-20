@@ -42,6 +42,11 @@ public class TimerActivity extends SherlockFragmentActivity {
 
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
+	static final String START_REASON = "START_REASON";
+	public enum StartReason {
+		START_REASON_AUTOSTART_STOPWATCH,
+		START_REASON_NONE
+	};
 	
 	private static enum Tab {
 		WORLD_CLOCK("World Clock", WorldClockFragment.class),
@@ -83,19 +88,28 @@ public class TimerActivity extends SherlockFragmentActivity {
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);
 
+        Bundle extras = getIntent().getExtras();
+        
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         for (Tab tab : Tab.values()) {
 	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
-	                tab.getFragmentClass(), null);
+	                tab.getFragmentClass(), extras);
         }
-
+        
+        StartReason startReason = StartReason.START_REASON_NONE;
+        if (extras != null) {
+            startReason = (StartReason) extras.getSerializable(START_REASON);
+        }
+                
         SharedPreferences prefs = getSharedPreferences("TimerActivity", Context.MODE_PRIVATE);
-        if (prefs.contains("tab")) {
-            bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
+        if (startReason == StartReason.START_REASON_AUTOSTART_STOPWATCH) {
+            bar.setSelectedNavigationItem(Tab.STOPWATCH.ordinal());
+        } else if (prefs.contains("tab")) {
+        	bar.setSelectedNavigationItem(prefs.getInt("tab", 0));
         } else if (savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+        	bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
-
+        
 		alarmDialog = new AlertDialog.Builder(this)
 				.setTitle("Countdown timer finished")
 				.setPositiveButton("Dismiss",

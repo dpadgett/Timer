@@ -182,6 +182,13 @@ public class AlarmSelector {
 			List<String> newNames = new ArrayList<String>();
 			List<String> newUris = new ArrayList<String>();
 			
+			// explicitly add the default URI, so we can select it separately from the other tones
+			Uri defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+			Ringtone ringtone = RingtoneManager.getRingtone(context, defaultUri);
+			newNames.add(ringtone.getTitle(context));
+			newUris.add(defaultUri.toString());
+			newPaths.add(getRealPathFromURI(defaultUri));
+			
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 				newNames.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
 				newUris.add(manager.getRingtoneUri(c.getPosition()).toString());
@@ -305,6 +312,17 @@ public class AlarmSelector {
 				context.getSharedPreferences("Countdown", Context.MODE_PRIVATE);
 
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
+        // needed for backward compatability with original version which just stored the path
+        if (alarmUri.toString().startsWith("/")) {
+        	int idx = paths.indexOf(alarmUri.toString());
+        	if (idx != -1) {
+        		alarmUri = Uri.parse(uris.get(idx));
+        		SharedPreferences.Editor prefsEdit = 
+					context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
+				prefsEdit.putString("alarmUri", uris.get(idx));
+				prefsEdit.commit();
+        	}
+        }
      // Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
 		int idx = uris.indexOf(alarmUri.toString());
 		if (idx != -1) {

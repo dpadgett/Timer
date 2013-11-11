@@ -18,7 +18,6 @@ package org.dpadgett.timer;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
@@ -101,6 +100,7 @@ public class AlarmSelector {
 		alarmTonesAdapter =
 				new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
 						names);
+		alarmTonesAdapter.setNotifyOnChange(false); // we manually update when finished changing it
 		alarmTonesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         selector.setAdapter(alarmTonesAdapter);
         selector.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -123,6 +123,8 @@ public class AlarmSelector {
 	
 	private void updateAlarms() {
 		restoreState();
+		alarmTonesAdapter.clear();
+		alarmTonesAdapter.addAll(names);
 		alarmTonesAdapter.notifyDataSetChanged();
 	}
 
@@ -313,14 +315,26 @@ public class AlarmSelector {
 
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
         // needed for backward compatability with original version which just stored the path
-        if (alarmUri.toString().startsWith("/")) {
-        	int idx = paths.indexOf(alarmUri.toString());
+		//Log.i(getClass().getName(), "Saved URI is " + alarmUri.toString());
+        if (alarmUri.toString().startsWith("/") || alarmUri.toString().startsWith("file:///")) {
+        	String alarmStr = alarmUri.toString();
+        	if (alarmStr.startsWith("file:///")) {
+        		alarmStr = alarmStr.substring("file://".length());
+        	}
+        	int idx = paths.indexOf(alarmStr);
         	if (idx != -1) {
+        		//Log.i(getClass().getName(), "Replacing URI " + alarmStr + " with " + uris.get(idx));
         		alarmUri = Uri.parse(uris.get(idx));
         		SharedPreferences.Editor prefsEdit = 
 					context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
 				prefsEdit.putString("alarmUri", uris.get(idx));
 				prefsEdit.commit();
+        	} else {
+        		// if we can't find the old selection in the new scheme, still need to rewrite the
+        		// uri so that we can find it later, since we will later insert it at the end of the
+        		// list
+        		//Log.w(getClass().getName(), "couldn't parse alarmUri " + alarmStr + ", paths " + paths);
+        		alarmUri = Uri.parse("file://" + alarmStr.toString());
         	}
         }
      // Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));

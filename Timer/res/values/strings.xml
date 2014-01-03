@@ -16,4 +16,27 @@
 
     <string name="title_activity_stopwatch_autostart">StopwatchAutostartActivity</string>
 
+    <string name="gen_version">Version</string>
+    <string name="gen_dismiss">Dismiss</string>
+    
+    <string name="tab_worldclock">World Clock</string>
+    <string name="tab_stopwatch">Stopwatch</string>
+    <string name="tab_countdown">Countdown</string>
+    <string name="tab_about">About</string>
+    
+    <string name="wordclock_plusadd">+ Add</string>
+    <string name="wordclock_selecttimezone">Select a timezone</string>
+    <string name="wordclock_remove">Remove</string>
+    
+    <string name="stopwatch_start">Start</string>
+    <string name="stopwatch_stop">Stop</string>
+    <string name="stopwatch_reset">Reset</string>
+    <string name="stopwatch_lap">Lap</string>
+    
+    <string name="countdown_start">Start</string>
+    <string name="countdown_cancel">Cancel</string>
+    <string name="countdown_onfinish">On finish:</string>
+    <string name="countdown_finished">Countdown timer finished</string>
+    <string name="countdown_taptodismiss">Tap here to dismiss</string>
+    
 </resources>

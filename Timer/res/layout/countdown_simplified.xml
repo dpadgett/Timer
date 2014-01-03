@@ -73,7 +73,7 @@
 	    <TextView
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:text="On finish:"
+	        android:text="@string/countdown_onfinish"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 		<Spinner
@@ -94,7 +94,7 @@
             android:id="@+id/startButton"
             android:layout_width="120sp"
             android:layout_height="wrap_content"
-            android:text="Start" />
+            android:text="@string/countdown_start" />
 
     </LinearLayout>
 </LinearLayout>

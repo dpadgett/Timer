@@ -86,7 +86,7 @@ public class LapTimes {
 				.inflate(R.layout.single_lap_time, (ViewGroup) lapTimesView, false);
 
 		TextView lapLabel = (TextView) lapLayout.findViewById(R.id.lapLabel);
-		lapLabel.setText("lap " + (lapTimes.size() + 1));
+		lapLabel.setText(context.getResources().getString(R.string.stopwatch_lap)+" "+(lapTimes.size() + 1));
 		
 		TextView lapTimeView = (TextView) lapLayout.findViewById(R.id.lapTime);
 		lapTimeView.setText(getTimerText(lapTime));

@@ -104,14 +104,14 @@ public class AlarmService extends Service {
 		NotificationManager mNotificationManager = 
 				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		int icon = drawable.ic_dialog_info;
-		String tickerText = "Countdown timer finished";
+		String tickerText = context.getResources().getString(R.string.countdown_finished);
 		long when = System.currentTimeMillis();
 
 		Notification notification = new Notification(icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONGOING_EVENT;
 		
-		String contentTitle = "Countdown timer finished";
-		String contentText = "Tap here to dismiss";
+		String contentTitle = context.getResources().getString(R.string.countdown_finished);
+		String contentText = context.getResources().getString(R.string.countdown_taptodismiss);
 		Intent notificationIntent = new Intent(context, AlarmService.class)
 			.putExtra("startAlarm", false).putExtra("fromFragment", false)
 			.setAction("internalStopAlarm");

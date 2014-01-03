@@ -19,7 +19,6 @@ package org.dpadgett.timer;
 import org.dpadgett.compat.LinearLayout;
 import org.dpadgett.timer.TimerActivity.StartReason;
 import org.dpadgett.widget.TimerTextView;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -27,7 +26,6 @@ import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -73,8 +71,8 @@ public class StopwatchFragment extends Fragment {
 		lapTimeText.resume();
 		timerText.forceUpdate(timeStarted);
 		lapTimeText.forceUpdate(timeStarted);
-		startButton.setText("Stop");
-		resetButton.setText("Lap");
+		startButton.setText(getResources().getString(R.string.stopwatch_stop));
+		resetButton.setText(getResources().getString(R.string.stopwatch_lap));
 		saveState();
 	}
 	
@@ -82,8 +80,8 @@ public class StopwatchFragment extends Fragment {
 		Button startButton = (Button) rootView.findViewById(R.id.startButton);
 		Button resetButton = (Button) rootView.findViewById(R.id.stopButton);
 		long timeStopped = System.currentTimeMillis();
-		startButton.setText("Start");
-		resetButton.setText("Reset");
+		startButton.setText(getResources().getString(R.string.stopwatch_start));
+		resetButton.setText(getResources().getString(R.string.stopwatch_reset));
 		additionalElapsed += timeStopped - timeStarted;
 		timerText.pause(timeStopped);
 		lapTimeText.pause(timeStopped);
@@ -142,7 +140,7 @@ public class StopwatchFragment extends Fragment {
         
         timerText = (TimerTextView) rootView.findViewById(R.id.timerText);
         lapTimeText = (TimerTextView) rootView.findViewById(R.id.liveLapTime);
-        lapTimeText.setTextPrefix("lap: ");
+        lapTimeText.setTextPrefix(getResources().getString(R.string.stopwatch_lap)+": ");
         
         lapTimes = new LapTimes((ScrollView) rootView.findViewById(R.id.scrollView1));
  
@@ -219,8 +217,8 @@ public class StopwatchFragment extends Fragment {
 		if (isTimerRunning) {
     		timerText.resume();
     		lapTimeText.resume();
-			startButton.setText("Stop");
-			resetButton.setText("Lap");
+			startButton.setText(getResources().getString(R.string.stopwatch_stop));
+			resetButton.setText(getResources().getString(R.string.stopwatch_lap));
     	}
 		timerText.forceUpdate(timeStarted);
 		lapTimeText.forceUpdate(timeStarted);

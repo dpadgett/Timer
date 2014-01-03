@@ -26,7 +26,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
@@ -43,25 +42,27 @@ public class TimerActivity extends SherlockFragmentActivity {
 	static final String ACTION_SHOW_DIALOG = "org.dpadgett.timer.CountdownFragment.SHOW_DIALOG";
 	static final String ACTION_DISMISS_DIALOG = "org.dpadgett.timer.CountdownFragment.DISMISS_DIALOG";
 	static final String START_REASON = "START_REASON";
+	
 	public enum StartReason {
 		START_REASON_AUTOSTART_STOPWATCH,
 		START_REASON_NONE
 	};
 	
 	private static enum Tab {
-		WORLD_CLOCK("World Clock", WorldClockFragment.class),
-		STOPWATCH("Stopwatch", StopwatchFragment.class),
-		COUNTDOWN("Countdown", CountdownFragment.class);
+		WORLD_CLOCK(R.string.tab_worldclock, WorldClockFragment.class),
+		STOPWATCH(R.string.tab_stopwatch, StopwatchFragment.class),
+		COUNTDOWN(R.string.tab_countdown, CountdownFragment.class),
+		ABOUT(R.string.tab_about, AboutFragment.class);
 
-		private final String title;
+		private final int title;
 		private final Class<? extends Fragment> clazz;
 
-		private Tab(String title, Class<? extends Fragment> clazz) {
+		private Tab(int title, Class<? extends Fragment> clazz) {
 			this.title = title;
 			this.clazz = clazz;
 		}
 		
-		private String getTitle() {
+		private int getTitle() {
 			return title;
 		}
 		
@@ -87,13 +88,15 @@ public class TimerActivity extends SherlockFragmentActivity {
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
         bar.setDisplayShowHomeEnabled(false);
-
+        
         Bundle extras = getIntent().getExtras();
         
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         for (Tab tab : Tab.values()) {
-	        mTabsAdapter.addTab(bar.newTab().setText(tab.getTitle()),
-	                tab.getFragmentClass(), extras);
+	        mTabsAdapter.addTab(bar.newTab().setText(
+	        		getResources().getString(tab.getTitle())),
+	                tab.getFragmentClass(), 
+	                extras);
         }
         
         StartReason startReason = StartReason.START_REASON_NONE;
@@ -111,8 +114,8 @@ public class TimerActivity extends SherlockFragmentActivity {
         }
         
 		alarmDialog = new AlertDialog.Builder(this)
-				.setTitle("Countdown timer finished")
-				.setPositiveButton("Dismiss",
+				.setTitle(getResources().getString(R.string.countdown_finished))
+				.setPositiveButton(getResources().getString(R.string.gen_dismiss),
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
@@ -166,4 +169,5 @@ public class TimerActivity extends SherlockFragmentActivity {
 			}
 		}
     };
+    
 }

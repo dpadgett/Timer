@@ -186,7 +186,7 @@ public class CountdownFragment extends Fragment {
 				Button startButton = (Button) rootView.findViewById(R.id.startButton);
 				inputs.removeAllViews();
 				inputs.addView(timerLayout);
-				startButton.setText("Cancel");
+				startButton.setText(getContext().getResources().getString(R.string.countdown_cancel));
 				// timing thread will auto start itself
 	    	}
         }
@@ -262,7 +262,7 @@ public class CountdownFragment extends Fragment {
 			
 			inputs.removeAllViews();
 			inputs.addView(timerLayout);
-			startButton.setText("Cancel");
+			startButton.setText(getContext().getResources().getString(R.string.countdown_cancel));
 			
 			AlarmManager alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
 			// should be unique
@@ -295,7 +295,7 @@ public class CountdownFragment extends Fragment {
 	    	handler.removeCallbacks(inputModeOn);
 			inputs.removeAllViews();
 			inputs.addView(inputLayout);
-			startButton.setText("Start");
+			startButton.setText(getContext().getResources().getString(R.string.countdown_start));
 			timingState.stopTimer();
 			if (alarmPendingIntent == null) {
 				// should be unique

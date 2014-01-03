@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="hello">Sup World, TimerActivity!</string>
+    <string name="app_name">Timer</string>
+
+    <!-- NumberPicker - accessibility support -->
+    <!-- Description of the button to increment the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_button">Incrementa</string>
+    <!-- Description of the button to decrement the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_decrement_button">Decrementa</string>
+    <!-- Description of the tap and hold action to get into scroll mode in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_mode"><xliff:g id="value" example="3">%s</xliff:g> clicca e tieni.</string>
+    <!-- Description of the scrolling action in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_action">Slide su per incrementare e giù per decrementare.</string>
+
+    <string name="title_activity_stopwatch_autostart">StopwatchAutostartActivity</string>
+
+    <string name="gen_version">Versione</string>
+    <string name="gen_dismiss">Chiudi</string>
+        
+    <string name="tab_worldclock">Orologio Mondiale</string>
+    <string name="tab_stopwatch">Cronometro</string>
+    <string name="tab_countdown">Timer</string>
+    <string name="tab_about">About</string>
+    
+    <string name="wordclock_plusadd">+ Aggiungi</string>
+    <string name="wordclock_selecttimezone">Seleziona una timezone</string>
+    <string name="wordclock_remove">Rimuovi</string>
+    
+    <string name="stopwatch_start">Avvia</string>
+    <string name="stopwatch_stop">Ferma</string>
+    <string name="stopwatch_reset">Azzera</string>
+    <string name="stopwatch_lap">Giro</string>
+    
+    <string name="countdown_start">Avvia</string>
+    <string name="countdown_cancel">Annulla</string>
+    <string name="countdown_onfinish">Alla fine:</string>
+    <string name="countdown_finished">Conteggio timer completato</string>
+    <string name="countdown_taptodismiss">Premi qui per terminare</string>
+    
+</resources>

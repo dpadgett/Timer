@@ -66,7 +66,7 @@
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Start" />
+                android:text="@string/stopwatch_start" />
 
             <org.dpadgett.compat.Space
                 android:layout_width="20sp"
@@ -77,7 +77,7 @@
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Reset" />
+                android:text="@string/stopwatch_reset" />
 
             <org.dpadgett.compat.Space
                 android:layout_width="20sp"

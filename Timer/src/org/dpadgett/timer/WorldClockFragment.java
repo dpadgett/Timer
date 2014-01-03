@@ -40,8 +40,8 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -139,7 +139,7 @@ public class WorldClockFragment extends Fragment {
 
 	private void newClockDialog(final int position) {
     	AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    	builder.setTitle("Select a timezone");
+    	builder.setTitle(context.getResources().getString(R.string.wordclock_selecttimezone));
     	final Map<String, String> timezoneNameToId = new HashMap<String, String>();
     	Set<Integer> timezones = new TreeSet<Integer>();
     	final Map<Integer, List<String>> offsetToName = new HashMap<Integer, List<String>>();
@@ -164,7 +164,7 @@ public class WorldClockFragment extends Fragment {
     		Collections.sort(names);
     	}
     	if (position > -1) {
-	    	builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+	    	builder.setPositiveButton(context.getResources().getString(R.string.wordclock_remove), new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					clockList.remove(position);
@@ -216,7 +216,7 @@ public class WorldClockFragment extends Fragment {
 				adapter.clear();
 				adapter.addAll(offsetToName.get(timezonesList.get(progress)));
 				int millisOffset = timezonesList.get(progress);
-				String offset = String.format("%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), Math.abs(millisOffset / 1000 / 60) % 60);
+				String offset = String.format(Locale.getDefault(),"%02d:%02d", Math.abs(millisOffset / 1000 / 60 / 60), Math.abs(millisOffset / 1000 / 60) % 60);
 				if (millisOffset / 1000 / 60 / 60 < 0) {
 					offset = "-" + offset;
 				} else {
@@ -313,10 +313,14 @@ public class WorldClockFragment extends Fragment {
 	}
 	
 	private void updateClockTextView(TextView clockToUpdate, String timezone) {
-		SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss a");
+		SimpleDateFormat sdf = null;
+		String value = Settings.System.getString(context.getContentResolver(), android.provider.Settings.System.TIME_12_24);
+		if (value.equals("12")) sdf = new SimpleDateFormat("h:mm:ss a",Locale.getDefault());
+		else sdf = new SimpleDateFormat("HH:mm:ss",Locale.getDefault());
 		Date newDate = new Date(); // as a fallback
 		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-		String toText = sdf.format(newDate).toLowerCase();
+		String toText = sdf.format(newDate).toLowerCase(Locale.getDefault());
 		clockToUpdate.setText(toText);
 	}
+
 }

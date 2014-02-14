@@ -13,7 +13,32 @@
     <string name="number_picker_increment_scroll_mode"><xliff:g id="value" example="3">%s</xliff:g> tap and hold.</string>
     <!-- Description of the scrolling action in NumberPicker. [CHAR LIMIT=NONE] -->
     <string name="number_picker_increment_scroll_action">Slide up to increment and down to decrement.</string>
-
     <string name="title_activity_stopwatch_autostart">StopwatchAutostartActivity</string>
-
+    <string name="countdown_timer_finished">Countdown timer finished</string>
+    <string name="tap_to_dismiss">Tap here to dismiss</string>
+    <string name="alarm_dialog_dismiss">Dismiss</string>
+    <string name="tab_title_worldclock">World Clock</string>
+    <string name="tab_title_stopwatch">Stopwatch</string>
+    <string name="tab_title_countdown">Countdown</string>
+    <string name="world_clock_timezone_label">UTC Offset: </string>
+    <string name="world_clock_timezone_label_initial" >UTC Offset: +0:00</string>
+    <string name="world_clock_timezone_utc">UTC</string>
+    <string name="world_clock_timezone_gmt">GMT</string>
+    <string name="world_clock_button_add">+ Add</string>
+    <string name="world_clock_button_remove">Remove</string>
+    <string name="world_clock_select_timezone">Select a timezone</string>
+    <string name="countdown_button_start">Start</string>
+    <string name="countdown_button_cancel">Cancel</string>
+    <string name="countdown_label_on_finish">On finish:</string>
+    <string name="countdown_number_picker_seconds">SECONDS</string>
+    <string name="countdown_number_picker_minutes">MINUTES</string>
+    <string name="countdown_number_picker_hours">HOURS</string>
+    <string name="stopwatch_button_start">Start</string>
+    <string name="stopwatch_button_stop">Stop</string>
+    <string name="stopwatch_button_lap">Lap</string>
+    <string name="stopwatch_button_reset">Reset</string>
+    <string name="stopwatch_timertext_initial">00:00:00.000</string>
+    <string name="stopwatch_lap_time_prefix">lap:</string>
+    <string name="stopwatch_lap_time_initial">lap: 00:00:00.000</string>
+    <string name="lap_times_lap_label">lap</string>
 </resources>

@@ -23,7 +23,7 @@
             android:id="@+id/timerText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00:00.000"
+            android:text="@string/stopwatch_timertext_initial"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textSize="50sp" />
 
@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="lap: 00:00:00.000"
+                android:text="@string/stopwatch_lap_time_initial"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
 
@@ -66,7 +66,7 @@
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Start" />
+                android:text="@string/stopwatch_button_start" />
 
             <org.dpadgett.compat.Space
                 android:layout_width="20sp"
@@ -77,7 +77,7 @@
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Reset" />
+                android:text="@string/stopwatch_button_reset" />
 
             <org.dpadgett.compat.Space
                 android:layout_width="20sp"

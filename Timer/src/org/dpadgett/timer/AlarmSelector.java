@@ -220,8 +220,10 @@ public class AlarmSelector {
 			
 			List<Uri> potentialUris = new ArrayList<Uri>();
 			potentialUris.add(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
-			for (File file : contents) {
-				potentialUris.add(Uri.fromFile(file));
+			if (contents != null) {
+				for (File file : contents) {
+					potentialUris.add(Uri.fromFile(file));
+				}
 			}
 			for (Uri uri : potentialUris) {
 				try {

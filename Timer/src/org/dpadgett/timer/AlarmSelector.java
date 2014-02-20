@@ -1,5 +1,22 @@
+/*  
+ * Copyright 2012 Dan Padgett
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.dpadgett.timer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +30,11 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * Utility class to provide alarm sound selection capabilities.  Caches
@@ -85,6 +100,7 @@ public class AlarmSelector {
 		alarmTonesAdapter =
 				new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
 						names);
+		alarmTonesAdapter.setNotifyOnChange(false); // we manually update when finished changing it
 		alarmTonesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         selector.setAdapter(alarmTonesAdapter);
         selector.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -94,9 +110,9 @@ public class AlarmSelector {
 					int position, long id) {
 				SharedPreferences.Editor prefs = 
 						context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
-				prefs.putString("alarmUri", "file://" + paths.get(position).toString());
+				prefs.putString("alarmUri", uris.get(position).toString());
 				prefs.commit();
-				Log.i(getClass().getName(), "Saved uri " + paths.get(position));
+				// Log.i(getClass().getName(), "Saved uri " + paths.get(position));
 			}
 
 			@Override
@@ -107,6 +123,8 @@ public class AlarmSelector {
 	
 	private void updateAlarms() {
 		restoreState();
+		alarmTonesAdapter.clear();
+		alarmTonesAdapter.addAll(names);
 		alarmTonesAdapter.notifyDataSetChanged();
 	}
 
@@ -114,7 +132,7 @@ public class AlarmSelector {
 		SharedPreferences prefs =
 				context.getSharedPreferences("Countdown_alarmSelector", Context.MODE_PRIVATE);
 		if (!prefs.contains("paths_0")) {
-			Log.i(getClass().getName(), "Cache miss...");
+			// Log.i(getClass().getName(), "Cache miss...");
 			fetchAlarms();
 			return;
 		}
@@ -150,36 +168,83 @@ public class AlarmSelector {
 			paths = newPaths;
 		}
 
-		Log.i(getClass().getName(), "Cache hit!");
+		// Log.i(getClass().getName(), "Cache hit!");
 	}
 
 	private void fetchAlarms() {
 		RingtoneManager manager = new RingtoneManager(context);
 		manager.setType(RingtoneManager.TYPE_ALARM);
-		Cursor c = manager.getCursor();
-		if (c == null) {
-			return;
+		try {
+			Cursor c = manager.getCursor();
+			if (c == null) {
+				return;
+			}
+			
+			List<String> newPaths = new ArrayList<String>();
+			List<String> newNames = new ArrayList<String>();
+			List<String> newUris = new ArrayList<String>();
+			
+			// explicitly add the default URI, so we can select it separately from the other tones
+			Uri defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+			Ringtone ringtone = RingtoneManager.getRingtone(context, defaultUri);
+			newNames.add(ringtone.getTitle(context));
+			newUris.add(defaultUri.toString());
+			newPaths.add(getRealPathFromURI(defaultUri));
+			
+			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+				newNames.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
+				newUris.add(manager.getRingtoneUri(c.getPosition()).toString());
+				System.out.println("uri: " + newUris.get(newUris.size() - 1));
+				newPaths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
+				// System.out.println("path: " + newPaths.get(newPaths.size() - 1));
+			}
+			c.close();
+			
+			if (!names.equals(newNames) || !uris.equals(newUris) || !paths.equals(newPaths)) {
+				names = newNames;
+				uris = newUris;
+				paths = newPaths;
+			}
+	
+			saveCache();
+		} catch (SecurityException e) {
+			String dirName = "/system/media/audio/alarms/";
+			File dir = new File(dirName);
+			File[] contents = dir.listFiles();
+			//System.out.println("Found files " + Arrays.toString(contents));
+			// this happens on newer phones with read from SD card disabled.  we can still fallback
+			// to the system default, which the user can change outside of the app
+			List<String> newPaths = new ArrayList<String>();
+			List<String> newNames = new ArrayList<String>();
+			List<String> newUris = new ArrayList<String>();
+			
+			List<Uri> potentialUris = new ArrayList<Uri>();
+			potentialUris.add(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+			for (File file : contents) {
+				potentialUris.add(Uri.fromFile(file));
+			}
+			for (Uri uri : potentialUris) {
+				try {
+					Ringtone ringtone = RingtoneManager.getRingtone(context, uri);
+					String title = ringtone.getTitle(context);
+					if (title.endsWith(".ogg")) {
+						title = title.substring(0, title.length() - 4);
+					}
+					newNames.add(title);
+					newUris.add(uri.toString());
+					newPaths.add(getRealPathFromURI(uri));
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			
+			if (!names.equals(newNames) || !uris.equals(newUris) || !paths.equals(newPaths)) {
+				names = newNames;
+				uris = newUris;
+				paths = newPaths;
+			}
+			saveCache();
 		}
-		
-		List<String> newPaths = new ArrayList<String>();
-		List<String> newNames = new ArrayList<String>();
-		List<String> newUris = new ArrayList<String>();
-		
-		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-			newNames.add(c.getString(RingtoneManager.TITLE_COLUMN_INDEX));
-			newUris.add(manager.getRingtoneUri(c.getPosition()).toString());
-			newPaths.add(getRealPathFromURI(manager.getRingtoneUri(c.getPosition())));
-			// System.out.println("path: " + newPaths.get(newPaths.size() - 1));
-		}
-		c.close();
-		
-		if (!names.equals(newNames) || !uris.equals(newUris) || !paths.equals(newPaths)) {
-			names = newNames;
-			uris = newUris;
-			paths = newPaths;
-		}
-
-		saveCache();
 	}
 
 	private void saveCache() {
@@ -211,7 +276,7 @@ public class AlarmSelector {
 		
 		prefs.commit();
 
-		Log.i(getClass().getName(), "Cache updated");
+		// Log.i(getClass().getName(), "Cache updated");
 	}
 
 	private String getRealPathFromURI(Uri contentUri) {
@@ -222,20 +287,24 @@ public class AlarmSelector {
         }
         try {
 	        Cursor cursor = context.getContentResolver().query(contentUri, null, null, null, null);
-	        int column_index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-	        if (column_index != -1) {
-		        cursor.moveToFirst();
-		        toReturn = cursor.getString(column_index);
-	        } else {
-	        	cursor.moveToFirst();
-	        	toReturn = getRealPathFromURI(
-	        			Uri.parse(cursor.getString(cursor.getColumnIndexOrThrow("value"))));
+	        if (cursor != null && !cursor.isAfterLast()) {
+		        int column_index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+		        if (column_index != -1) {
+			        cursor.moveToFirst();
+			        toReturn = cursor.getString(column_index);
+		        } else {
+		        	cursor.moveToFirst();
+		        	toReturn = getRealPathFromURI(
+		        			Uri.parse(cursor.getString(cursor.getColumnIndexOrThrow("value"))));
+		        }
+		        cursor.close();
 	        }
-	        cursor.close();
         } catch (SQLiteException e) {
         	e.printStackTrace();
         } catch (CursorIndexOutOfBoundsException e) {
         	e.printStackTrace();
+        } catch (SecurityException e) {
+        	return uri;
         }
         return toReturn;
     }
@@ -245,8 +314,31 @@ public class AlarmSelector {
 				context.getSharedPreferences("Countdown", Context.MODE_PRIVATE);
 
         Uri alarmUri = AlarmService.getRingtoneUri(prefs);
-        Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
-		int idx = paths.indexOf(getRealPathFromURI(alarmUri));
+        // needed for backward compatability with original version which just stored the path
+		//Log.i(getClass().getName(), "Saved URI is " + alarmUri.toString());
+        if (alarmUri.toString().startsWith("/") || alarmUri.toString().startsWith("file:///")) {
+        	String alarmStr = alarmUri.toString();
+        	if (alarmStr.startsWith("file:///")) {
+        		alarmStr = alarmStr.substring("file://".length());
+        	}
+        	int idx = paths.indexOf(alarmStr);
+        	if (idx != -1) {
+        		//Log.i(getClass().getName(), "Replacing URI " + alarmStr + " with " + uris.get(idx));
+        		alarmUri = Uri.parse(uris.get(idx));
+        		SharedPreferences.Editor prefsEdit = 
+					context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
+				prefsEdit.putString("alarmUri", uris.get(idx));
+				prefsEdit.commit();
+        	} else {
+        		// if we can't find the old selection in the new scheme, still need to rewrite the
+        		// uri so that we can find it later, since we will later insert it at the end of the
+        		// list
+        		//Log.w(getClass().getName(), "couldn't parse alarmUri " + alarmStr + ", paths " + paths);
+        		alarmUri = Uri.parse("file://" + alarmStr.toString());
+        	}
+        }
+     // Log.i(getClass().getName(), "alarmUri path is " + getRealPathFromURI(alarmUri));
+		int idx = uris.indexOf(alarmUri.toString());
 		if (idx != -1) {
 			selector.setSelection(idx);
 		} else {
@@ -257,14 +349,14 @@ public class AlarmSelector {
 				if (sel != Spinner.INVALID_POSITION) {
 					SharedPreferences.Editor prefsEdit = 
 							context.getSharedPreferences("Countdown", Context.MODE_PRIVATE).edit();
-					prefsEdit.putString("alarmUri", "file://" + paths.get(sel));
+					prefsEdit.putString("alarmUri", uris.get(sel));
 					prefsEdit.commit();
-					Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
+					// Log.i(getClass().getName(), "Saved default uri " + paths.get(sel).toString());
 				} else {
-					Log.i(getClass().getName(), "No ringtones found...");
+					// Log.i(getClass().getName(), "No ringtones found...");
 				}
 			} else {
-				Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
+				// Log.i(getClass().getName(), "ringtone path: " + ringtone + " vs " + Settings.System.DEFAULT_ALARM_ALERT_URI.getPath());
 				alarmTonesAdapter.add(
 						ringtone.getTitle(context));
 				uris.add(alarmUri.toString());

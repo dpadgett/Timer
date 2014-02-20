@@ -31,21 +31,21 @@ please see styles_device_defaults.xml.
 <resources>
     <!-- Global Theme Styles -->
     <eat-comment />
-    <style name="Widget.NumberPicker">
+    <style name="Widget.NumberPicker" parent="@android:style/Widget">
         <item name="android:orientation">vertical</item>
         <item name="android:fadingEdge">vertical</item>
         <item name="android:fadingEdgeLength">50dip</item>
         <item name="flingable">false</item>
     </style>
     
-    <style name="Widget.ImageButton">
+    <style name="Widget.ImageButton" parent="@android:style/Widget">
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
         <item name="android:scaleType">center</item>
         <item name="android:background">@android:drawable/btn_default</item>
     </style>
 
-    <style name="Widget.EditText">
+    <style name="Widget.EditText" parent="@android:style/Widget">
         <item name="android:focusable">true</item>
         <item name="android:focusableInTouchMode">true</item>
         <item name="android:clickable">true</item>

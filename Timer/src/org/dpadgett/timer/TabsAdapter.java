@@ -1,3 +1,19 @@
+/*  
+ * Copyright 2012 Dan Padgett
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.dpadgett.timer;
 
 import java.util.ArrayList;
@@ -11,7 +27,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -87,12 +102,12 @@ public class TabsAdapter extends FragmentPagerAdapter
     public Fragment getCachedItem(int position) {
         // Do we already have this fragment?
     	if (!mSingletonMap.containsKey(position)) {
-    		Log.i(getClass().getName(), "Fragment cache miss");
+    		// Log.i(getClass().getName(), "Fragment cache miss");
 	        Fragment fragment = (Fragment) instantiateItem(mViewPager, position);
 	        mSingletonMap.put(position, fragment);
 	        return fragment;
     	} else {
-    		Log.i(getClass().getName(), "Fragment cache hit");
+    		// Log.i(getClass().getName(), "Fragment cache hit");
     		return mSingletonMap.get(position);
     	}
     }

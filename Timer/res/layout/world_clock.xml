@@ -32,7 +32,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="+ Add" />
+            android:text="@string/world_clock_button_add" />
     </LinearLayout>
 
 </org.dpadgett.compat.LinearLayout>

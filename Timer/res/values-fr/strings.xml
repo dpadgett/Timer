@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="hello">Sup World, TimerActivity!</string>
+    <string name="app_name">Timer</string>
+
+    <!-- NumberPicker - accessibility support -->
+    <!-- Description of the button to increment the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_button">Incrémenter</string>
+    <!-- Description of the button to decrement the NumberPicker value. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_decrement_button">Décrémenter</string>
+    <!-- Description of the tap and hold action to get into scroll mode in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_mode"><xliff:g id="value" example="3">%s</xliff:g> appui long.</string>
+    <!-- Description of the scrolling action in NumberPicker. [CHAR LIMIT=NONE] -->
+    <string name="number_picker_increment_scroll_action">Glisser vers le haut pour incrémenter, vers le bas pour décrémenter.</string>
+    <string name="title_activity_stopwatch_autostart">StopwatchAutostartActivity</string>
+    <string name="countdown_timer_finished">Minuteur fini</string>
+    <string name="tap_to_dismiss">Appuyer ici pour faire partir</string>
+    <string name="alarm_dialog_dismiss">D'accord</string>
+    <string name="tab_title_worldclock">Heures du monde</string>
+    <string name="tab_title_stopwatch">Chronomètre</string>
+    <string name="tab_title_countdown">Minuteur</string>
+    <string name="world_clock_timezone_label">Fuseau horaire: </string>
+    <string name="world_clock_timezone_label_initial" >Fuseau horaire: +0:00</string>
+    <string name="world_clock_timezone_utc">UTC</string>
+    <string name="world_clock_timezone_gmt">GMT</string>
+    <string name="world_clock_button_add">+ Ajouter</string>
+    <string name="world_clock_button_remove">Supprimer</string>
+    <string name="world_clock_select_timezone">Sélectionner un fuseau horaire</string>
+    <string name="countdown_button_start">Démarrer</string>
+    <string name="countdown_button_cancel">Arrêter</string>
+    <string name="countdown_label_on_finish">à la fin:</string>
+    <string name="countdown_number_picker_seconds">SECONDES</string>
+    <string name="countdown_number_picker_minutes">MINUTES</string>
+    <string name="countdown_number_picker_hours">HEURES</string>
+    <string name="stopwatch_button_start">Démarrer</string>
+    <string name="stopwatch_button_stop">Arrêter</string>
+    <string name="stopwatch_button_lap">Tour</string>
+    <string name="stopwatch_button_reset">RAZ</string>
+    <string name="stopwatch_timertext_initial">00:00:00.000</string>
+    <string name="stopwatch_lap_time_prefix">tour:</string>
+    <string name="stopwatch_lap_time_initial">tour: 00:00:00.000</string>
+    <string name="lap_times_lap_label">tour</string>
+</resources>
